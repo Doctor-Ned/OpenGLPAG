@@ -2,4 +2,9 @@
 # Ten plik .gitignore został utworzony automatycznie przez Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
+Debug/
+Release/
+bin/
+obj/
+.vs/
+/Build
