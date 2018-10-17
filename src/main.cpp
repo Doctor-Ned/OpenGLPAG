@@ -68,9 +68,9 @@ ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
 	return remapRectToColRow(rect, index % 3, index / 3);
 }
 
-void createCarpetVertices(int depth, ImVec4 *rect, GLfloat *vertices, int off = 0) {
+void createCarpetVertices(int depth, ImVec4 *rect, GLfloat *vertices, bool reset = false) {
 	static int offset = 0;
-	if (off == 1) offset = 0;
+	if (reset) offset = 0;
 	if (depth == 0) {
 		createRectangleVertices(rect, vertices, offset);
 		offset += 6 * 3;
