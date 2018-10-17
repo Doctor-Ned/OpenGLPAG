@@ -42,7 +42,7 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void createRectangleVbo(ImVec4 *rect, std::vector<GLuint> *vbos) {
+void createRectangleVbo(ImVec4 *rect, GLfloat *vert, int offset) {
 	GLfloat vertices[] = {
 		rect->y,rect->w,0.0f,
 		rect->y,rect->z,0.0f,
@@ -51,14 +51,7 @@ void createRectangleVbo(ImVec4 *rect, std::vector<GLuint> *vbos) {
 		rect->x,rect->z,0.0f,
 		rect->x,rect->w,0.0f
 	};
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	vbos->push_back(vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // STATIC?
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	memcpy(&(vert[offset]), vertices, sizeof(vertices));
 }
 
 ImVec4 *remapRectToColRow(ImVec4 *rect, int col, int row) {
@@ -75,37 +68,41 @@ ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
 	return remapRectToColRow(rect, index % 3, index / 3);
 }
 
-void createCarpetVbos(int depth, ImVec4 *rect, std::vector<GLuint> *vbos) {
+void createCarpetVbos(int depth, ImVec4 *rect, GLfloat *vertices, int off = 0) {
+	static int offset = 0;
+	if (off == 1) offset = 0;
 	if (depth == 0) {
-		createRectangleVbo(rect, vbos);
+		createRectangleVbo(rect, vertices, offset);
+		offset += 6 * 3;
 	} else {
 		depth--;
 		for (int i = 0; i < 9; i++) {
 			if (i != 4) {
 				ImVec4 *newRect = remapRectToColRow(rect, i);
-				createCarpetVbos(depth, newRect, vbos);
+				createCarpetVbos(depth, newRect, vertices);
 				delete newRect;
 			}
 		}
 	}
 }
 
-void refillVao(int recurseDepth, std::vector<GLuint> *vbos, GLuint vao) {
+GLsizei refillVao(int recurseDepth, GLuint *vbo, GLuint *vao) {
 	static ImVec4 fullRect(-1, 1, -1, 1);  //minX,maxX,minY,maxX
-	glBindVertexArray(vao);
-	for (auto &vbo : *vbos) {
-		glDeleteBuffers(1, &vbo);
-	}
-	vbos->clear();
+	glBindVertexArray(*vao);
+	GLsizei newSize = recurseDepth == 0 ? 1 : pow(8, recurseDepth);
+	if (vbo != 0)glDeleteBuffers(1, vbo);
+	glGenBuffers(1, vbo);
+	GLfloat *vertices = new float[newSize * 6 * 3];
 	if (recurseDepth >= 0) {
-		createCarpetVbos(recurseDepth, &fullRect, vbos);
+		createCarpetVbos(recurseDepth, &fullRect, vertices, 1);
+		glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+		glBufferData(GL_ARRAY_BUFFER, newSize * 6 * 3 * sizeof(float), vertices, GL_STATIC_DRAW); // STATIC?
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glBindVertexArray(0);
-}
-
-
-void clearVao(std::vector<GLuint> *vbos, GLuint vao) {
-	refillVao(-1, vbos, vao);
+	return newSize;
 }
 
 int main(int, char**) {
@@ -215,11 +212,10 @@ int main(int, char**) {
 		return 1;
 	}
 
-	GLuint vao;
+	GLuint vao = 0, vbo = 0;
 	glGenVertexArrays(1, &vao);
 
-	std::vector<GLuint> vbos;
-	refillVao(0, &vbos, vao);
+	GLsizei currentSize = refillVao(0, &vbo, &vao);
 
 	GLint carpetColorLocation = glGetUniformLocation(shaderProgram, "inColor");
 
@@ -261,7 +257,7 @@ int main(int, char**) {
 
 		if (refill) {
 			refill = false;
-			refillVao(carpetDepth, &vbos, vao);
+			currentSize = refillVao(carpetDepth, &vbo, &vao);
 		}
 
 		// Rendering
@@ -273,16 +269,13 @@ int main(int, char**) {
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//TODO
 		glViewport(0, 0, carpetSize, carpetSize);
 		glUseProgram(shaderProgram);
 		glUniform4f(carpetColorLocation, carpetColor.x, carpetColor.y, carpetColor.z, carpetColor.w);
 		glBindVertexArray(vao);
 
-		for (auto &vbo : vbos) {
-			glBindVertexBuffer(0, vbo, 0, 3 * sizeof(float));
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
+		glBindVertexBuffer(0, vbo, 0, 3 * sizeof(float));
+		glDrawArrays(GL_TRIANGLES, 0, currentSize * 6);
 
 		glBindVertexArray(0);
 
@@ -297,8 +290,8 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	clearVao(&vbos, vao);
 	glDeleteProgram(shaderProgram);
+	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &vao);
 
 	glfwDestroyWindow(window);
