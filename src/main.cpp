@@ -42,7 +42,7 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void createRectangleVbo(ImVec4 *rect, GLfloat *vert, int offset) {
+void createRectangleVertices(ImVec4 *rect, GLfloat *vert, int offset) {
 	GLfloat vertices[] = {
 		rect->y,rect->w,0.0f,
 		rect->y,rect->z,0.0f,
@@ -68,18 +68,18 @@ ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
 	return remapRectToColRow(rect, index % 3, index / 3);
 }
 
-void createCarpetVbos(int depth, ImVec4 *rect, GLfloat *vertices, int off = 0) {
+void createCarpetVertices(int depth, ImVec4 *rect, GLfloat *vertices, int off = 0) {
 	static int offset = 0;
 	if (off == 1) offset = 0;
 	if (depth == 0) {
-		createRectangleVbo(rect, vertices, offset);
+		createRectangleVertices(rect, vertices, offset);
 		offset += 6 * 3;
 	} else {
 		depth--;
 		for (int i = 0; i < 9; i++) {
 			if (i != 4) {
 				ImVec4 *newRect = remapRectToColRow(rect, i);
-				createCarpetVbos(depth, newRect, vertices);
+				createCarpetVertices(depth, newRect, vertices);
 				delete newRect;
 			}
 		}
@@ -94,7 +94,7 @@ GLsizei refillVao(int recurseDepth, GLuint *vbo, GLuint *vao) {
 	glGenBuffers(1, vbo);
 	GLfloat *vertices = new float[newSize * 6 * 3];
 	if (recurseDepth >= 0) {
-		createCarpetVbos(recurseDepth, &fullRect, vertices, 1);
+		createCarpetVertices(recurseDepth, &fullRect, vertices, 1);
 		glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 		glBufferData(GL_ARRAY_BUFFER, newSize * 6 * 3 * sizeof(float), vertices, GL_STATIC_DRAW); // STATIC?
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
