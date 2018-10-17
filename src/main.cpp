@@ -2,6 +2,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <cstdio>
+#include <vector>
 
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>    // Initialize with gl3wInit()
@@ -18,22 +19,22 @@
 // Shader sources
 const GLchar* vertexSource = R"glsl(
     #version 430 core
-    in vec2 inPosition;
-    in vec3 inColor;
-    out vec3 exColor;
+    in vec3 inPosition;
+    uniform vec4 inColor;
+    out vec4 exColor;
     void main()
     {
         exColor = inColor;
-        gl_Position = vec4(inPosition, 0.0, 1.0);
+        gl_Position = vec4(inPosition, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
     #version 430 core
-    in vec3 exColor;
+    in vec4 exColor;
     out vec4 outColor;
     void main()
     {
-        outColor = vec4(ex Color, 1.0);
+        outColor = exColor;
     }
 )glsl";
 
@@ -41,9 +42,73 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-int main(int, char**) {
-	void refillVao(GLuint, int);
+void createRectangleVbo(ImVec4 *rect, std::vector<GLuint> *vbos) {
+	GLfloat vertices[] = {
+		rect->y,rect->w,0.0f,
+		rect->y,rect->z,0.0f,
+		rect->x,rect->w,0.0f,
+		rect->y,rect->z,0.0f,
+		rect->x,rect->z,0.0f,
+		rect->x,rect->w,0.0f
+	};
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	vbos->push_back(vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // STATIC?
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
+ImVec4 *remapRectToColRow(ImVec4 *rect, int col, int row) {
+	ImVec4 *result = new ImVec4();
+	float width = (rect->y - rect->x) / 3.0f, height = (rect->w - rect->z) / 3.0f;
+	result->x = rect->x + width * col;
+	result->y = result->x + width;
+	result->z = rect->z + height * row;
+	result->w = result->z + height;
+	return result;
+}
+
+ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
+	return remapRectToColRow(rect, index % 3, index / 3);
+}
+
+void createCarpetVbos(int depth, ImVec4 *rect, std::vector<GLuint> *vbos) {
+	if (depth == 0) {
+		createRectangleVbo(rect, vbos);
+	} else {
+		depth--;
+		for (int i = 0; i < 9; i++) {
+			if (i != 4) {
+				ImVec4 *newRect = remapRectToColRow(rect, i);
+				createCarpetVbos(depth, newRect, vbos);
+				delete newRect;
+			}
+		}
+	}
+}
+
+void refillVao(int recurseDepth, std::vector<GLuint> *vbos, GLuint vao) {
+	static ImVec4 fullRect(-1, 1, -1, 1);  //minX,maxX,minY,maxX
+	glBindVertexArray(vao);
+	for (auto &vbo : *vbos) {
+		glDeleteBuffers(1, &vbo);
+	}
+	vbos->clear();
+	if (recurseDepth >= 0) {
+		createCarpetVbos(recurseDepth, &fullRect, vbos);
+	}
+	glBindVertexArray(0);
+}
+
+
+void clearVao(std::vector<GLuint> *vbos, GLuint vao) {
+	refillVao(-1, vbos, vao);
+}
+
+int main(int, char**) {
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
@@ -67,7 +132,7 @@ int main(int, char**) {
 #endif
 
 	// Create window with graphics context
-	const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+	const int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 800;
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
 	if (window == NULL) {
 		return 1;
@@ -92,8 +157,6 @@ int main(int, char**) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
@@ -101,7 +164,7 @@ int main(int, char**) {
 	ImGui::StyleColorsDark();
 
 
-	ImVec4 carpet_color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f), clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 carpetColor = ImVec4(1.00f, 1.00f, 1.00f, 1.00f), clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
 	//load shaders
@@ -116,7 +179,7 @@ int main(int, char**) {
 		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
 		errorLog = new char[maxLength];
 		glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorLog);
-		fprintf(stderr, errorLog);
+		fprintf(stderr, "Vertex shader error: %s\n", errorLog);
 		delete errorLog;
 		return 1;
 	}
@@ -129,7 +192,7 @@ int main(int, char**) {
 		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
 		errorLog = new char[maxLength];
 		glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorLog);
-		fprintf(stderr, errorLog);
+		fprintf(stderr, "Fragment shader error: %s\n", errorLog);
 		delete errorLog;
 		return 1;
 	}
@@ -153,27 +216,21 @@ int main(int, char**) {
 	}
 
 	GLuint vao;
-	//glGenVertexArrays(1, &vao);
-	//refillVao(vao, 1);
+	glGenVertexArrays(1, &vao);
 
-	glUseProgram(shaderProgram);
+	std::vector<GLuint> vbos;
+	refillVao(0, &vbos, vao);
+
+	GLint carpetColorLocation = glGetUniformLocation(shaderProgram, "inColor");
 
 	while (!glfwWindowShouldClose(window)) {
-		// Poll and handle events (inputs, window resize, etc.)
-		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-
-
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// Configuration window
-		static int carpetDepth = 1;
+		static int carpetDepth = 0;
 		static int targetDepth = carpetDepth;
 		static int carpetSize = 400;
 		static int targetSize = carpetSize;
@@ -181,17 +238,13 @@ int main(int, char**) {
 
 		ImGui::Begin("Configuration");
 		{
-			ImGui::ColorEdit3("Carpet color", (float*)&carpet_color);
+			ImGui::ColorEdit3("Carpet color", (float*)&carpetColor);
 			ImGui::SliderInt("Carpet size", &targetSize, 50, SMALLER_SIZE);
-			if (ImGui::Button("Apply carpet size")) {
-				if (carpetSize != targetSize) {
-					carpetSize = targetSize;
-				}
+			if (carpetSize != targetSize) {
+				carpetSize = targetSize;
 			}
-			ImGui::SameLine();
-			ImGui::Text("Current size: %d", carpetSize);
 			ImGui::NewLine();
-			ImGui::SliderInt("Recursion depth", &targetDepth, 1, 20);
+			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 6);
 			if (ImGui::Button("Apply recursion depth")) {
 				if (carpetDepth != targetDepth) {
 					carpetDepth = targetDepth;
@@ -201,14 +254,14 @@ int main(int, char**) {
 			ImGui::SameLine();
 			ImGui::Text("Current depth: %d", carpetDepth);
 			ImGui::NewLine();
-			ImGui::ColorEdit3("Clear color", (float*)&clear_color);
+			ImGui::ColorEdit3("Clear color", (float*)&clearColor);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
 
 		if (refill) {
 			refill = false;
-			refill(carpetDepth, vao);
+			refillVao(carpetDepth, &vbos, vao);
 		}
 
 		// Rendering
@@ -217,8 +270,23 @@ int main(int, char**) {
 		glfwMakeContextCurrent(window);
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
-		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		//TODO
+		glViewport(0, 0, carpetSize, carpetSize);
+		glUseProgram(shaderProgram);
+		glUniform4f(carpetColorLocation, carpetColor.x, carpetColor.y, carpetColor.z, carpetColor.w);
+		glBindVertexArray(vao);
+
+		for (auto &vbo : vbos) {
+			glBindVertexBuffer(0, vbo, 0, 3 * sizeof(float));
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+
+		glBindVertexArray(0);
+
+		glViewport(0, 0, display_w, display_h);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwMakeContextCurrent(window);
 		glfwSwapBuffers(window);
@@ -229,6 +297,7 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	clearVao(&vbos, vao);
 	glDeleteProgram(shaderProgram);
 	glDeleteBuffers(1, &vao);
 
@@ -236,8 +305,4 @@ int main(int, char**) {
 	glfwTerminate();
 
 	return 0;
-}
-
-void refillVao(int recurseDepth, GLuint vao) {
-
 }
