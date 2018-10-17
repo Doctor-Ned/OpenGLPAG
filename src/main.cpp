@@ -18,22 +18,22 @@
 // Shader sources
 const GLchar* vertexSource = R"glsl(
     #version 430 core
-    in vec2 position;
-    in vec3 color;
-    out vec3 Color;
+    in vec2 inPosition;
+    in vec3 inColor;
+    out vec3 exColor;
     void main()
     {
-        Color = color;
-        gl_Position = vec4(position, 0.0, 1.0);
+        exColor = inColor;
+        gl_Position = vec4(inPosition, 0.0, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
     #version 430 core
-    in vec3 Color;
-    out vec4 Color;
+    in vec3 exColor;
+    out vec4 outColor;
     void main()
     {
-        Color = vec4(Color, 1.0);
+        outColor = vec4(ex Color, 1.0);
     }
 )glsl";
 
@@ -137,8 +137,8 @@ int main(int, char**) {
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
-	glBindAttribLocation(shaderProgram, 0, "in_position");
-	glBindAttribLocation(shaderProgram, 1, "in_color");
+	glBindAttribLocation(shaderProgram, 0, "inPosition");
+	glBindAttribLocation(shaderProgram, 1, "inColor");
 
 	glLinkProgram(shaderProgram);
 
