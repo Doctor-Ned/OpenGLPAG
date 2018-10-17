@@ -15,11 +15,35 @@
 
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
+// Shader sources
+const GLchar* vertexSource = R"glsl(
+    #version 430 core
+    in vec2 position;
+    in vec3 color;
+    out vec3 Color;
+    void main()
+    {
+        Color = color;
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+)glsl";
+const GLchar* fragmentSource = R"glsl(
+    #version 430 core
+    in vec3 Color;
+    out vec4 Color;
+    void main()
+    {
+        Color = vec4(Color, 1.0);
+    }
+)glsl";
+
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 int main(int, char**) {
+	void refillVao(GLuint, int);
+
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
@@ -43,7 +67,8 @@ int main(int, char**) {
 #endif
 
 	// Create window with graphics context
-	GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGLPAG", NULL, NULL);
+	const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
 	if (window == NULL) {
 		return 1;
 	}
@@ -75,11 +100,63 @@ int main(int, char**) {
 
 	ImGui::StyleColorsDark();
 
-	const int INITIAL_CARPET_SIZE = 400;
-	const ImVec2 CarpetVec2(INITIAL_CARPET_SIZE, INITIAL_CARPET_SIZE);
 
-	bool show_carpet = true;
 	ImVec4 carpet_color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f), clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
+
+	//load shaders
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, (const GLchar**)&vertexSource, 0);
+	glCompileShader(vertexShader);
+	GLint isFine, maxLength;
+	char *errorLog;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isFine);
+	if (isFine == FALSE) {
+		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+		errorLog = new char[maxLength];
+		glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorLog);
+		fprintf(stderr, errorLog);
+		delete errorLog;
+		return 1;
+	}
+
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, (const GLchar**)&fragmentSource, 0);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isFine);
+	if (isFine == FALSE) {
+		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+		errorLog = new char[maxLength];
+		glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorLog);
+		fprintf(stderr, errorLog);
+		delete errorLog;
+		return 1;
+	}
+
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glBindAttribLocation(shaderProgram, 0, "in_position");
+	glBindAttribLocation(shaderProgram, 1, "in_color");
+
+	glLinkProgram(shaderProgram);
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int *)&isFine);
+	if (isFine == FALSE) {
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
+		errorLog = new char[maxLength];
+		glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, errorLog);
+		fprintf(stderr, errorLog);
+		delete errorLog;
+		return 1;
+	}
+
+	GLuint vao;
+	//glGenVertexArrays(1, &vao);
+	//refillVao(vao, 1);
+
+	glUseProgram(shaderProgram);
 
 	while (!glfwWindowShouldClose(window)) {
 		// Poll and handle events (inputs, window resize, etc.)
@@ -96,32 +173,43 @@ int main(int, char**) {
 		ImGui::NewFrame();
 
 		// Configuration window
-		static int carpet_depth = 1;
-		static int target_depth = carpet_depth;
+		static int carpetDepth = 1;
+		static int targetDepth = carpetDepth;
+		static int carpetSize = 400;
+		static int targetSize = carpetSize;
+		static bool refill = false;
 
 		ImGui::Begin("Configuration");
 		{
 			ImGui::ColorEdit3("Carpet color", (float*)&carpet_color);
-			ImGui::SliderInt("Recursion depth", &target_depth, 1, 20);
-			if (ImGui::Button("Apply recursion depth")) {
-				carpet_depth = target_depth;
+			ImGui::SliderInt("Carpet size", &targetSize, 50, SMALLER_SIZE);
+			if (ImGui::Button("Apply carpet size")) {
+				if (carpetSize != targetSize) {
+					carpetSize = targetSize;
+				}
 			}
 			ImGui::SameLine();
-			ImGui::Text("Current depth: %d", carpet_depth);
+			ImGui::Text("Current size: %d", carpetSize);
+			ImGui::NewLine();
+			ImGui::SliderInt("Recursion depth", &targetDepth, 1, 20);
+			if (ImGui::Button("Apply recursion depth")) {
+				if (carpetDepth != targetDepth) {
+					carpetDepth = targetDepth;
+					refill = true;
+				}
+			}
+			ImGui::SameLine();
+			ImGui::Text("Current depth: %d", carpetDepth);
 			ImGui::NewLine();
 			ImGui::ColorEdit3("Clear color", (float*)&clear_color);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
 
-		// Sierpinski carpet
-		ImGui::SetNextWindowSize(CarpetVec2);
-		ImGui::Begin("Carpet", &show_carpet, ImGuiWindowFlags_NoResize);
-		{
-
+		if (refill) {
+			refill = false;
+			refill(carpetDepth, vao);
 		}
-		ImGui::End();
-
 
 		// Rendering
 		ImGui::Render();
@@ -132,7 +220,6 @@ int main(int, char**) {
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 		glfwMakeContextCurrent(window);
 		glfwSwapBuffers(window);
 	}
@@ -142,8 +229,15 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	glDeleteProgram(shaderProgram);
+	glDeleteBuffers(1, &vao);
+
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	return 0;
+}
+
+void refillVao(int recurseDepth, GLuint vao) {
+
 }
