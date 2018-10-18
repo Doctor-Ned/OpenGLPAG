@@ -22,19 +22,23 @@ const GLchar* vertexSource = R"glsl(
     in vec3 inPosition;
     uniform vec4 inColor;
     out vec4 exColor;
+	out vec4 exPosition;
     void main()
     {
         exColor = inColor;
+		exPosition = vec4(inPosition,1.0);
         gl_Position = vec4(inPosition, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
     #version 430 core
     in vec4 exColor;
+	in vec4 exPosition;
     out vec4 outColor;
     void main()
     {
-        outColor = exColor;
+        //outColor = exPosition;
+		outColor=exColor;
     }
 )glsl";
 
@@ -42,21 +46,16 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void createRectangleVertices(ImVec4 *rect, GLuint *ind, GLfloat *vert, int indOffset, int vertOffset) {
+void createRectangleVertices(ImVec4 *rect, GLfloat *vert, int offset) {
 	GLfloat vertices[] = {
 		rect->y,rect->w,0.0f,
 		rect->y,rect->z,0.0f,
 		rect->x,rect->w,0.0f,
-		//rect->y,rect->z,0.0f,
+		rect->y,rect->z,0.0f,
 		rect->x,rect->z,0.0f,
-		//rect->x,rect->w,0.0f
+		rect->x,rect->w,0.0f
 	};
-	GLuint indices[] = {
-		vertOffset,vertOffset + 1,vertOffset + 2,
-		vertOffset + 1,vertOffset + 3,vertOffset + 2
-	};
-	memcpy(&(vert[vertOffset]), vertices, sizeof(vertices));
-	memcpy(&(ind[indOffset]), indices, sizeof(indices));
+	memcpy(&(vert[offset]), vertices, sizeof(vertices));
 }
 
 ImVec4 *remapRectToColRow(ImVec4 *rect, int col, int row) {
@@ -73,54 +72,41 @@ ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
 	return remapRectToColRow(rect, index % 3, index / 3);
 }
 
-void createCarpetVertices(int depth, ImVec4 *rect, GLuint *indices, GLfloat *vertices, bool reset = false) {
-	static int vertOffset = 0, indOffset = 0;
-	if (reset) {
-		vertOffset = 0;
-		indOffset = 0;
-	}
+void createCarpetVertices(int depth, ImVec4 *rect, GLfloat *vertices, bool reset = false) {
+	static int offset = 0;
+	if (reset) offset = 0;
 	if (depth == 0) {
-		createRectangleVertices(rect, indices, vertices, indOffset, vertOffset);
-		vertOffset += 4;
-		indOffset += 6;
+		createRectangleVertices(rect, vertices, offset);
+		offset += 6 * 3;
 	} else {
 		depth--;
 		for (int i = 0; i < 9; i++) {
 			if (i != 4) {
 				ImVec4 *newRect = remapRectToColRow(rect, i);
-				createCarpetVertices(depth, newRect, indices, vertices);
+				createCarpetVertices(depth, newRect, vertices);
 				delete newRect;
 			}
 		}
 	}
 }
 
-GLsizei refillVao(int recurseDepth, GLuint *ebo, GLuint *vbo, GLuint *vao) {
+GLsizei refillVao(int recurseDepth, GLuint *vbo, GLuint *vao) {
 	static ImVec4 fullRect(-1, 1, -1, 1);  //minX,maxX,minY,maxX
 	glBindVertexArray(*vao);
 	GLsizei newSize = recurseDepth == 0 ? 1 : pow(8, recurseDepth);
-	if (*vbo != 0)glDeleteBuffers(1, vbo);
-	if (*ebo != 0) {
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glDeleteBuffers(1, ebo);
-	}
+	if (vbo != 0)glDeleteBuffers(1, vbo);
 	glGenBuffers(1, vbo);
-	glGenBuffers(1, ebo);
-	GLfloat *vertices = new GLfloat[newSize * 4 * 3];  //four vertices for each square, 3 floats for each vertex
-	GLuint *indices = new GLuint[newSize * 6];         //six indices -> 2 triangles -> 1 square
+	GLfloat *vertices = new float[newSize * 6 * 3];
 	if (recurseDepth >= 0) {
-		createCarpetVertices(recurseDepth, &fullRect, indices, vertices, 1);
+		createCarpetVertices(recurseDepth, &fullRect, vertices, 1);
 		glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-		glBufferData(GL_ARRAY_BUFFER, newSize * 4 * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize * 6, indices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, newSize * 6 * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glBindVertexArray(0);
-	delete vertices;  //not sure if these two should be here yet. must be tested
-	delete indices;
+	delete vertices;
 	return newSize;
 }
 
@@ -231,10 +217,10 @@ int main(int, char**) {
 		return 1;
 	}
 
-	GLuint vao = 0, vbo = 0, ebo = 0;
+	GLuint vao = 0, vbo = 0;
 	glGenVertexArrays(1, &vao);
 
-	GLsizei currentSize = refillVao(0, &ebo, &vbo, &vao);
+	GLsizei currentSize = refillVao(0, &vbo, &vao);
 
 	GLint carpetColorLocation = glGetUniformLocation(shaderProgram, "inColor");
 
@@ -276,7 +262,7 @@ int main(int, char**) {
 
 		if (refill) {
 			refill = false;
-			currentSize = refillVao(carpetDepth, &ebo, &vbo, &vao);
+			currentSize = refillVao(carpetDepth, &vbo, &vao);
 		}
 
 		// Rendering
@@ -291,14 +277,12 @@ int main(int, char**) {
 		glViewport(0, 0, carpetSize, carpetSize);
 		glUseProgram(shaderProgram);
 		glUniform4f(carpetColorLocation, carpetColor.x, carpetColor.y, carpetColor.z, carpetColor.w);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		//glDrawArrays(GL_TRIANGLES, 0, currentSize * 6);
-		glDrawElements(GL_TRIANGLES, currentSize * 6, GL_UNSIGNED_INT, 0);
+
+		glBindVertexBuffer(0, vbo, 0, 3 * sizeof(float));
+		glDrawArrays(GL_TRIANGLES, 0, currentSize * 6);
+
 		glBindVertexArray(0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(0, 0, display_w, display_h);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -311,9 +295,7 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glDeleteProgram(shaderProgram);
-	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &vao);
 
