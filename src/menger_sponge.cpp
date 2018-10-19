@@ -4,34 +4,49 @@
 
 menger_sponge::menger_sponge() :
 	menger_sponge::menger_sponge(
-		glm::vec3(-HALF_SQRT_2, -HALF_SQRT_2, -HALF_SQRT_2),
-		glm::vec3(HALF_SQRT_2, HALF_SQRT_2, HALF_SQRT_2)) {}
+		new glm::vec3(-HALF_SQRT_2, -HALF_SQRT_2, -HALF_SQRT_2),
+		new glm::vec3(HALF_SQRT_2, HALF_SQRT_2, HALF_SQRT_2)) {}
 
-menger_sponge::menger_sponge(glm::vec3 min, glm::vec3 max) {
+menger_sponge::menger_sponge(glm::vec3 *min, glm::vec3 *max) {
 	this->min = min;
 	this->max = max;
 	vao = new GLuint();
 	vbo = new GLuint();
-	glCreateVertexArrays(1, vao);
+	glGenVertexArrays(1, vao);
 	recreate(0);
 }
 
-void menger_sponge::recreate(int recurseDepth) {
+void menger_sponge::render() {
 	glBindVertexArray(*vao);
+	glBindVertexBuffer(0, *vbo, 0, 8 * sizeof(float));
+	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
+	glBindVertexArray(0);
+}
+
+void menger_sponge::deleteBuffers() {
+	glDeleteVertexArrays(1, vao);
+	glDeleteBuffers(1, vbo);
+	delete vao;
+	delete vbo;
+}
+
+void menger_sponge::recreate(int recurseDepth) {
 	if (*vbo != 0) {
 		glDeleteBuffers(1, vbo);
 	}
+	glBindVertexArray(*vao);
 	glGenBuffers(1, vbo);
 	if (recurseDepth >= 0) {
-		createVertices(recurseDepth, min, max);
-		vertexAmount = vertices.size();
+		createVertices(recurseDepth, *min, *max);
+		//createCube(*min, *max);
+		vertexAmount = vertices.size() / 8;
 		glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertexAmount * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)3);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)6);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)(6 * sizeof(float)));
 		glEnableVertexAttribArray(2);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -57,54 +72,47 @@ void menger_sponge::createCube(glm::vec3 min, glm::vec3 max) {
 		min.x,min.y,max.z,0.0f,0.0f,1.0f,0.0f,0.0f,
 		max.x,min.y,max.z,0.0f,0.0f,1.0f,1.0f,0.0f,
 		max.x,max.y,max.z,0.0f,0.0f,1.0f,1.0f,1.0f,
+		max.x,max.y,max.z,0.0f,0.0f,1.0f,1.0f,1.0f,
 		min.x,max.y,max.z,0.0f,0.0f,1.0f,0.0f,1.0f,
+		min.x,min.y,max.z,0.0f,0.0f,1.0f,0.0f,0.0f,
 		//back
 		min.x,min.y,min.z,0.0f,0.0f,-1.0f,0.0f,0.0f,
 		min.x,max.y,min.z,0.0f,0.0f,-1.0f,1.0f,0.0f,
 		max.x,max.y,min.z,0.0f,0.0f,-1.0f,1.0f,1.0f,
+		max.x,max.y,min.z,0.0f,0.0f,-1.0f,1.0f,1.0f,
 		max.x,min.y,min.z,0.0f,0.0f,-1.0f,0.0f,1.0f,
+		min.x,min.y,min.z,0.0f,0.0f,-1.0f,0.0f,0.0f,
 		//left
 		max.x,min.y,max.z,1.0f,0.0f,0.0f,0.0f,0.0f,
 		max.x,min.y,min.z,1.0f,0.0f,0.0f,1.0f,0.0f,
 		max.x,max.y,min.z,1.0f,0.0f,0.0f,1.0f,1.0f,
+		max.x,max.y,min.z,1.0f,0.0f,0.0f,1.0f,1.0f,
 		max.x,max.y,max.z,1.0f,0.0f,0.0f,0.0f,1.0f,
+		max.x,min.y,max.z,1.0f,0.0f,0.0f,0.0f,0.0f,
 		//right
 		min.x,min.y,max.z,-1.0f,0.0f,0.0f,0.0f,0.0f,
 		min.x,max.y,max.z,-1.0f,0.0f,0.0f,1.0f,0.0f,
 		min.x,max.y,min.z,-1.0f,0.0f,0.0f,1.0f,1.0f,
+		min.x,max.y,min.z,-1.0f,0.0f,0.0f,1.0f,1.0f,
 		min.x,min.y,min.z,-1.0f,0.0f,0.0f,0.0f,1.0f,
+		min.x,min.y,max.z,-1.0f,0.0f,0.0f,0.0f,0.0f,
 		//top
 		min.x,max.y,max.z,0.0f,1.0f,0.0f,0.0f,0.0f,
 		max.x,max.y,max.z,0.0f,1.0f,0.0f,1.0f,0.0f,
 		max.x,max.y,min.z,0.0f,1.0f,0.0f,1.0f,1.0f,
+		max.x,max.y,min.z,0.0f,1.0f,0.0f,1.0f,1.0f,
 		min.x,max.y,min.z,0.0f,1.0f,0.0f,0.0f,1.0f,
+		min.x,max.y,max.z,0.0f,1.0f,0.0f,0.0f,0.0f,
 		//bottom
 		min.x,min.y,max.z,0.0f,-1.0f,0.0f,0.0f,0.0f,
 		min.x,min.y,min.z,0.0f,-1.0f,0.0f,1.0f,0.0f,
 		max.x,min.y,min.z,0.0f,-1.0f,0.0f,1.0f,1.0f,
-		max.x,min.y,max.z,0.0f,-1.0f,0.0f,0.0f,1.0f
+		max.x,min.y,min.z,0.0f,-1.0f,0.0f,1.0f,1.0f,
+		max.x,min.y,max.z,0.0f,-1.0f,0.0f,0.0f,1.0f,
+		min.x,min.y,max.z,0.0f,-1.0f,0.0f,0.0f,0.0f
 	};
-	//int indices[] = {
-	//	indOffset + 0,indOffset + 1,indOffset + 2,
-	//	indOffset + 2,indOffset + 3,indOffset + 0,
 
-	//	indOffset + 4,indOffset + 5,indOffset + 6,
-	//	indOffset + 6,indOffset + 7,indOffset + 4,
-
-	//	indOffset + 8,indOffset + 9,indOffset + 10,
-	//	indOffset + 10,indOffset + 11,indOffset + 8,
-
-	//	indOffset + 12,indOffset + 13,indOffset + 14,
-	//	indOffset + 14,indOffset + 15,indOffset + 12,
-
-	//	indOffset + 16,indOffset + 17,indOffset + 18,
-	//	indOffset + 18,indOffset + 19,indOffset + 16,
-
-	//	indOffset + 20,indOffset + 21,indOffset + 22,
-	//	indOffset + 22,indOffset + 23,indOffset + 20
-	//};
-
-	std::copy(&vertices[0], &vertices[192], std::back_inserter(this->vertices));  // 192 = 8*4*6
+	std::copy(&vertices[0], &vertices[sizeof(vertices)/sizeof(float)], std::back_inserter(this->vertices));
 }
 
 void menger_sponge::getCubeMinMax(glm::vec3 &min, glm::vec3 &max, glm::vec3 prevMin, glm::vec3 prevMax, int index) {
@@ -122,16 +130,21 @@ void menger_sponge::getCubeMinMax(glm::vec3 & min, glm::vec3 & max, glm::vec3 pr
 	max.y = min.y + yWidth;
 	max.z = min.z + zWidth;
 
-	float addX = 0, addY = 0, addZ = 0;
-
+	float addX = col * xWidth, addY = level * yWidth, addZ = row * zWidth;
+	min.x += addX;
+	max.x += addX;
+	min.y += addY;
+	max.y += addY;
+	min.z += addZ;
+	max.z += addZ;
 }
 
 void menger_sponge::createVertices(int recurseDepth, glm::vec3 min, glm::vec3 max) {
 	static int current;
 	static int indices[] = {
-		0,1,2,3,4,5,6,7,8,         //bottom level
+		0,1,2,3,5,6,7,8,           //bottom level
 		9,11,15,17,                //middle level
-		18,19,20,21,22,23,24,25,26 //top level
+		18,19,20,21,23,24,25,26    //top level
 	};
 	if (recurseDepth == 0) {
 		createCube(min, max);

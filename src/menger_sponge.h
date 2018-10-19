@@ -22,7 +22,9 @@
 class menger_sponge {
 public:
 	menger_sponge();
-	menger_sponge(glm::vec3 min, glm::vec3 max);
+	menger_sponge(glm::vec3 *min, glm::vec3 *max);
+	void render();
+	void deleteBuffers();
 	void recreate(int recurseDepth);
 	GLuint *getVAO();
 	GLuint *getVBO();
@@ -32,7 +34,7 @@ private:
 	void createCube(glm::vec3 min, glm::vec3 max);
 	void getCubeMinMax(glm::vec3 &min, glm::vec3 &max, glm::vec3 prevMin, glm::vec3 prevMax, int index);
 	void getCubeMinMax(glm::vec3 &min, glm::vec3 &max, glm::vec3 prevMin, glm::vec3 prevMax, int row, int col, int level);
-	glm::vec3 min, max;
+	glm::vec3 *min, *max;
 	std::vector<float> vertices;
 	GLuint *vao = NULL, *vbo = NULL;
 	unsigned int vertexAmount;

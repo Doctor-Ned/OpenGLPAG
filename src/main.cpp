@@ -1,13 +1,13 @@
-#include "menger_sponge.h";
+#include "menger_sponge.h"
 #include <cstdio>
+#include <vector>
+
+#include <stb_image.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-
-#include <stb_image.h>
 
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
@@ -46,8 +46,10 @@ const GLchar* fragmentSource = R"glsl(
 	uniform vec3 lightColor;
     uniform vec4 color;
 	uniform sampler2D imgTexture;
+	uniform int disableTexture;
 
     out vec4 outColor;
+
     void main()
     {
 		float ambientStrength = 0.1;
@@ -57,8 +59,8 @@ const GLchar* fragmentSource = R"glsl(
 		vec3 lightDirection = normalize(lightPosition - exPosition);
 		float diff = max(dot(norm, lightDirection), 0.0);
 		vec3 diffuse = diff * lightColor;
-		
-		outColor=vec4(ambient+diffuse,1.0f) * color * texture(imgTexture, exTexCoord);
+		outColor=vec4(ambient+diffuse,1.0f) * color;
+		if(disableTexture == 0) outColor = outColor * texture(imgTexture, exTexCoord);
     }
 )glsl";
 
@@ -175,22 +177,27 @@ int main(int, char**) {
 		lightPositionLocation = glGetUniformLocation(shaderProgram, "lightPosition"),
 		lightColorLocation = glGetUniformLocation(shaderProgram, "lightColor"),
 		colorLocation = glGetUniformLocation(shaderProgram, "color"),
-		imgTextureLocation = glGetUniformLocation(shaderProgram, "imgTexture");
+		disableTextureLocation = glGetUniformLocation(shaderProgram, "disableTexture");
+
+	const char * TEXTURE_NAME = "texture.jpg";
 
 	int imgWidth, imgHeight, imgChannels;
-	unsigned char *imgData = stbi_load("texture.png", &imgWidth, &imgHeight, &imgChannels, 0);
+	unsigned char *imgData = stbi_load(TEXTURE_NAME, &imgWidth, &imgHeight, &imgChannels, 0);
 	if (!imgData) {
-		fprintf(stderr, "Failed to load file texture.png!");
+		fprintf(stderr, "Failed to load texture from file \"%s\"!", TEXTURE_NAME);
 		return 1;
 	}
 	GLuint imgTexture;
 	glGenTextures(1, &imgTexture);
 	glBindTexture(GL_TEXTURE_2D, imgTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imgData);
 
-	glm::vec4 color(1.00f, 0.08f, 0.40f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f);
+	menger_sponge cube;
+
+	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f);
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
 	glm::vec3 lightPosition(0.0f, 1.0f, 2.0f);
@@ -203,13 +210,7 @@ int main(int, char**) {
 		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
-	glm::mat4 model;
-
-	glUniform3f(lightPositionLocation, lightPosition.x, lightPosition.y, lightPosition.z);
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
-
-	menger_sponge cube;
+	glm::mat4 model(1.0f);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -224,17 +225,18 @@ int main(int, char**) {
 		static int targetSize = outputSize;
 		static bool refill = false;
 		static bool outline = false;
-		static glm::vec2 rotation(0.0f, 0.0f), prevRotation(1.0f, 0.0f);
+		static bool shouldUseTexture = true;
+		static glm::vec2 rotation(0.5f, 1.0f), prevRotation(0.0f, 0.0f);
 
 		ImGui::Begin("Configuration");
 		{
-			ImGui::ColorEdit4("Color", (float*)&color);
+			ImGui::ColorEdit3("Color", (float*)&color);
 			ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
 			if (outputSize != targetSize) {
 				outputSize = targetSize;
 			}
 			ImGui::NewLine();
-			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 6);
+			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 4);
 			if (ImGui::Button("Apply recursion depth")) {
 				if (recurseDepth != targetDepth) {
 					recurseDepth = targetDepth;
@@ -246,6 +248,8 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::SliderAngle("X rotation", &(rotation.x));
 			ImGui::SliderAngle("Y rotation", &(rotation.y));
+			ImGui::NewLine();
+			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
 			ImGui::ColorEdit3("Light color", (float*)&lightColor);
 			ImGui::NewLine();
@@ -282,15 +286,15 @@ int main(int, char**) {
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
 		glUseProgram(shaderProgram);
 
+		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
 		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
 		glUniform3f(lightColorLocation, lightColor.x, lightColor.y, lightColor.z);
+		glUniform3f(lightPositionLocation, lightPosition.x, lightPosition.y, lightPosition.z);
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
-		//glBindTexture(GL_TEXTURE_2D, imgTexture);
-		glBindVertexArray(*cube.getVAO());
-		glBindVertexBuffer(0, *cube.getVBO(), 0, 6 * sizeof(float));
-		glDrawArrays(GL_TRIANGLES, 0, cube.getVertexAmount());
-		glBindVertexArray(0);
+		cube.render();
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(0, 0, display_w, display_h);
@@ -305,8 +309,8 @@ int main(int, char**) {
 	ImGui::DestroyContext();
 
 	glDeleteProgram(shaderProgram);
-	glDeleteBuffers(1, cube.getVAO());
-	glDeleteBuffers(1, cube.getVBO());
+	//glDeleteBuffers(1, &VBO);
+	//glDeleteBuffers(1, &cubeVAO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
