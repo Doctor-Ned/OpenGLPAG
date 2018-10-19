@@ -14,31 +14,56 @@
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
 // Shader sources
 const GLchar* vertexSource = R"glsl(
     #version 430 core
-    in vec3 inPosition;
-    uniform vec4 inColor;
-    out vec4 exColor;
-	out vec4 exPosition;
+
+    layout (location = 0) in vec3 inPosition;
+    layout (location = 1) in vec3 inNormal;
+
+	uniform mat4 model;
+	uniform mat4 view;
+	uniform mat4 projection;
+
+	out vec3 exPosition;
+	out vec3 exNormal;
+
     void main()
     {
-        exColor = inColor;
-		exPosition = vec4(inPosition,1.0);
-        gl_Position = vec4(inPosition, 1.0);
+		exPosition = vec3(model * vec4(inPosition, 1.0));
+		exNormal = vec3(model * vec4(inNormal, 1.0));
+        gl_Position = projection * view * vec4(exPosition, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
     #version 430 core
-    in vec4 exColor;
-	in vec4 exPosition;
+
+	in vec3 exPosition;
+	in vec3 exNormal;
+
+	uniform vec3 lightPosition;
+	uniform vec3 lightColor;
+    uniform vec4 color;
+
     out vec4 outColor;
     void main()
     {
-        //outColor = exPosition;
-		outColor=exColor;
+		float ambientStrength = 0.1;
+		vec3 ambient = ambientStrength * lightColor;
+		
+		vec3 norm = normalize(exNormal);
+		vec3 lightDirection = normalize(lightPosition - exPosition);
+		float diff = max(dot(norm, lightDirection), 0.0);
+		vec3 diffuse = diff * lightColor;
+		
+		outColor=vec4(ambient+diffuse,1.0f) * color;
     }
 )glsl";
 
@@ -46,68 +71,52 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void createRectangleVertices(ImVec4 *rect, GLfloat *vert, int offset) {
-	GLfloat vertices[] = {
-		rect->y,rect->w,0.0f,
-		rect->y,rect->z,0.0f,
-		rect->x,rect->w,0.0f,
-		rect->y,rect->z,0.0f,
-		rect->x,rect->z,0.0f,
-		rect->x,rect->w,0.0f
+static void createCube(glm::vec3 min, glm::vec3 max, float target[], unsigned int offset = 0) {
+	float vertices[] = {
+		//front
+		min.x,min.y,max.z,0.0f,0.0f,1.0f,
+		max.x,min.y,max.z,0.0f,0.0f,1.0f,
+		max.x,max.y,max.z,0.0f,0.0f,1.0f,
+		max.x,max.y,max.z,0.0f,0.0f,1.0f,
+		min.x,max.y,max.z,0.0f,0.0f,1.0f,
+		min.x,min.y,max.z,0.0f,0.0f,1.0f,
+		//back
+		min.x,min.y,min.z,0.0f,0.0f,-1.0f,
+		min.x,max.y,min.z,0.0f,0.0f,-1.0f,
+		max.x,max.y,min.z,0.0f,0.0f,-1.0f,
+		max.x,max.y,min.z,0.0f,0.0f,-1.0f,
+		max.x,min.y,min.z,0.0f,0.0f,-1.0f,
+		min.x,min.y,min.z,0.0f,0.0f,-1.0f,
+		//left
+		max.x,min.y,max.z,1.0f,0.0f,0.0f,
+		max.x,min.y,min.z,1.0f,0.0f,0.0f,
+		max.x,max.y,min.z,1.0f,0.0f,0.0f,
+		max.x,max.y,min.z,1.0f,0.0f,0.0f,
+		max.x,max.y,max.z,1.0f,0.0f,0.0f,
+		max.x,min.y,max.z,1.0f,0.0f,0.0f,
+		//right
+		min.x,min.y,max.z,-1.0f,0.0f,0.0f,
+		min.x,max.y,max.z,-1.0f,0.0f,0.0f,
+		min.x,max.y,min.z,-1.0f,0.0f,0.0f,
+		min.x,max.y,min.z,-1.0f,0.0f,0.0f,
+		min.x,min.y,min.z,-1.0f,0.0f,0.0f,
+		min.x,min.y,max.z,-1.0f,0.0f,0.0f,
+		//top
+		min.x,max.y,max.z,0.0f,1.0f,0.0f,
+		max.x,max.y,max.z,0.0f,1.0f,0.0f,
+		max.x,max.y,min.z,0.0f,1.0f,0.0f,
+		max.x,max.y,min.z,0.0f,1.0f,0.0f,
+		min.x,max.y,min.z,0.0f,1.0f,0.0f,
+		min.x,max.y,max.z,0.0f,1.0f,0.0f,
+		//bottom
+		min.x,min.y,max.z,0.0f,-1.0f,0.0f,
+		min.x,min.y,min.z,0.0f,-1.0f,0.0f,
+		max.x,min.y,min.z,0.0f,-1.0f,0.0f,
+		max.x,min.y,min.z,0.0f,-1.0f,0.0f,
+		max.x,min.y,max.z,0.0f,-1.0f,0.0f,
+		min.x,min.y,max.z,0.0f,-1.0f,0.0f
 	};
-	memcpy(&(vert[offset]), vertices, sizeof(vertices));
-}
-
-ImVec4 *remapRectToColRow(ImVec4 *rect, int col, int row) {
-	ImVec4 *result = new ImVec4();
-	float width = (rect->y - rect->x) / 3.0f, height = (rect->w - rect->z) / 3.0f;
-	result->x = rect->x + width * col;
-	result->y = result->x + width;
-	result->z = rect->z + height * row;
-	result->w = result->z + height;
-	return result;
-}
-
-ImVec4 *remapRectToColRow(ImVec4 *rect, int index) {
-	return remapRectToColRow(rect, index % 3, index / 3);
-}
-
-void createCarpetVertices(int depth, ImVec4 *rect, GLfloat *vertices, bool reset = false) {
-	static int offset = 0;
-	if (reset) offset = 0;
-	if (depth == 0) {
-		createRectangleVertices(rect, vertices, offset);
-		offset += 6 * 3;
-	} else {
-		depth--;
-		for (int i = 0; i < 9; i++) {
-			if (i != 4) {
-				ImVec4 *newRect = remapRectToColRow(rect, i);
-				createCarpetVertices(depth, newRect, vertices);
-				delete newRect;
-			}
-		}
-	}
-}
-
-GLsizei refillVao(int recurseDepth, GLuint *vbo, GLuint *vao) {
-	static ImVec4 fullRect(-1, 1, -1, 1);  //minX,maxX,minY,maxX
-	glBindVertexArray(*vao);
-	GLsizei newSize = recurseDepth == 0 ? 1 : pow(8, recurseDepth);
-	if (vbo != 0)glDeleteBuffers(1, vbo);
-	glGenBuffers(1, vbo);
-	GLfloat *vertices = new float[newSize * 6 * 3];
-	if (recurseDepth >= 0) {
-		createCarpetVertices(recurseDepth, &fullRect, vertices, 1);
-		glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-		glBufferData(GL_ARRAY_BUFFER, newSize * 6 * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid*)0);
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	glBindVertexArray(0);
-	delete vertices;
-	return newSize;
+	memcpy(&target[offset], vertices, sizeof(vertices));
 }
 
 int main(int, char**) {
@@ -165,9 +174,7 @@ int main(int, char**) {
 
 	ImGui::StyleColorsDark();
 
-
-	ImVec4 carpetColor = ImVec4(1.00f, 1.00f, 1.00f, 1.00f), clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
+	glEnable(GL_DEPTH_TEST);   // this is so important. Spent 2 hours looking for it
 
 	//load shaders
 
@@ -202,8 +209,6 @@ int main(int, char**) {
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
-	glBindAttribLocation(shaderProgram, 0, "inPosition");
-	glBindAttribLocation(shaderProgram, 1, "inColor");
 
 	glLinkProgram(shaderProgram);
 
@@ -217,12 +222,91 @@ int main(int, char**) {
 		return 1;
 	}
 
-	GLuint vao = 0, vbo = 0;
-	glGenVertexArrays(1, &vao);
+	GLint modelLocation = glGetUniformLocation(shaderProgram, "model"),
+		viewLocation = glGetUniformLocation(shaderProgram, "view"),
+		projectionLocation = glGetUniformLocation(shaderProgram, "projection"),
+		lightPositionLocation = glGetUniformLocation(shaderProgram, "lightPosition"),
+		lightColorLocation = glGetUniformLocation(shaderProgram, "lightColor"),
+		colorLocation = glGetUniformLocation(shaderProgram, "color");
 
-	GLsizei currentSize = refillVao(0, &vbo, &vao);
+	float vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-	GLint carpetColorLocation = glGetUniformLocation(shaderProgram, "inColor");
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	};
+
+	float halfSqrt2 = sqrt(2) / 4.0f;
+
+	createCube(glm::vec3(-halfSqrt2, -halfSqrt2, -halfSqrt2), glm::vec3(halfSqrt2, halfSqrt2, halfSqrt2), vertices);
+
+	unsigned int VBO, cubeVAO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindVertexArray(cubeVAO);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+
+	glm::vec4 color(1.00f, 0.08f, 0.40f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f);
+	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
+
+	glm::vec3 lightPosition(0.0f, 1.0f, 2.0f);
+
+	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
+
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
+	glm::mat4 view = glm::lookAt(
+		glm::vec3(0, 0, 2.0f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0, 1, 0)
+	);
+	glm::mat4 model;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -233,14 +317,16 @@ int main(int, char**) {
 
 		static int carpetDepth = 0;
 		static int targetDepth = carpetDepth;
-		static int carpetSize = 400;
+		static int carpetSize = SMALLER_SIZE;
 		static int targetSize = carpetSize;
 		static bool refill = false;
+		static bool outline = false;
+		static glm::vec2 rotation(0.0f, 0.0f), prevRotation(1.0f, 0.0f);
 
 		ImGui::Begin("Configuration");
 		{
-			ImGui::ColorEdit3("Carpet color", (float*)&carpetColor);
-			ImGui::SliderInt("Carpet size", &targetSize, 50, SMALLER_SIZE);
+			ImGui::ColorEdit4("Color", (float*)&color);
+			ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
 			if (carpetSize != targetSize) {
 				carpetSize = targetSize;
 			}
@@ -255,14 +341,28 @@ int main(int, char**) {
 			ImGui::SameLine();
 			ImGui::Text("Current depth: %d", carpetDepth);
 			ImGui::NewLine();
+			ImGui::SliderAngle("X rotation", &(rotation.x));
+			ImGui::SliderAngle("Y rotation", &(rotation.y));
+			ImGui::NewLine();
+			ImGui::ColorEdit3("Light color", (float*)&lightColor);
+			ImGui::NewLine();
+			ImGui::Checkbox("Outline", &outline);
 			ImGui::ColorEdit3("Clear color", (float*)&clearColor);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
 
+		if (glm::any(glm::notEqual(rotation, prevRotation))) {
+			prevRotation.x = rotation.x;
+			prevRotation.y = rotation.y;
+			model = glm::mat4(1.0f);
+			model = glm::rotate(model, rotation.x, xAxis);
+			model = glm::rotate(model, rotation.y, yAxis);
+		}
+
 		if (refill) {
 			refill = false;
-			currentSize = refillVao(carpetDepth, &vbo, &vao);
+			//currentSize = refillVao(carpetDepth, &vbo, &vao);
 		}
 
 		// Rendering
@@ -272,17 +372,25 @@ int main(int, char**) {
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glViewport(0, 0, carpetSize, carpetSize);
+
+		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glViewport((SMALLER_SIZE - carpetSize) / 2, (SMALLER_SIZE - carpetSize) / 2, carpetSize, carpetSize);
 		glUseProgram(shaderProgram);
-		glUniform4f(carpetColorLocation, carpetColor.x, carpetColor.y, carpetColor.z, carpetColor.w);
-		glBindVertexArray(vao);
 
-		glBindVertexBuffer(0, vbo, 0, 3 * sizeof(float));
-		glDrawArrays(GL_TRIANGLES, 0, currentSize * 6);
+		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
+		glUniform3f(lightColorLocation, lightColor.x, lightColor.y, lightColor.z);
+		glUniform3f(lightPositionLocation, lightPosition.x, lightPosition.y, lightPosition.z);
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
+		glBindVertexArray(cubeVAO);
+		glBindVertexBuffer(0, VBO, 0, 6 * sizeof(float));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(0, 0, display_w, display_h);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -296,8 +404,8 @@ int main(int, char**) {
 	ImGui::DestroyContext();
 
 	glDeleteProgram(shaderProgram);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &vao);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &cubeVAO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
