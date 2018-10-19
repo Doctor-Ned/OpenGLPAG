@@ -8,6 +8,9 @@ file(GLOB_RECURSE HEADER_FILES
 	 *.h
 	 *.hpp)
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/texture.png
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 # Define the executable
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
