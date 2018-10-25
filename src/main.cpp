@@ -228,13 +228,14 @@ int main(int, char**) {
 		static bool shouldUseTexture = true;
 		static glm::vec2 rotation(0.5f, 1.0f), prevRotation(0.0f, 0.0f);
 
+
 		ImGui::Begin("Configuration");
 		{
 			ImGui::ColorEdit3("Color", (float*)&color);
-			ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
-			if (outputSize != targetSize) {
-				outputSize = targetSize;
-			}
+			//ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
+			//if (outputSize != targetSize) {
+			//	outputSize = targetSize;
+			//}
 			ImGui::NewLine();
 			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 4);
 			if (ImGui::Button("Apply recursion depth")) {
@@ -246,8 +247,8 @@ int main(int, char**) {
 			ImGui::SameLine();
 			ImGui::Text("Current depth: %d", recurseDepth);
 			ImGui::NewLine();
-			ImGui::SliderAngle("X rotation", &(rotation.x));
-			ImGui::SliderAngle("Y rotation", &(rotation.y));
+			ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
+			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
@@ -271,6 +272,8 @@ int main(int, char**) {
 			refill = false;
 			cube.recreate(recurseDepth);
 		}
+
+		outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
 		// Rendering
 		ImGui::Render();
