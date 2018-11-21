@@ -10,6 +10,7 @@ file(GLOB_RECURSE SHADER_FILES
 # Add model/texture files
 file(GLOB_RECURSE MODEL_FILES
 	*.obj
+	*.mtl
 	*.jpg)
 	
 # Add header files
