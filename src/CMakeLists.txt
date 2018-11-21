@@ -2,20 +2,29 @@
 file(GLOB_RECURSE SOURCE_FILES 
 	 *.c
 	 *.cpp)
+	 
+# Add shader files
+file(GLOB_RECURSE SHADER_FILES
+	*.glsl)
+
+# Add model/texture files
+file(GLOB_RECURSE MODEL_FILES
+	*.obj
+	*.jpg)
 	
 # Add header files
 file(GLOB_RECURSE HEADER_FILES 
 	 *.h
 	 *.hpp)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/texture.png
+file(COPY ${SHADER_FILES}
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/texture.jpg
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+	 
+ file(COPY ${MODEL_FILES}
+ DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Define the executable
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SHADER_FILES} ${HEADER_FILES} ${SOURCE_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
 # Define the include DIRs

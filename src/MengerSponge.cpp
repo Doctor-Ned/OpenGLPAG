@@ -1,13 +1,13 @@
-#include "menger_sponge.h"
+#include "MengerSponge.h"
 #include <iterator>
 #include <algorithm>
 
-menger_sponge::menger_sponge() :
-	menger_sponge::menger_sponge(
+MengerSponge::MengerSponge() :
+	MengerSponge::MengerSponge(
 		new glm::vec3(-HALF_SQRT_2, -HALF_SQRT_2, -HALF_SQRT_2),
 		new glm::vec3(HALF_SQRT_2, HALF_SQRT_2, HALF_SQRT_2)) {}
 
-menger_sponge::menger_sponge(glm::vec3 *min, glm::vec3 *max) {
+MengerSponge::MengerSponge(glm::vec3 *min, glm::vec3 *max) {
 	this->min = min;
 	this->max = max;
 	vao = new GLuint();
@@ -16,21 +16,21 @@ menger_sponge::menger_sponge(glm::vec3 *min, glm::vec3 *max) {
 	recreate(0);
 }
 
-void menger_sponge::render() {
+void MengerSponge::render() {
 	glBindVertexArray(*vao);
 	glBindVertexBuffer(0, *vbo, 0, 8 * sizeof(float));
 	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
 	glBindVertexArray(0);
 }
 
-void menger_sponge::deleteBuffers() {
+void MengerSponge::deleteBuffers() {
 	glDeleteVertexArrays(1, vao);
 	glDeleteBuffers(1, vbo);
 	delete vao;
 	delete vbo;
 }
 
-void menger_sponge::recreate(int recurseDepth) {
+void MengerSponge::recreate(int recurseDepth) {
 	if (*vbo != 0) {
 		glDeleteBuffers(1, vbo);
 	}
@@ -54,19 +54,19 @@ void menger_sponge::recreate(int recurseDepth) {
 	vertices.clear();
 }
 
-GLuint * menger_sponge::getVAO() {
+GLuint * MengerSponge::getVAO() {
 	return vao;
 }
 
-GLuint * menger_sponge::getVBO() {
+GLuint * MengerSponge::getVBO() {
 	return vbo;
 }
 
-unsigned int menger_sponge::getVertexAmount() {
+unsigned int MengerSponge::getVertexAmount() {
 	return vertexAmount;
 }
 
-void menger_sponge::createCube(glm::vec3 min, glm::vec3 max) {
+void MengerSponge::createCube(glm::vec3 min, glm::vec3 max) {
 	float vertices[] = {
 		//front
 		min.x,min.y,max.z,0.0f,0.0f,1.0f,0.0f,0.0f,
@@ -115,11 +115,11 @@ void menger_sponge::createCube(glm::vec3 min, glm::vec3 max) {
 	std::copy(&vertices[0], &vertices[sizeof(vertices)/sizeof(float)], std::back_inserter(this->vertices));
 }
 
-void menger_sponge::getCubeMinMax(glm::vec3 &min, glm::vec3 &max, glm::vec3 prevMin, glm::vec3 prevMax, int index) {
+void MengerSponge::getCubeMinMax(glm::vec3 &min, glm::vec3 &max, glm::vec3 prevMin, glm::vec3 prevMax, int index) {
 	getCubeMinMax(min, max, prevMin, prevMax, index % 3, (index % 9) / 3, index / 9);
 }
 
-void menger_sponge::getCubeMinMax(glm::vec3 & min, glm::vec3 & max, glm::vec3 prevMin, glm::vec3 prevMax, int col, int row, int level) {
+void MengerSponge::getCubeMinMax(glm::vec3 & min, glm::vec3 & max, glm::vec3 prevMin, glm::vec3 prevMax, int col, int row, int level) {
 	float xWidth = (prevMax.x - prevMin.x) / 3.0f,
 		yWidth = (prevMax.y - prevMin.y) / 3.0f,
 		zWidth = (prevMax.z - prevMin.z) / 3.0f;
@@ -139,7 +139,7 @@ void menger_sponge::getCubeMinMax(glm::vec3 & min, glm::vec3 & max, glm::vec3 pr
 	max.z += addZ;
 }
 
-void menger_sponge::createVertices(int recurseDepth, glm::vec3 min, glm::vec3 max) {
+void MengerSponge::createVertices(int recurseDepth, glm::vec3 min, glm::vec3 max) {
 	static int current;
 	static int indices[] = {
 		0,1,2,3,5,6,7,8,           //bottom level

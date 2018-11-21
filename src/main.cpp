@@ -1,4 +1,5 @@
-#include "menger_sponge.h"
+#include "Util.h"
+#include "MengerSponge.h"
 #include <cstdio>
 #include <vector>
 
@@ -10,59 +11,6 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
-
-// Shader sources
-const GLchar* vertexSource = R"glsl(
-    #version 430 core
-
-    layout (location = 0) in vec3 inPosition;
-    layout (location = 1) in vec3 inNormal;
-	layout (location = 2) in vec2 inTexCoord;
-
-	uniform mat4 model;
-	uniform mat4 view;
-	uniform mat4 projection;
-
-	out vec3 exPosition;
-	out vec3 exNormal;
-	out vec2 exTexCoord;
-
-    void main()
-    {
-		exTexCoord = inTexCoord;
-		exPosition = vec3(model * vec4(inPosition, 1.0));
-		exNormal = vec3(model * vec4(inNormal, 1.0));
-        gl_Position = projection * view * vec4(exPosition, 1.0);
-    }
-)glsl";
-const GLchar* fragmentSource = R"glsl(
-    #version 430 core
-
-	in vec3 exPosition;
-	in vec3 exNormal;
-	in vec2 exTexCoord;
-
-	uniform vec3 lightPosition;
-	uniform vec3 lightColor;
-    uniform vec4 color;
-	uniform sampler2D imgTexture;
-	uniform int disableTexture;
-
-    out vec4 outColor;
-
-    void main()
-    {
-		float ambientStrength = 0.1;
-		vec3 ambient = ambientStrength * lightColor;
-		
-		vec3 norm = normalize(exNormal);
-		vec3 lightDirection = normalize(lightPosition - exPosition);
-		float diff = max(dot(norm, lightDirection), 0.0);
-		vec3 diffuse = diff * lightColor;
-		outColor=vec4(ambient+diffuse,1.0f) * color;
-		if(disableTexture == 0) outColor = outColor * texture(imgTexture, exTexCoord);
-    }
-)glsl";
 
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -127,49 +75,15 @@ int main(int, char**) {
 
 	//load shaders
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, (const GLchar**)&vertexSource, 0);
-	glCompileShader(vertexShader);
-	GLint isFine, maxLength;
-	char *errorLog;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isFine);
-	if (isFine == FALSE) {
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
-		errorLog = new char[maxLength];
-		glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorLog);
-		fprintf(stderr, "Vertex shader error: %s\n", errorLog);
-		delete errorLog;
-		return 1;
-	}
+	GLuint vertexShader = Util::createAndCompileShader(GL_VERTEX_SHADER, "vertexShader.glsl");
 
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, (const GLchar**)&fragmentSource, 0);
-	glCompileShader(fragmentShader);
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &isFine);
-	if (isFine == FALSE) {
-		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
-		errorLog = new char[maxLength];
-		glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorLog);
-		fprintf(stderr, "Fragment shader error: %s\n", errorLog);
-		delete errorLog;
-		return 1;
-	}
+	GLuint fragmentShader = Util::createAndCompileShader(GL_FRAGMENT_SHADER, "fragmentShader.glsl");
 
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 
-	glLinkProgram(shaderProgram);
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int *)&isFine);
-	if (isFine == FALSE) {
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
-		errorLog = new char[maxLength];
-		glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, errorLog);
-		fprintf(stderr, errorLog);
-		delete errorLog;
-		return 1;
-	}
+	Util::linkShaderProgram(shaderProgram);
 
 	GLint modelLocation = glGetUniformLocation(shaderProgram, "model"),
 		viewLocation = glGetUniformLocation(shaderProgram, "view"),
@@ -195,7 +109,7 @@ int main(int, char**) {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imgData);
 
-	menger_sponge cube;
+	MengerSponge cube;
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f);
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
@@ -232,10 +146,10 @@ int main(int, char**) {
 		ImGui::Begin("Configuration");
 		{
 			ImGui::ColorEdit3("Color", (float*)&color);
-			//ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
-			//if (outputSize != targetSize) {
-			//	outputSize = targetSize;
-			//}
+			ImGui::SliderInt("Size", &targetSize, 50, SMALLER_SIZE);
+			if (outputSize != targetSize) {
+				outputSize = targetSize;
+			}
 			ImGui::NewLine();
 			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 4);
 			if (ImGui::Button("Apply recursion depth")) {
@@ -273,7 +187,7 @@ int main(int, char**) {
 			cube.recreate(recurseDepth);
 		}
 
-		outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
+		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
 		// Rendering
 		ImGui::Render();
