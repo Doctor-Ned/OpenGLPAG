@@ -1,7 +1,7 @@
 #ifndef MENGERSPONGE_H
 #define MENGERSPONGE_H
 
-#include "Util.h"
+#include "Headers.h"
 #define HALF_SQRT_2 sqrt(2)/4.0f
 
 class MengerSponge {

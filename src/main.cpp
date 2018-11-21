@@ -1,4 +1,6 @@
-#include "Util.h"
+#include "Shader.h"
+#include "UboLight.h"
+#include "UboViewProjection.h"
 #include "MengerSponge.h"
 #include <cstdio>
 #include <vector>
@@ -75,19 +77,12 @@ int main(int, char**) {
 
 	//load shaders
 
-	GLuint vertexShader = Util::createAndCompileShader(GL_VERTEX_SHADER, "vertexShader.glsl");
+	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
 
-	GLuint fragmentShader = Util::createAndCompileShader(GL_FRAGMENT_SHADER, "fragmentShader.glsl");
 
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-
-	Util::linkShaderProgram(shaderProgram);
-
-	GLint modelLocation = glGetUniformLocation(shaderProgram, "model"),
-		colorLocation = glGetUniformLocation(shaderProgram, "color"),
-		disableTextureLocation = glGetUniformLocation(shaderProgram, "disableTexture");
+	GLint modelLocation = glGetUniformLocation(shader.getID(), "model"),
+		colorLocation = glGetUniformLocation(shader.getID(), "color"),
+		disableTextureLocation = glGetUniformLocation(shader.getID(), "disableTexture");
 
 	const char * TEXTURE_NAME = "texture.jpg";
 
@@ -122,13 +117,11 @@ int main(int, char**) {
 	);
 	glm::mat4 model(1.0f);
 
-	GLuint uboViewProjection = Util::createUboViewProjection(0);
-	Util::bindUniformBlock(shaderProgram, UBO_VIEWPROJECTION, 0);
-	Util::injectUboViewProjection(uboViewProjection, view, projection);
+	UboViewProjection uboViewProjection(view, projection);
+	UboLight uboLight(lightPosition, lightColor);
 
-	GLuint uboLight = Util::createUboLight(1);
-	Util::bindUniformBlock(shaderProgram, UBO_LIGHT, 1);
-	Util::injectUboLight(uboLight, lightPosition, lightColor);
+	shader.bind(&uboViewProjection);
+	shader.bind(&uboLight);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -187,7 +180,7 @@ int main(int, char**) {
 
 		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
 			prevLightColor = lightColor;
-			Util::injectUboLight(uboLight, lightPosition, lightColor);
+			uboLight.inject(lightPosition, lightColor);
 		}
 
 		if (refill) {
@@ -209,7 +202,7 @@ int main(int, char**) {
 
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
-		glUseProgram(shaderProgram);
+		glUseProgram(shader.getID());
 
 		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
 		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
@@ -229,7 +222,7 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	glDeleteProgram(shaderProgram);
+	shader.remove();
 	//glDeleteBuffers(1, &VBO);
 	//glDeleteBuffers(1, &cubeVAO);
 
