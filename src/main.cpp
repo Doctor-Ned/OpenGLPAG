@@ -86,10 +86,6 @@ int main(int, char**) {
 	Util::linkShaderProgram(shaderProgram);
 
 	GLint modelLocation = glGetUniformLocation(shaderProgram, "model"),
-		viewLocation = glGetUniformLocation(shaderProgram, "view"),
-		projectionLocation = glGetUniformLocation(shaderProgram, "projection"),
-		lightPositionLocation = glGetUniformLocation(shaderProgram, "lightPosition"),
-		lightColorLocation = glGetUniformLocation(shaderProgram, "lightColor"),
 		colorLocation = glGetUniformLocation(shaderProgram, "color"),
 		disableTextureLocation = glGetUniformLocation(shaderProgram, "disableTexture");
 
@@ -111,10 +107,10 @@ int main(int, char**) {
 
 	MengerSponge cube;
 
-	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f);
+	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
-	glm::vec3 lightPosition(0.0f, 1.0f, 2.0f);
+	glm::vec4 lightPosition(0.0f, 1.0f, 2.0f, 1.0f);
 
 	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
 
@@ -125,6 +121,14 @@ int main(int, char**) {
 		glm::vec3(0, 1, 0)
 	);
 	glm::mat4 model(1.0f);
+
+	GLuint uboViewProjection = Util::createUboViewProjection(0);
+	Util::bindUniformBlock(shaderProgram, UBO_VIEWPROJECTION, 0);
+	Util::injectUboViewProjection(uboViewProjection, view, projection);
+
+	GLuint uboLight = Util::createUboLight(1);
+	Util::bindUniformBlock(shaderProgram, UBO_LIGHT, 1);
+	Util::injectUboLight(uboLight, lightPosition, lightColor);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -175,11 +179,15 @@ int main(int, char**) {
 		}
 
 		if (glm::any(glm::notEqual(rotation, prevRotation))) {
-			prevRotation.x = rotation.x;
-			prevRotation.y = rotation.y;
+			prevRotation = rotation;
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, rotation.x, xAxis);
 			model = glm::rotate(model, rotation.y, yAxis);
+		}
+
+		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
+			prevLightColor = lightColor;
+			Util::injectUboLight(uboLight, lightPosition, lightColor);
 		}
 
 		if (refill) {
@@ -205,11 +213,7 @@ int main(int, char**) {
 
 		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
 		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
-		glUniform3f(lightColorLocation, lightColor.x, lightColor.y, lightColor.z);
-		glUniform3f(lightPositionLocation, lightPosition.x, lightPosition.y, lightPosition.z);
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
 		cube.render();
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
