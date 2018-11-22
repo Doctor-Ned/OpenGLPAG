@@ -1,7 +1,11 @@
 #include "GraphNode.h"
 #include <algorithm>
 
-GraphNode::GraphNode(Mesh * mesh, GraphNode *parent) : mesh(mesh), parent(parent), scale(1.0f), local(glm::mat4(1.0f)), dirty(true) {}
+GraphNode::GraphNode(Mesh * mesh, GraphNode *parent) : mesh(mesh), parent(parent), scale(1.0f), local(glm::mat4(1.0f)), dirty(true) {
+	if (parent != NULL) {
+		parent->addChild(this);
+	}
+}
 
 void GraphNode::draw() {
 	if (parent != NULL) {
@@ -25,7 +29,11 @@ void GraphNode::draw() {
 	}
 }
 
-void GraphNode::update(double timeDiff) {}
+void GraphNode::update(double timeDiff) {
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->update(timeDiff);
+	}
+}
 
 glm::mat4 GraphNode::getWorld() {
 	return world;

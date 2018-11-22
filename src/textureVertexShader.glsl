@@ -16,6 +16,6 @@ void main() {
 	vec3 pos = inPosition * scale;
     exTexCoord = inTexCoord;
     exPosition = vec3(model * vec4(pos, 1.0));
-    exNormal = vec3(model * vec4(inNormal, 1.0));
+    exNormal = vec3(model * vec4(inNormal, 0.0));
     gl_Position = projection * view * vec4(exPosition, 1.0);
 }

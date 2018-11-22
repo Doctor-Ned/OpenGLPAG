@@ -7,15 +7,15 @@
 class GraphNode {
 public:
 	GraphNode(Mesh *mesh = NULL, GraphNode *parent = NULL);
-	void draw();
+	virtual void draw();
 	virtual void update(double timeDiff);
-	glm::mat4 getLocal();
-	glm::mat4 getWorld();
-	void setScale(float scale);
-	void setLocal(glm::mat4 local);
-	void addChild(GraphNode *child);
-	void removeChild(GraphNode *child);
-private:
+	virtual glm::mat4 getLocal();
+	virtual glm::mat4 getWorld();
+	virtual void setScale(float scale);
+	virtual void setLocal(glm::mat4 local);
+	virtual void addChild(GraphNode *child);
+	virtual void removeChild(GraphNode *child);
+protected:
 	glm::mat4 local, world;
 	std::vector<GraphNode*> children;
 	GraphNode *parent;

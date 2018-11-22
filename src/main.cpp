@@ -3,9 +3,10 @@
 #include <cstdio>
 #include "MeshCylinder.h"
 #include "MeshCone.h"
-#include "GraphNode.h"
 #include "Model.h"
 #include "MeshOrbit.h"
+#include "OrbitingNode.h"
+#include "RotatingNode.h"
 
 #include <stb_image.h>
 
@@ -86,7 +87,45 @@ int main(int, char**) {
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
-	glm::vec4 lightPosition(0.0f, 1.0f, 2.0f, 1.0f);
+	static float radius = 0.15f;
+	static float height = 0.5f;
+	static int sideAmount = 3;
+	MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
+	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
+		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30);
+	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
+	GraphNode graphRoot; // , cylinderNode(&cylinder), coneNode(&cone);
+	RotatingNode suitNode(10.0f, &nanosuit), catNode(1.0f, &cat), cylinderNode(0.5f, &cylinder); //, catNode(0.03f, &cat);
+	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
+	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL),
+		orbitingNode3(&orbitNode3, 0.15f, NULL);
+
+
+	suitNode.setScale(0.04f);
+	catNode.setScale(0.5f);
+	//orbitingNode2.setScale(0.5f);
+
+	orbitingNode2.addChild(&catNode);
+	orbitingNode3.addChild(&cylinderNode);
+
+	graphRoot.addChild(&suitNode);
+	graphRoot.addChild(&orbitNode1);
+	graphRoot.addChild(&orbitNode2);
+	orbitingNode2.addChild(&orbitNode3);
+
+	//orbitingNode1.addChild(&orbitNode2);
+	//graphRoot.addChild(&orbitNode3);
+
+	//cylinderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0/*f)));
+	//coneNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f)));
+	//graphRoot.addChild(&cylinderNode);
+	//graphRoot.addChild(&coneNode);
+	//graphRoot.addChild(&suitNode);
+	//graphRoot.addChild(&catNode);
+	//graphRoot.addChild(&orbitNode);
+
+	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
 
@@ -110,23 +149,6 @@ int main(int, char**) {
 	simpleShader.bind(&uboViewProjection);
 	simpleShader.bind(&uboLight);
 
-	static float radius = 0.3f;
-	static float height = 1.0f;
-	static int sideAmount = 3;
-	MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
-	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
-	MeshOrbit orbit(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 15);
-	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
-	GraphNode graphRoot, cylinderNode(&cylinder), coneNode(&cone), suitNode(&nanosuit), catNode(&cat), orbitNode(&orbit);
-	suitNode.setScale(0.1f);
-	cylinderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)));
-	coneNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f)));
-	graphRoot.addChild(&cylinderNode);
-	graphRoot.addChild(&coneNode);
-	graphRoot.addChild(&suitNode);
-	graphRoot.addChild(&catNode);
-	graphRoot.addChild(&orbitNode);
-
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -144,7 +166,16 @@ int main(int, char**) {
 		static bool outline = false;
 		static bool shouldUseTexture = true, shouldAutoUpdate = true;
 		static glm::vec2 rotation(0.25f, 0.0f), prevRotation(0.0f, 0.0f);
+		static double glfwTime;
+		static double currentTime = 0.0f;
+		static double timeDelta;
+		static float timeMultiplier = 1.0f;
 
+		static float testFloat1 = 1.0f, testFloat2 = 1.0f;
+
+		glfwTime = glfwGetTime();
+		timeDelta = glfwTime - currentTime;
+		currentTime = glfwTime;
 
 		ImGui::Begin("Configuration");
 		{
@@ -173,6 +204,13 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
+			ImGui::NewLine();
+			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
+			ImGui::SliderFloat("Test", &testFloat1, 0.001f, 10.0f);
+			ImGui::SliderFloat("Test2", &testFloat2, 0.001f, 10.0f);
+			orbitingNode2.setOrbitSpeed(testFloat1);
+			catNode.setRotationSpeed(testFloat2);
+			//orbitNode1.setRadius(testFloat);
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
@@ -223,6 +261,7 @@ int main(int, char**) {
 		texturedShader.setColor(color);
 		glUseProgram(0);
 
+		graphRoot.update(timeDelta * timeMultiplier);
 		graphRoot.draw();
 
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
