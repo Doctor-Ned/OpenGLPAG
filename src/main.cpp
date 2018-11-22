@@ -7,6 +7,8 @@
 #include "MeshOrbit.h"
 #include "OrbitingNode.h"
 #include "RotatingNode.h"
+#include "GeometryShader.h"
+#include "MeshCylinderGeometry.h"
 
 #include <stb_image.h>
 
@@ -45,7 +47,7 @@ int main(int, char**) {
 #endif
 
 	// Create window with graphics context
-	const int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 800;
+	const int WINDOW_WIDTH = 1600, WINDOW_HEIGHT = 1280;
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
 	if (window == NULL) {
 		return 1;
@@ -83,6 +85,7 @@ int main(int, char**) {
 	Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
 	Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
 	Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
+	GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
@@ -90,17 +93,21 @@ int main(int, char**) {
 	static float radius = 0.15f;
 	static float height = 0.5f;
 	static int sideAmount = 3;
-	MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
+	//MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
 	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
 	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
-		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30);
+		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30), orbit4(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.60f, 30);
 	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
+	MeshCylinderGeometry cylinder(geometryShader, radius, height, sideAmount);
 	GraphNode graphRoot;
 	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat), cylinderNode(0.2f, &cylinder);
 	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
-	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL),
-		orbitingNode3(&orbitNode3, 0.15f, NULL);
+	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL);
 
+	OrbitNode verticalOrbit(&orbit4);
+	verticalOrbit.setLocal(glm::rotate(glm::mat4(1.0f), (float)(M_PI / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
+	OrbitingNode orbitingNode3(&orbitNode3, 0.15f, NULL), orbitingNode4(&verticalOrbit, 0.08f, &cat);
 
 	suitNode.setScale(0.04f);
 	catNode.setScale(0.5f);
@@ -111,6 +118,7 @@ int main(int, char**) {
 	graphRoot.addChild(&suitNode);
 	graphRoot.addChild(&orbitNode1);
 	graphRoot.addChild(&orbitNode2);
+	cylinderNode.addChild(&verticalOrbit);
 	orbitingNode2.addChild(&orbitNode3);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
@@ -228,6 +236,8 @@ int main(int, char**) {
 			cylinder.updateValues(radius, height, sideAmount);
 			//cube.recreate(recurseDepth);
 		}
+
+		orbitingNode4.setScale(sin(currentTime+0.5f));
 
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 

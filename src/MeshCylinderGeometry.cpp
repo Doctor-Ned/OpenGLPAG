@@ -1,10 +1,7 @@
 #include "MeshCylinderGeometry.h"
 
-MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount)
-	: radius(radius), height(height), MeshSimple(shader) {
-	this->radius = radius;
-	this->height = height;
-	this->sideAmount = sideAmount;
+MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount, glm::vec3 baseCenter)
+	: baseCenter(baseCenter), radius(radius), height(height), shader(shader), MeshSimple(shader) {
 	vertex.Position.x = 0.0f;
 	vertex.Position.y = 0.0f;
 	vertex.Position.z = 0.0f;
@@ -15,6 +12,7 @@ void MeshCylinderGeometry::draw(glm::mat4 world, float scale) { draw(shader, wor
 
 void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setValues(radius, height, sideAmount);
 	shader.setScale(scale);
 	shader.setModel(world);
 	glBindVertexArray(VAO);
@@ -54,4 +52,5 @@ void MeshCylinderGeometry::setupMesh() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
 	glBindVertexArray(0);
+	glUseProgram(0);
 }
