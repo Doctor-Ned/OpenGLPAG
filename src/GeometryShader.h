@@ -7,7 +7,7 @@
 class GeometryShader : public Shader {
 public:
 	GeometryShader(char *vertexPath, char *fragmentPath, char *geometryPath);
-	void setValues(float radius, float height, int sideAmount);
+	void setHeight(float height);
 protected:
 	virtual void createShaders();
 	char *geometryPath = NULL;

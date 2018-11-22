@@ -9,10 +9,8 @@ GeometryShader::GeometryShader(char * vertexPath, char * fragmentPath, char * ge
 	deleteShaders();
 }
 
-void GeometryShader::setValues(float radius, float height, int sideAmount) {
-	glUniform1f(getUniformLocation("radius"), radius);
+void GeometryShader::setHeight(float height) {
 	glUniform1f(getUniformLocation("height"), height);
-	glUniform1i(getUniformLocation("sideAmount"), sideAmount);
 }
 
 void GeometryShader::createShaders() {

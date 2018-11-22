@@ -1,5 +1,4 @@
 #version 430 core
-#define M_PI 3.1415926535897932384626433832795
 
 layout (std140) uniform ViewProjection {
 	mat4 view;
@@ -7,131 +6,110 @@ layout (std140) uniform ViewProjection {
 };
 uniform float scale;
 uniform mat4 model;
-uniform float radius;
 uniform float height;
-uniform int sideAmount;
 
-out vec3 exPosition;
+out vec4 exPosition;
 out vec3 exNormal;
 out vec2 exTexCoord;
 
-layout(points) in;
-layout(triangle_strip, max_vertices = 3) out;
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 12) out;
 
-void createTopBottomTriangle(vec4 center, float angle1, float angle2, mat4 mvp) {
-	vec4 closer = center;
-	closer.x += cos(angle1) * radius;
-	closer.z += sin(angle1) * radius;
-	vec4 farther = center;
-	farther.x += cos(angle2) * radius;
-	farther.z += sin(angle2) * radius;
+void createTriangles(vec4 center, vec4 closer, vec4 farther) {
+	mat4 vp = projection * view;
 
+	//bottom triangle
 	exNormal = vec3(0.0f, -1.0f, 0.0f);
-	
-	gl_Position = mvp * center;
-	exTexCoord.x = 0.5f;
-	exTexCoord.y = 1.0f;
+	exNormal = vec3(model * vec4(exNormal, 0.0f));
+
+	exTexCoord = vec2(0.5f, 1.0f);
+	exPosition = model * center;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * closer;
-	exTexCoord.x = 0.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(1.0f, 0.0f);
+	exPosition = model * farther;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * farther;
-	exTexCoord.x = 1.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(0.0f, 0.0f);
+	exPosition = model * closer;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
 	EndPrimitive();
 
-	center.y+=height;
-	closer.y+=height;
-	farther.y+=height;
+	//top triangle
 	exNormal = vec3(0.0f, 1.0f, 0.0f);
+	exNormal = vec3(model * vec4(exNormal, 0.0f));
 
-	gl_Position = mvp * center;
-	exTexCoord.x = 0.5f;
-	exTexCoord.y = 1.0f;
+	exTexCoord = vec2(0.5f, 1.0f);
+	exPosition = center;
+	exPosition.y += height * scale;
+	exPosition = model * exPosition;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * closer;
-	exTexCoord.x = 0.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(0.0f, 0.0f);
+	exPosition = closer;
+	exPosition.y += height * scale;
+	exPosition = model * exPosition;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * farther;
-	exTexCoord.x = 1.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(1.0f, 0.0f);
+	exPosition = farther;
+	exPosition.y += height * scale;
+	exPosition = model * exPosition;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
 	EndPrimitive();
-}
 
-void createSideTriangles(vec4 center, float angle1, float angle2, mat4 mvp) {
-	vec4 closer = center;
-	closer.x += cos(angle1) * radius;
-	closer.z += sin(angle1) * radius;
-	vec4 farther = center;
-	farther.x += cos(angle2) * radius;
-	farther.z += sin(angle2) * radius;
-	vec4 upCloser = closer;
-	upCloser.y += height;
-	vec4 upFarther = farther;
-	upFarther.y += height;
+	//side triangles
+	vec4 upCloser = closer, upFarther = farther;
+	upCloser.y+=height * scale;
+	upFarther.y+=height * scale;
 
 	vec2 flatLine = vec2(farther.x-closer.x, farther.z-closer.z);
 	exNormal = normalize(vec3(flatLine.y, 0.0f, -flatLine.x));
+	exNormal = vec3(model * vec4(exNormal, 0.0f));
 
-	gl_Position = mvp * closer;
-	exTexCoord.x = 0.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(0.0f, 1.0f);
+	exPosition = model * upCloser;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * farther;
-	exTexCoord.x = 1.0f;
-	exTexCoord.y = 1.0f;
+	exTexCoord = vec2(0.0f, 0.0f);
+	exPosition = model * closer;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
-	gl_Position = mvp * upCloser;
-	exTexCoord.x = 0.0f;
-	exTexCoord.y = 1.0f;
-	EmitVertex();
-
-	EndPrimitive();
-
-	gl_Position = mvp * upCloser;
-	exTexCoord.x = 0.0f;
-	exTexCoord.y = 1.0f;
-	EmitVertex();
-
-	gl_Position = mvp * farther;
-	exTexCoord.x = 1.0f;
-	exTexCoord.y = 1.0f;
-	EmitVertex();
-
-	gl_Position = mvp * upFarther;
-	exTexCoord.x = 1.0f;
-	exTexCoord.y = 0.0f;
+	exTexCoord = vec2(1.0f, 0.0f);
+	exPosition = model * farther;
+	gl_Position = vp * exPosition;
 	EmitVertex();
 
 	EndPrimitive();
-}
 
-void createTriangles(vec4 center, float radStep, mat4 mvp) {
-	bool last;
-	float angle = 0.0f;
-	for(int i=0;i<sideAmount;i++) {
-		last = i == sideAmount - 1;
-		createTopBottomTriangle(center, angle, last ? 0.0f : angle + radStep, mvp);
-		createSideTriangles(center, angle, last ? 0.0f : angle + radStep, mvp);
-	}
+	exTexCoord = vec2(0.0f, 1.0f);
+	exPosition = model * upCloser;
+	gl_Position = vp * exPosition;
+	EmitVertex();
+
+	exTexCoord = vec2(1.0f, 0.0f);
+	exPosition = model * farther;
+	gl_Position = vp * exPosition;
+	EmitVertex();
+
+	exTexCoord = vec2(1.0f, 1.0f);
+	exPosition = model * upFarther;
+	gl_Position = vp * exPosition;
+	EmitVertex();
+
+	EndPrimitive();
 }
 
 void main() {
-	mat4 mvp = projection * view * model;
-	float radStep = 2 * M_PI / sideAmount;
-	vec4 center = gl_in[0].gl_Position;
-	center.w = 1.0f;
-	createTriangles(center, radStep, mvp);
+	createTriangles(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
 }

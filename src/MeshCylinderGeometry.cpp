@@ -10,13 +10,13 @@ void MeshCylinderGeometry::draw(glm::mat4 world, float scale) { draw(shader, wor
 
 void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world, float scale) {
 	shader.use();
-	shader.setValues(radius, height, sideAmount);
+	shader.setHeight(height);
 	shader.setScale(scale);
 	shader.setModel(world);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);
 	glBindVertexBuffer(0, VBO, 0, sizeof(glm::vec3));
-	glDrawArrays(GL_POINTS, 0, 1);
+	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -44,20 +44,54 @@ void MeshCylinderGeometry::updateValues(float radius, float height, int sideAmou
 		sideAmount = 3;
 	}
 	this->sideAmount = sideAmount;
+
+	bufferData();
 }
 
-void MeshCylinderGeometry::setupMesh() {
-	shader.use();
-	glGenVertexArrays(1, &VAO);
+void MeshCylinderGeometry::createBottomTriangle(std::vector<glm::vec3>* data, float angle1, float angle2) {
+	glm::vec3 closer = baseCenter, farther = baseCenter;
+
+	closer.x += cos(angle1) * radius;
+	closer.z += sin(angle1) * radius;
+
+	farther.x += cos(angle2) * radius;
+	farther.z += sin(angle2) * radius;
+
+	data->push_back(baseCenter);
+	data->push_back(closer);
+	data->push_back(farther);
+}
+
+void MeshCylinderGeometry::bufferData() {
 	glBindVertexArray(VAO);
+	if (VBO != 0) {
+		glDeleteBuffers(1, &VBO);
+	}
 	glGenBuffers(1, &VBO);
 
+	std::vector<glm::vec3> data;
+	float radStep = 2 * M_PI / sideAmount;
+	float angle = 0.0f;
+	for (int i = 0; i < sideAmount; i++) {
+		createBottomTriangle(&data, angle, i == sideAmount - 1 ? 0.0f : angle + radStep);
+		angle += radStep;
+	}
+
+	vertexAmount = data.size();
+
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &baseCenter, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertexAmount, &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
 	glBindVertexArray(0);
 	glUseProgram(0);
+}
+
+void MeshCylinderGeometry::setupMesh() {
+	shader.use();
+	VBO = 0;
+	glGenVertexArrays(1, &VAO);
+	updateValues(radius, height, sideAmount);
 }

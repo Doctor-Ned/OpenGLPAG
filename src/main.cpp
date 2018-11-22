@@ -93,15 +93,20 @@ int main(int, char**) {
 	static float radius = 0.15f;
 	static float height = 0.5f;
 	static int sideAmount = 3;
-	//MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCylinder cylinderCode(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
 	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
 	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
-		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30), orbit4(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.60f, 30);
+		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30), orbit4(solidShader, glm::vec3(1.0f, 1.0f, 0.0f), 0.75f, 30);
 	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
-	MeshCylinderGeometry cylinder(geometryShader, radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCylinderGeometry cylinderGeoShader(geometryShader, radius, height, sideAmount, "texture_cylinder.jpg");
 	GraphNode graphRoot;
 	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat);
-	RotatingNode cylinderNode(0.2f, &cylinder);
+
+	RotatingNode cylinderNode(0.2f, NULL);
+	GraphNode cylinderCodeNode(&cylinderCode), cylinderGeoShaderNode(&cylinderGeoShader);
+	cylinderNode.addChild(&cylinderCodeNode);
+	cylinderNode.addChild(&cylinderGeoShaderNode);
+
 	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
 	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL);
 
@@ -116,14 +121,14 @@ int main(int, char**) {
 	suitNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 	graphRoot.addChild(&suitNode);
 
-	//orbitingNode2.addChild(&catNode);
-	//orbitingNode3.addChild(&cylinderNode);
+	orbitingNode2.addChild(&catNode);
+	orbitingNode3.addChild(&cylinderNode);
 
-	//graphRoot.addChild(&suitNode);
-	//graphRoot.addChild(&orbitNode1);
-	//graphRoot.addChild(&orbitNode2);
-	//cylinderNode.addChild(&verticalOrbit);
-	//orbitingNode2.addChild(&orbitNode3);
+	graphRoot.addChild(&suitNode);
+	graphRoot.addChild(&orbitNode1);
+	graphRoot.addChild(&orbitNode2);
+	cylinderNode.addChild(&verticalOrbit);
+	orbitingNode2.addChild(&orbitNode3);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -152,6 +157,9 @@ int main(int, char**) {
 	geometryShader.bind(&uboViewProjection);
 	geometryShader.bind(&uboLight);
 
+	cylinderCodeNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-radius - 0.05f, 0.0f, 0.0f)));
+	cylinderGeoShaderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(radius + 0.05f, 0.0f, 0.0f)));
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -159,7 +167,9 @@ int main(int, char**) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		static float scale = 1.0f;
 		static float targetRadius = radius;
+		static float targetScale = scale;
 		static float targetHeight = height;
 		static int targetSides = sideAmount;
 		static int outputSize = SMALLER_SIZE;
@@ -171,9 +181,9 @@ int main(int, char**) {
 		static double glfwTime;
 		static double currentTime = 0.0f;
 		static double timeDelta;
-		static float timeMultiplier = 1.0f;
+		static float timeMultiplier = 0.1f;
 
-		static float testFloat1 = 1.0f, testFloat2 = 1.0f;
+		static float catOrbitSpeed = 1.0f, catRotationSpeed = 1.0f;
 
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
@@ -193,11 +203,14 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::SliderInt("Cylinder sides", &targetSides, 3, 50);
 			ImGui::NewLine();
+			ImGui::SliderFloat("Cylinder scale", &targetScale, 0.001f, 10.0f);
+			ImGui::NewLine();
 			if (ImGui::Button("Apply cylinder changes") || shouldAutoUpdate) {
-				if (sideAmount != targetSides || radius != targetRadius || height != targetHeight) {
+				if (sideAmount != targetSides || radius != targetRadius || height != targetHeight || scale != targetScale) {
 					sideAmount = targetSides;
 					radius = targetRadius;
 					height = targetHeight;
+					scale = targetScale;
 					refill = true;
 				}
 			}
@@ -207,10 +220,10 @@ int main(int, char**) {
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
-			ImGui::SliderFloat("Test", &testFloat1, 0.001f, 10.0f);
-			ImGui::SliderFloat("Test2", &testFloat2, 0.001f, 10.0f);
-			orbitingNode2.setOrbitSpeed(testFloat1);
-			catNode.setRotationSpeed(testFloat2);
+			ImGui::SliderFloat("Cat orbiting speed", &catOrbitSpeed, 0.0f, 20.0f);
+			ImGui::SliderFloat("Cat rotation speed", &catRotationSpeed, 0.0f, 20.0f);
+			orbitingNode2.setOrbitSpeed(catOrbitSpeed);
+			catNode.setRotationSpeed(catRotationSpeed);
 			//orbitNode1.setRadius(testFloat);
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
@@ -238,11 +251,17 @@ int main(int, char**) {
 
 		if (refill) {
 			refill = false;
-			cylinder.updateValues(radius, height, sideAmount);
+			cylinderCodeNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-radius * scale - 0.05f, 0.0f, 0.0f)));
+			cylinderGeoShaderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(radius * scale + 0.05f, 0.0f, 0.0f)));
+
+			cylinderCodeNode.setScale(scale);
+			cylinderGeoShaderNode.setScale(scale);
+			cylinderCode.updateValues(radius, height, sideAmount);
+			cylinderGeoShader.updateValues(radius, height, sideAmount);
 			//cube.recreate(recurseDepth);
 		}
 
-		orbitingNode4.setScale(sin(currentTime + 0.5f));
+		orbitingNode4.setScale((sin(currentTime) + 1.0f) / 2.0f);
 
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
