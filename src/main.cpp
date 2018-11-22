@@ -4,6 +4,7 @@
 #include "MengerSponge.h"
 #include <cstdio>
 #include <vector>
+#include "MeshCylinder.h"
 
 #include <stb_image.h>
 
@@ -123,6 +124,11 @@ int main(int, char**) {
 	shader.bind(&uboViewProjection);
 	shader.bind(&uboLight);
 
+	static float radius = 0.3f;
+	static float height = 1.0f;
+	static int sideAmount = 3;
+	MeshCylinder cylinder(radius, height, sideAmount, "texture_cylinder.jpg");
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -130,13 +136,14 @@ int main(int, char**) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		static int recurseDepth = 0;
-		static int targetDepth = recurseDepth;
+		static float targetRadius = radius;
+		static float targetHeight = height;
+		static int targetSides = sideAmount;
 		static int outputSize = SMALLER_SIZE;
 		static int targetSize = outputSize;
 		static bool refill = false;
 		static bool outline = false;
-		static bool shouldUseTexture = true;
+		static bool shouldUseTexture = true, shouldAutoUpdate = true;
 		static glm::vec2 rotation(0.5f, 1.0f), prevRotation(0.0f, 0.0f);
 
 
@@ -148,15 +155,28 @@ int main(int, char**) {
 				outputSize = targetSize;
 			}
 			ImGui::NewLine();
-			ImGui::SliderInt("Recursion depth", &targetDepth, 0, 4);
-			if (ImGui::Button("Apply recursion depth")) {
-				if (recurseDepth != targetDepth) {
-					recurseDepth = targetDepth;
+			ImGui::SliderFloat("Cylinder radius", &targetRadius, 0.05f, 2.0f);
+			ImGui::SameLine();
+			ImGui::Text("Cylinder's current radius: %f.", radius);
+			ImGui::NewLine();
+			ImGui::SliderFloat("Cylinder height", &targetHeight, 0.05f, 2.0f);
+			ImGui::SameLine();
+			ImGui::Text("Cylinder's current height: %f.", height);
+			ImGui::NewLine();
+			ImGui::SliderInt("Cylinder sides", &targetSides, 3, 50);
+			ImGui::SameLine();
+			ImGui::Text("The cylinder has %d sides.", sideAmount);
+			ImGui::NewLine();
+			if (ImGui::Button("Apply cylinder changes") || shouldAutoUpdate) {
+				if (sideAmount != targetSides || radius != targetRadius || height != targetHeight) {
+					sideAmount = targetSides;
+					radius = targetRadius;
+					height = targetHeight;
+					cylinder.baseCenter.y = (-height / 2.0f);
 					refill = true;
 				}
 			}
-			ImGui::SameLine();
-			ImGui::Text("Current depth: %d", recurseDepth);
+			ImGui::Checkbox("Auto-update", &shouldAutoUpdate);
 			ImGui::NewLine();
 			ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
@@ -185,7 +205,8 @@ int main(int, char**) {
 
 		if (refill) {
 			refill = false;
-			cube.recreate(recurseDepth);
+			cylinder.updateValues(radius, height, sideAmount);
+			//cube.recreate(recurseDepth);
 		}
 
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
@@ -208,7 +229,8 @@ int main(int, char**) {
 		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
 		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
-		cube.render();
+		cylinder.Draw(shader);
+		//cube.render();
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(0, 0, display_w, display_h);

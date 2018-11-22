@@ -1,7 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "Mesh.h"
+#include "MeshModel.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -11,15 +11,15 @@
 class Model {
 public:
 	Model(char *path);
-	void Draw(GLuint shaderProgram);
-	std::vector<Texture> textures_loaded;
-	std::vector<Mesh> meshes;
-	std::string directory;
+	void Draw(Shader shader);
 private:
+	std::vector<ModelTexture> textures_loaded;
+	std::vector<MeshModel> meshes;
+	std::string directory;
 	void loadModel(std::string const &path);
 	void processNode(aiNode *node, const aiScene *scene);
-	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-	std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+	MeshModel processMesh(aiMesh *mesh, const aiScene *scene);
+	std::vector<ModelTexture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 	GLuint TextureFromFile(const char *path, const std::string &directory);
 };
 

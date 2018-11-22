@@ -1,13 +1,17 @@
 #include "Shader.h"
 #include <fstream>
 
-Shader::Shader(char * vertexPath, char * fragmentPath) {
+Shader::Shader(char * vertexPath, char * fragmentPath) : Shader(vertexPath, fragmentPath, true) {}
+
+Shader::Shader(char * vertexPath, char * fragmentPath, bool initialise) {
 	this->vertexPath = vertexPath;
 	this->fragmentPath = fragmentPath;
 	id = glCreateProgram();
-	createShaders();
-	linkShaderProgram();
-	deleteShaders();
+	if (initialise) {
+		createShaders();
+		linkShaderProgram();
+		deleteShaders();
+	}
 }
 
 void Shader::createShaders() {
@@ -37,6 +41,10 @@ void Shader::remove() {
 void Shader::bind(Ubo * ubo) {
 	GLuint index = glGetUniformBlockIndex(id, ubo->getBlockName());
 	glUniformBlockBinding(id, index, ubo->getBinding());
+}
+
+GLint Shader::getUniformLocation(char * name) {
+	return glGetUniformLocation(id, name);
 }
 
 GLuint Shader::createAndCompileShader(int shaderType, const char* file) {

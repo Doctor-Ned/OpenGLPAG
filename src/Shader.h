@@ -11,7 +11,9 @@ public:
 	void use();
 	void remove();
 	virtual void bind(Ubo *ubo);
+	GLint getUniformLocation(char *name);
 protected:
+	Shader(char *vertexPath, char *fragmentPath, bool initialise);
 	GLuint createAndCompileShader(int shaderType, const char* file);
 	virtual void createShaders();
 	void deleteShaders();
