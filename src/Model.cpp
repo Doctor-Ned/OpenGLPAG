@@ -6,12 +6,14 @@ Model::Model(Shader shader, char *path) : Mesh(shader) {
 	loadModel(std::string(path));
 }
 
-void Model::draw(glm::mat4 world) { draw(shader, world); }
+void Model::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
-void Model::draw(Shader shader, glm::mat4 world) {
+void Model::draw(Shader shader, glm::mat4 world, float scale) {
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, world);
+		meshes[i].draw(shader, world, scale);
 }
+
+void Model::setupMesh() {}
 
 void Model::loadModel(std::string const & path) {
 	Assimp::Importer importer;

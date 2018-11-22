@@ -5,10 +5,11 @@ MeshModel::MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vect
 	setupMesh();
 }
 
-void MeshModel::draw(glm::mat4 world) { draw(shader, world); }
+void MeshModel::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
-void MeshModel::draw(Shader shader, glm::mat4 world) {
+void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setScale(scale);
 	shader.setModel(world);
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;

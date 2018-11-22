@@ -5,12 +5,13 @@ MeshSimple::MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::v
 	setupMesh();
 }
 
-void MeshSimple::draw(glm::mat4 world) { draw(shader, world); }
+void MeshSimple::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
 MeshSimple::MeshSimple(Shader shader) : Mesh(shader) {}
 
-void MeshSimple::draw(Shader shader, glm::mat4 world) {
+void MeshSimple::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setScale(scale);
 	shader.setModel(world);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

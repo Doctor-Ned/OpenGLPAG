@@ -11,20 +11,21 @@ MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, 
 	setupMesh();
 }
 
-void MeshCylinderGeometry::draw(glm::mat4 world) { draw(shader, world); }
+void MeshCylinderGeometry::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
-void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world) {
+void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setScale(scale);
 	shader.setModel(world);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, 1);
 	glBindVertexArray(0);
 }
 
-void MeshCylinderGeometry::draw(Shader shader, glm::mat4 world) {
+void MeshCylinderGeometry::draw(Shader shader, glm::mat4 world, float scale) {
 	GeometryShader *geo = dynamic_cast<GeometryShader*>(&shader);
 	if (geo != nullptr) {
-		draw(*geo, world);
+		draw(*geo, world, scale);
 	} else {
 		printf("You tried to draw a MeshCylinderGeometry with a shader that is not a GeometryShader. That should not happen. Ever.\n");
 		exit(1);

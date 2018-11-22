@@ -11,9 +11,10 @@
 class Model : public Mesh {
 public:
 	Model(Shader shader, char *path);
-	void draw(glm::mat4 world);
-	void draw(Shader shader, glm::mat4 world);
+	void draw(glm::mat4 world, float scale = 1.0f);
+	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 private:
+	void setupMesh();
 	std::vector<ModelTexture> textures_loaded;
 	std::vector<MeshModel> meshes;
 	std::string directory;

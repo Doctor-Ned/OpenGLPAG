@@ -7,10 +7,11 @@ MeshCylinder::MeshCylinder(Shader shader, float radius, float height, int sideAm
 	setupMesh();
 }
 
-void MeshCylinder::draw(glm::mat4 world) { draw(shader, world); }
+void MeshCylinder::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
-void MeshCylinder::draw(Shader shader, glm::mat4 world) {
+void MeshCylinder::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setScale(scale);
 	shader.setModel(world);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);

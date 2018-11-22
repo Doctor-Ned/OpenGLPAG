@@ -6,10 +6,12 @@
 
 class GraphNode {
 public:
-	GraphNode(Mesh *mesh, GraphNode *parent = NULL);
+	GraphNode(Mesh *mesh = NULL, GraphNode *parent = NULL);
 	void draw();
+	virtual void update(double timeDiff);
 	glm::mat4 getLocal();
 	glm::mat4 getWorld();
+	void setScale(float scale);
 	void setLocal(glm::mat4 local);
 	void addChild(GraphNode *child);
 	void removeChild(GraphNode *child);
@@ -19,6 +21,7 @@ private:
 	GraphNode *parent;
 	Mesh *mesh;
 	bool dirty;
+	float scale;
 };
 
 #endif

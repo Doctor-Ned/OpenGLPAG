@@ -38,12 +38,40 @@ void Shader::remove() {
 	glDeleteProgram(id);
 }
 
+void Shader::setDisableTexture(bool disable) {
+	glUniform1i(getUniformLocation("disableTexture"), disable ? 1 : 0);
+	disableTexture = disable;
+}
+
+void Shader::setScale(float scale) {
+	glUniform1f(getUniformLocation("scale"), scale);
+	this->scale = scale;
+}
+
 void Shader::setColor(glm::vec4 color) {
 	glUniform4f(getUniformLocation("color"), color.x, color.y, color.z, color.w);
+	this->color = color;
 }
 
 void Shader::setModel(glm::mat4 model) {
 	glUniformMatrix4fv(getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+	this->model = model;
+}
+
+bool Shader::getTextureDisabled() {
+	return disableTexture;
+}
+
+float Shader::getScale() {
+	return scale;
+}
+
+glm::vec4 Shader::getColor() {
+	return color;
+}
+
+glm::mat4 Shader::getModel() {
+	return model;
 }
 
 void Shader::bind(Ubo * ubo) {

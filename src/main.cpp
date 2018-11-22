@@ -1,9 +1,11 @@
-#include "Shader.h"
 #include "UboLight.h"
 #include "UboViewProjection.h"
 #include <cstdio>
-#include <vector>
 #include "MeshCylinder.h"
+#include "MeshCone.h"
+#include "GraphNode.h"
+#include "Model.h"
+#include "MeshOrbit.h"
 
 #include <stb_image.h>
 
@@ -77,12 +79,12 @@ int main(int, char**) {
 
 	//load shaders
 
-	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
+	Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
+	Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
+	Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
 
 
-	GLint modelLocation = shader.getUniformLocation("model"),
-		colorLocation = shader.getUniformLocation("color"),
-		disableTextureLocation = shader.getUniformLocation("disableTexture");
+	GLint disableTextureLocation = texturedShader.getUniformLocation("disableTexture");
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
@@ -93,7 +95,7 @@ int main(int, char**) {
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(0, 0, 2.0f),
+		glm::vec3(0, 2, 5.0f),
 		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
@@ -102,13 +104,32 @@ int main(int, char**) {
 	UboViewProjection uboViewProjection(view, projection);
 	UboLight uboLight(lightPosition, lightColor);
 
-	shader.bind(&uboViewProjection);
-	shader.bind(&uboLight);
+	texturedShader.bind(&uboViewProjection);
+	texturedShader.bind(&uboLight);
+
+	solidShader.bind(&uboViewProjection);
+	solidShader.bind(&uboLight);
+
+	simpleShader.bind(&uboViewProjection);
+	simpleShader.bind(&uboLight);
 
 	static float radius = 0.3f;
 	static float height = 1.0f;
 	static int sideAmount = 3;
-	MeshCylinder cylinder(shader, radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCylinder cylinder(texturedShader, radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
+	MeshOrbit orbit(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 15);
+	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
+	GraphNode graphRoot, cylinderNode(&cylinder), coneNode(&cone), suitNode(&nanosuit), catNode(&cat), orbitNode(&orbit);
+	suitNode.setScale(0.1f);
+	cylinderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)));
+	coneNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f)));
+	graphRoot.addChild(&cylinderNode);
+	graphRoot.addChild(&coneNode);
+	graphRoot.addChild(&suitNode);
+	graphRoot.addChild(&catNode);
+	graphRoot.addChild(&orbitNode);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -125,7 +146,7 @@ int main(int, char**) {
 		static bool refill = false;
 		static bool outline = false;
 		static bool shouldUseTexture = true, shouldAutoUpdate = true;
-		static glm::vec2 rotation(0.5f, 1.0f), prevRotation(0.0f, 0.0f);
+		static glm::vec2 rotation(0.25f, 0.0f), prevRotation(0.0f, 0.0f);
 
 
 		ImGui::Begin("Configuration");
@@ -137,16 +158,10 @@ int main(int, char**) {
 			}
 			ImGui::NewLine();
 			ImGui::SliderFloat("Cylinder radius", &targetRadius, 0.05f, 2.0f);
-			ImGui::SameLine();
-			ImGui::Text("Cylinder's current radius: %f.", radius);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Cylinder height", &targetHeight, 0.05f, 2.0f);
-			ImGui::SameLine();
-			ImGui::Text("Cylinder's current height: %f.", height);
 			ImGui::NewLine();
 			ImGui::SliderInt("Cylinder sides", &targetSides, 3, 50);
-			ImGui::SameLine();
-			ImGui::Text("The cylinder has %d sides.", sideAmount);
 			ImGui::NewLine();
 			if (ImGui::Button("Apply cylinder changes") || shouldAutoUpdate) {
 				if (sideAmount != targetSides || radius != targetRadius || height != targetHeight) {
@@ -177,6 +192,7 @@ int main(int, char**) {
 			model = glm::mat4(1.0f);
 			model = glm::rotate(model, rotation.x, xAxis);
 			model = glm::rotate(model, rotation.y, yAxis);
+			graphRoot.setLocal(model);
 		}
 
 		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
@@ -204,14 +220,12 @@ int main(int, char**) {
 
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
-		glUseProgram(shader.getID());
 
 		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
-		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
-		//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		texturedShader.setColor(color);
 
-		cylinder.draw(model);
-		//cube.render();
+		graphRoot.draw();
+
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(0, 0, display_w, display_h);
@@ -225,7 +239,7 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	shader.remove();
+	texturedShader.remove();
 	//glDeleteBuffers(1, &VBO);
 	//glDeleteBuffers(1, &cubeVAO);
 

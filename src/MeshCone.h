@@ -1,14 +1,14 @@
-#ifndef MESHCYLINDER_H
-#define MESHCYLINDER_H
+#ifndef MESHCONE_H
+#define MESHCONE_H
 
 #include "Headers.h"
 #include "MeshTexture.h"
 #include <string>
 #include <vector>
 
-class MeshCylinder : public MeshTexture {
+class MeshCone : public MeshTexture {
 public:
-	MeshCylinder(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, -0.5f, 0.0f));
+	MeshCone(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, -0.5f, 0.0f));
 	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void updateValues(float radius, float height, int sideAmount);
@@ -16,7 +16,6 @@ public:
 protected:
 	void createBottomTriangle(std::vector<TextureVertex> *vertices, float angle1, float angle2);
 	void createTopTriangle(std::vector<TextureVertex> *vertices);
-	void createSideTriangles(std::vector<TextureVertex> *vertices);
 	void bufferData(std::vector<TextureVertex> *vertices);
 	void setupMesh();
 	float height;
