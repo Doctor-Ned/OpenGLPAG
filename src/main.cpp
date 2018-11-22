@@ -83,9 +83,6 @@ int main(int, char**) {
 	Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
 	Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
 
-
-	GLint disableTextureLocation = texturedShader.getUniformLocation("disableTexture");
-
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
@@ -221,8 +218,10 @@ int main(int, char**) {
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
 
-		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
+		texturedShader.use();
+		texturedShader.setDisableTexture(!shouldUseTexture);
 		texturedShader.setColor(color);
+		glUseProgram(0);
 
 		graphRoot.draw();
 

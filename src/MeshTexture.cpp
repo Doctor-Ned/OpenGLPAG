@@ -18,6 +18,7 @@ void MeshTexture::draw(Shader shader, glm::mat4 world, float scale) {
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 Texture MeshTexture::createTexture(char * textureFile) {
@@ -44,6 +45,7 @@ Texture MeshTexture::createTexture(char * textureFile) {
 MeshTexture::MeshTexture(Shader shader) : Mesh(shader) {}
 
 void MeshTexture::setupMesh() {
+	shader.use();
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);

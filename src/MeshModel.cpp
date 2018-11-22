@@ -38,9 +38,11 @@ void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
+	glUseProgram(0);
 }
 
 void MeshModel::setupMesh() {
+	shader.use();
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);

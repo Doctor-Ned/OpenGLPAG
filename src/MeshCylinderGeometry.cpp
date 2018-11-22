@@ -20,6 +20,7 @@ void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world, float sc
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, 1);
 	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void MeshCylinderGeometry::draw(Shader shader, glm::mat4 world, float scale) {
@@ -42,6 +43,7 @@ void MeshCylinderGeometry::updateValues(float radius, float height, int sideAmou
 }
 
 void MeshCylinderGeometry::setupMesh() {
+	shader.use();
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 

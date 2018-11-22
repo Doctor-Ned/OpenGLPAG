@@ -10,6 +10,7 @@ public:
 	virtual GLuint getID();
 	void use();
 	void remove();
+	void refreshUniforms();
 	void setDisableTexture(bool disable);
 	void setScale(float scale);
 	void setColor(glm::vec4 color);
@@ -30,10 +31,10 @@ protected:
 	std::vector<GLuint> shaders;
 	char *fragmentPath;
 	char *vertexPath;
-	glm::vec4 color;
-	glm::mat4 model;
-	float scale;
-	bool disableTexture;
+	glm::vec4 *color = NULL;
+	glm::mat4 *model = NULL;
+	float *scale = NULL;
+	bool *disableTexture = NULL;
 };
 
 #endif

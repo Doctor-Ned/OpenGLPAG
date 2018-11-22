@@ -8,13 +8,14 @@ MeshOrbit::MeshOrbit(Shader shader, glm::vec3 color, float radius, int sideAmoun
 void MeshOrbit::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
 
 void MeshOrbit::draw(Shader shader, glm::mat4 world, float scale) {
-	//shader.use();
+	shader.use();
 	shader.setScale(scale);
 	shader.setModel(world);
 	glBindVertexArray(VAO);
 	glBindVertexBuffer(0, VBO, 0, sizeof(Vertex));
 	glDrawArrays(GL_LINES, 0, sideAmount * 2);
 	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void MeshOrbit::addSegment(std::vector<Vertex>* vertices, float angle1, float angle2) {
@@ -32,6 +33,7 @@ void MeshOrbit::addSegment(std::vector<Vertex>* vertices, float angle1, float an
 }
 
 void MeshOrbit::setupMesh() {
+	shader.use();
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 

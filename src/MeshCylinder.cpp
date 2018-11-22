@@ -18,6 +18,7 @@ void MeshCylinder::draw(Shader shader, glm::mat4 world, float scale) {
 	glBindVertexBuffer(0, VBO, 0, sizeof(TextureVertex));
 	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
 	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void MeshCylinder::updateValues(float radius, float height, int sideAmount) {
@@ -166,6 +167,7 @@ void MeshCylinder::createSideTriangles(std::vector<TextureVertex>* vertices) {
 }
 
 void MeshCylinder::bufferData(std::vector<TextureVertex> *vertices) {
+	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
 	}

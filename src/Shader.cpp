@@ -38,40 +38,67 @@ void Shader::remove() {
 	glDeleteProgram(id);
 }
 
+void Shader::refreshUniforms() {
+	if (disableTexture != NULL) {
+		setDisableTexture(*disableTexture);
+	}
+	if (scale != NULL) {
+		setScale(*scale);
+	}
+	if (color != NULL) {
+		setColor(*color);
+	}
+	if (model != NULL) {
+		setModel(*model);
+	}
+}
+
 void Shader::setDisableTexture(bool disable) {
+	if (this->disableTexture == NULL) {
+		this->disableTexture = new bool();
+	}
 	glUniform1i(getUniformLocation("disableTexture"), disable ? 1 : 0);
-	disableTexture = disable;
+	*disableTexture = disable;
 }
 
 void Shader::setScale(float scale) {
+	if (this->scale == NULL) {
+		this->scale = new float();
+	}
 	glUniform1f(getUniformLocation("scale"), scale);
-	this->scale = scale;
+	*(this->scale) = scale;
 }
 
 void Shader::setColor(glm::vec4 color) {
+	if (this->color == NULL) {
+		this->color = new glm::vec4();
+	}
 	glUniform4f(getUniformLocation("color"), color.x, color.y, color.z, color.w);
-	this->color = color;
+	*(this->color) = color;
 }
 
 void Shader::setModel(glm::mat4 model) {
+	if (this->model == NULL) {
+		this->model = new glm::mat4();
+	}
 	glUniformMatrix4fv(getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-	this->model = model;
+	*(this->model) = model;
 }
 
 bool Shader::getTextureDisabled() {
-	return disableTexture;
+	return *disableTexture;
 }
 
 float Shader::getScale() {
-	return scale;
+	return *scale;
 }
 
 glm::vec4 Shader::getColor() {
-	return color;
+	return *color;
 }
 
 glm::mat4 Shader::getModel() {
-	return model;
+	return *model;
 }
 
 void Shader::bind(Ubo * ubo) {
