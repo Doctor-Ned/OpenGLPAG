@@ -8,8 +8,9 @@
 
 class MeshCylinder : public MeshTexture {
 public:
-	MeshCylinder(float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, -0.5f, 0.0f));
-	virtual void Draw(Shader shader);
+	MeshCylinder(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, -0.5f, 0.0f));
+	void draw(glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 	void updateValues(float radius, float height, int sideAmount);
 	glm::vec3 baseCenter;
 protected:
@@ -17,7 +18,7 @@ protected:
 	void createTopTriangle(std::vector<TextureVertex> *vertices);
 	void createSideTriangles(std::vector<TextureVertex> *vertices);
 	void bufferData(std::vector<TextureVertex> *vertices);
-	virtual void setupMesh();
+	void setupMesh();
 	float height;
 	float radius;
 	int sideAmount;

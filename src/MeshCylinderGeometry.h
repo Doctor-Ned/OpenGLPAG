@@ -9,8 +9,10 @@
 
 class MeshCylinderGeometry : public MeshSimple {
 public:
-	MeshCylinderGeometry(float radius, float height, int sideAmount);
-	virtual void Draw(GeometryShader shader);
+	MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount);
+	void draw(glm::mat4 world);
+	void draw(GeometryShader shader, glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 	void updateValues(float radius, float height, int sideAmount);
 protected:
 	virtual void setupMesh();

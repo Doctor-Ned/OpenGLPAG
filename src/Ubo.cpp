@@ -1,4 +1,3 @@
-#include "SceneNode.h"
 #include "Ubo.h"
 
 Ubo::Ubo(unsigned int size, char * blockName, GLuint binding) {

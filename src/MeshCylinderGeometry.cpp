@@ -1,6 +1,7 @@
 #include "MeshCylinderGeometry.h"
 
-MeshCylinderGeometry::MeshCylinderGeometry(float radius, float height, int sideAmount) : MeshSimple() {
+MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount)
+	: radius(radius), height(height), MeshSimple(shader) {
 	this->radius = radius;
 	this->height = height;
 	this->sideAmount = sideAmount;
@@ -10,11 +11,24 @@ MeshCylinderGeometry::MeshCylinderGeometry(float radius, float height, int sideA
 	setupMesh();
 }
 
-void MeshCylinderGeometry::Draw(GeometryShader shader) {
+void MeshCylinderGeometry::draw(glm::mat4 world) { draw(shader, world); }
+
+void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world) {
 	shader.use();
+	shader.setModel(world);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, 1);
 	glBindVertexArray(0);
+}
+
+void MeshCylinderGeometry::draw(Shader shader, glm::mat4 world) {
+	GeometryShader *geo = dynamic_cast<GeometryShader*>(&shader);
+	if (geo != nullptr) {
+		draw(*geo, world);
+	} else {
+		printf("You tried to draw a MeshCylinderGeometry with a shader that is not a GeometryShader. That should not happen. Ever.\n");
+		exit(1);
+	}
 }
 
 void MeshCylinderGeometry::updateValues(float radius, float height, int sideAmount) {

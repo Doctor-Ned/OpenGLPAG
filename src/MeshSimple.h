@@ -13,11 +13,12 @@ struct SimpleVertex {
 
 class MeshSimple : public Mesh {
 public:
-	MeshSimple(std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices);
-	virtual void Draw(Shader shader);
+	MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices);
+	void draw(glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 protected:
-	MeshSimple();
-	virtual void setupMesh();
+	MeshSimple(Shader shader);
+	void setupMesh();
 	std::vector<SimpleVertex> vertices;
 };
 

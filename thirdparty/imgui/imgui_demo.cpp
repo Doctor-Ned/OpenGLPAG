@@ -2234,7 +2234,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
                     "  \"xxx\"      display lines containing \"xxx\"\n"
                     "  \"xxx,yyy\"  display lines containing \"xxx\" or \"yyy\"\n"
                     "  \"-xxx\"     hide lines containing \"xxx\"");
-        filter.Draw();
+        filter.draw();
         const char* lines[] = { "aaa1.c", "bbb1.c", "ccc1.c", "aaa2.cpp", "bbb2.cpp", "ccc2.cpp", "abc.h", "hello, world" };
         for (int i = 0; i < IM_ARRAYSIZE(lines); i++)
             if (filter.PassFilter(lines[i]))
@@ -2537,7 +2537,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
         ImGui::Text("Tip: Left-click on colored square to open color picker,\nRight-click to open edit options menu.");
 
         static ImGuiTextFilter filter;
-        filter.Draw("Filter colors", 200);
+        filter.draw("Filter colors", 200);
 
         static ImGuiColorEditFlags alpha_flags = 0;
         ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
@@ -2807,7 +2807,7 @@ struct ExampleAppConsole
         ScrollToBottom = true;
     }
 
-    void    Draw(const char* title, bool* p_open)
+    void    draw(const char* title, bool* p_open)
     {
         ImGui::SetNextWindowSize(ImVec2(520,600), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(title, p_open))
@@ -2841,7 +2841,7 @@ struct ExampleAppConsole
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0,0));
         static ImGuiTextFilter filter;
-        filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+        filter.draw("Filter (\"incl,-excl\") (\"error\")", 180);
         ImGui::PopStyleVar();
         ImGui::Separator();
 
@@ -3057,7 +3057,7 @@ struct ExampleAppConsole
 static void ShowExampleAppConsole(bool* p_open)
 {
     static ExampleAppConsole console;
-    console.Draw("Example: Console", p_open);
+    console.draw("Example: Console", p_open);
 }
 
 //-----------------------------------------------------------------------------
@@ -3090,7 +3090,7 @@ struct ExampleAppLog
         ScrollToBottom = true;
     }
 
-    void    Draw(const char* title, bool* p_open = NULL)
+    void    draw(const char* title, bool* p_open = NULL)
     {
         ImGui::SetNextWindowSize(ImVec2(500,400), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(title, p_open))
@@ -3102,7 +3102,7 @@ struct ExampleAppLog
         ImGui::SameLine();
         bool copy = ImGui::Button("Copy");
         ImGui::SameLine();
-        Filter.Draw("Filter", -100.0f);
+        Filter.draw("Filter", -100.0f);
         ImGui::Separator();
         ImGui::BeginChild("scrolling", ImVec2(0,0), false, ImGuiWindowFlags_HorizontalScrollbar);
         if (copy) ImGui::LogToClipboard();
@@ -3147,7 +3147,7 @@ static void ShowExampleAppLog(bool* p_open)
         last_time = time;
     }
 
-    log.Draw("Example: Log", p_open);
+    log.draw("Example: Log", p_open);
 }
 
 //-----------------------------------------------------------------------------

@@ -10,8 +10,10 @@ public:
 	virtual GLuint getID();
 	void use();
 	void remove();
+	void setColor(glm::vec4 color);
+	void setModel(glm::mat4 model);
 	virtual void bind(Ubo *ubo);
-	GLint getUniformLocation(char *name);
+	GLint getUniformLocation(const char *name);
 protected:
 	Shader(char *vertexPath, char *fragmentPath, bool initialise);
 	GLuint createAndCompileShader(int shaderType, const char* file);

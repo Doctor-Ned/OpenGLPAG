@@ -1,14 +1,17 @@
 #include "MeshTexture.h"
 #include <stb_image.h>
 
-MeshTexture::MeshTexture(std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char * textureFile) : Mesh(indices) {
-	this->vertices = vertices;
+MeshTexture::MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char * textureFile)
+	: vertices(vertices), Mesh(shader, indices) {
 	this->texture = createTexture(textureFile);
 	setupMesh();
 }
 
-void MeshTexture::Draw(Shader shader) {
+void MeshTexture::draw(glm::mat4 world) { draw(shader, world); }
+
+void MeshTexture::draw(Shader shader, glm::mat4 world) {
 	shader.use();
+	shader.setModel(world);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);
@@ -37,7 +40,7 @@ Texture MeshTexture::createTexture(char * textureFile) {
 	return texture;
 }
 
-MeshTexture::MeshTexture() : Mesh() {}
+MeshTexture::MeshTexture(Shader shader) : Mesh(shader) {}
 
 void MeshTexture::setupMesh() {
 	glGenVertexArrays(1, &VAO);

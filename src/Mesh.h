@@ -8,13 +8,15 @@
 
 class Mesh {
 public:
-	virtual void Draw(Shader shader) = 0;
+	virtual void draw(glm::mat4 world);
+	virtual void draw(Shader shader, glm::mat4 world) = 0;
 protected:
-	Mesh(std::vector<unsigned int> indices);
-	Mesh();
+	Mesh(Shader shader, std::vector<unsigned int> indices);
+	Mesh(Shader shader);
 	GLuint VAO;
 	GLuint VBO, EBO;
 	std::vector<unsigned int> indices;
+	Shader shader;
 	virtual void setupMesh() = 0;
 };
 

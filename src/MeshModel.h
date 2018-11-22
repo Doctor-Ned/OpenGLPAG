@@ -22,8 +22,9 @@ struct ModelTexture {
 
 class MeshModel : public Mesh {
 public:
-	MeshModel(std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures);
-	void Draw(Shader shader);
+	MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures);
+	void draw(glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 protected:
 	void setupMesh();
 	std::vector<ModelVertex> vertices;

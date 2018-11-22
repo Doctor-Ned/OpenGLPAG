@@ -8,10 +8,11 @@
 #include <vector>
 #include <string>
 
-class Model {
+class Model : public Mesh {
 public:
-	Model(char *path);
-	void Draw(Shader shader);
+	Model(Shader shader, char *path);
+	void draw(glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 private:
 	std::vector<ModelTexture> textures_loaded;
 	std::vector<MeshModel> meshes;

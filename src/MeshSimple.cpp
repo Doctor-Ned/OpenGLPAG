@@ -1,14 +1,17 @@
 #include "MeshSimple.h"
 
-MeshSimple::MeshSimple(std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices) : Mesh(indices) {
-	this->vertices = vertices;
+MeshSimple::MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices)
+	: vertices(vertices), Mesh(shader, indices) {
 	setupMesh();
 }
 
-MeshSimple::MeshSimple() : Mesh() {}
+void MeshSimple::draw(glm::mat4 world) { draw(shader, world); }
 
-void MeshSimple::Draw(Shader shader) {
+MeshSimple::MeshSimple(Shader shader) : Mesh(shader) {}
+
+void MeshSimple::draw(Shader shader, glm::mat4 world) {
 	shader.use();
+	shader.setModel(world);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

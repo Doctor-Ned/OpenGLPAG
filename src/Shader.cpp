@@ -38,12 +38,20 @@ void Shader::remove() {
 	glDeleteProgram(id);
 }
 
+void Shader::setColor(glm::vec4 color) {
+	glUniform4f(getUniformLocation("color"), color.x, color.y, color.z, color.w);
+}
+
+void Shader::setModel(glm::mat4 model) {
+	glUniformMatrix4fv(getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+}
+
 void Shader::bind(Ubo * ubo) {
 	GLuint index = glGetUniformBlockIndex(id, ubo->getBlockName());
 	glUniformBlockBinding(id, index, ubo->getBinding());
 }
 
-GLint Shader::getUniformLocation(char * name) {
+GLint Shader::getUniformLocation(const char * name) {
 	return glGetUniformLocation(id, name);
 }
 

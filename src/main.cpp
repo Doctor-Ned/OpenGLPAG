@@ -1,7 +1,6 @@
 #include "Shader.h"
 #include "UboLight.h"
 #include "UboViewProjection.h"
-#include "MengerSponge.h"
 #include <cstdio>
 #include <vector>
 #include "MeshCylinder.h"
@@ -81,27 +80,9 @@ int main(int, char**) {
 	Shader shader("vertexShader.glsl", "fragmentShader.glsl");
 
 
-	GLint modelLocation = glGetUniformLocation(shader.getID(), "model"),
-		colorLocation = glGetUniformLocation(shader.getID(), "color"),
-		disableTextureLocation = glGetUniformLocation(shader.getID(), "disableTexture");
-
-	const char * TEXTURE_NAME = "texture.jpg";
-
-	int imgWidth, imgHeight, imgChannels;
-	unsigned char *imgData = stbi_load(TEXTURE_NAME, &imgWidth, &imgHeight, &imgChannels, 0);
-	if (!imgData) {
-		fprintf(stderr, "Failed to load texture from file \"%s\"!", TEXTURE_NAME);
-		return 1;
-	}
-	GLuint imgTexture;
-	glGenTextures(1, &imgTexture);
-	glBindTexture(GL_TEXTURE_2D, imgTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(imgData);
-
-	MengerSponge cube;
+	GLint modelLocation = shader.getUniformLocation("model"),
+		colorLocation = shader.getUniformLocation("color"),
+		disableTextureLocation = shader.getUniformLocation("disableTexture");
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
@@ -127,7 +108,7 @@ int main(int, char**) {
 	static float radius = 0.3f;
 	static float height = 1.0f;
 	static int sideAmount = 3;
-	MeshCylinder cylinder(radius, height, sideAmount, "texture_cylinder.jpg");
+	MeshCylinder cylinder(shader, radius, height, sideAmount, "texture_cylinder.jpg");
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -227,9 +208,9 @@ int main(int, char**) {
 
 		glUniform1i(disableTextureLocation, shouldUseTexture ? 0 : 1);
 		glUniform4f(colorLocation, color.x, color.y, color.z, color.w);
-		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
-		cylinder.Draw(shader);
+		cylinder.draw(model);
 		//cube.render();
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

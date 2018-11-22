@@ -16,11 +16,12 @@ struct Texture {
 
 class MeshTexture : public Mesh {
 public:
-	MeshTexture(std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char *textureFile);
-	void Draw(Shader shader);
+	MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char *textureFile);
+	void draw(glm::mat4 world);
+	void draw(Shader shader, glm::mat4 world);
 	static Texture createTexture(char *textureFile);
 protected:
-	MeshTexture();
+	MeshTexture(Shader shader);
 	void setupMesh();
 	Texture texture;
 	std::vector<TextureVertex> vertices;

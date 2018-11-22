@@ -2,13 +2,15 @@
 
 #include <stb_image.h>
 
-Model::Model(char *path) {
+Model::Model(Shader shader, char *path) : Mesh(shader) {
 	loadModel(std::string(path));
 }
 
-void Model::Draw(Shader shader) {
+void Model::draw(glm::mat4 world) { draw(shader, world); }
+
+void Model::draw(Shader shader, glm::mat4 world) {
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+		meshes[i].draw(shader, world);
 }
 
 void Model::loadModel(std::string const & path) {
@@ -92,7 +94,7 @@ MeshModel Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 	std::vector<ModelTexture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-	return MeshModel(vertices, indices, textures);
+	return MeshModel(shader, vertices, indices, textures);
 }
 
 std::vector<ModelTexture> Model::loadMaterialTextures(aiMaterial * mat, aiTextureType type, std::string typeName) {

@@ -1,17 +1,17 @@
 #include "MeshCylinder.h"
 
-MeshCylinder::MeshCylinder(float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter) : MeshTexture() {
-	this->radius = radius;
-	this->height = height;
-	this->sideAmount = sideAmount;
-	this->baseCenter = baseCenter;
+MeshCylinder::MeshCylinder(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter)
+	: radius(radius), height(height), sideAmount(sideAmount), baseCenter(baseCenter), MeshTexture(shader) {
 	texture = createTexture(texturePath);
 	VBO = 0;
 	setupMesh();
 }
 
-void MeshCylinder::Draw(Shader shader) {
+void MeshCylinder::draw(glm::mat4 world) { draw(shader, world); }
+
+void MeshCylinder::draw(Shader shader, glm::mat4 world) {
 	shader.use();
+	shader.setModel(world);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);
 	glBindVertexBuffer(0, VBO, 0, sizeof(TextureVertex));
@@ -20,7 +20,13 @@ void MeshCylinder::Draw(Shader shader) {
 }
 
 void MeshCylinder::updateValues(float radius, float height, int sideAmount) {
+	if (radius <= 0) {
+		radius = 0.01f;
+	}
 	this->radius = radius;
+	if (height <= 0) {
+		height = 0.01f;
+	}
 	this->height = height;
 	if (sideAmount < 3) {
 		sideAmount = 3;

@@ -1,13 +1,15 @@
 #include "MeshModel.h"
 
-MeshModel::MeshModel(std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures) : Mesh(indices) {
-	this->vertices = vertices;
-	this->textures = textures;
+MeshModel::MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures)
+	: vertices(vertices), textures(textures), Mesh(shader, indices) {
 	setupMesh();
 }
 
-void MeshModel::Draw(Shader shader) {
+void MeshModel::draw(glm::mat4 world) { draw(shader, world); }
+
+void MeshModel::draw(Shader shader, glm::mat4 world) {
 	shader.use();
+	shader.setModel(world);
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
 	GLuint normalNr = 1;
@@ -26,7 +28,7 @@ void MeshModel::Draw(Shader shader) {
 		else if (name == "texture_height")
 			number = std::to_string(heightNr++);
 
-		glUniform1i(glGetUniformLocation(shader.getID(), (name + number).c_str()), i);
+		glUniform1i(shader.getUniformLocation((name + number).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 

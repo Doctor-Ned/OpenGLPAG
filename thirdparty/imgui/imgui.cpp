@@ -1852,7 +1852,7 @@ ImGuiTextFilter::ImGuiTextFilter(const char* default_filter)
     }
 }
 
-bool ImGuiTextFilter::Draw(const char* label, float width)
+bool ImGuiTextFilter::draw(const char* label, float width)
 {
     if (width != 0.0f)
         ImGui::PushItemWidth(width);
