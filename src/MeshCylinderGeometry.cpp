@@ -1,10 +1,8 @@
 #include "MeshCylinderGeometry.h"
 
-MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount, glm::vec3 baseCenter)
-	: baseCenter(baseCenter), radius(radius), height(height), shader(shader), MeshSimple(shader) {
-	vertex.Position.x = 0.0f;
-	vertex.Position.y = 0.0f;
-	vertex.Position.z = 0.0f;
+MeshCylinderGeometry::MeshCylinderGeometry(GeometryShader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter)
+	: baseCenter(baseCenter), radius(radius), height(height), shader(shader), MeshTexture(shader) {
+	texture = createTexture(texturePath);
 	setupMesh();
 }
 
@@ -15,7 +13,9 @@ void MeshCylinderGeometry::draw(GeometryShader shader, glm::mat4 world, float sc
 	shader.setValues(radius, height, sideAmount);
 	shader.setScale(scale);
 	shader.setModel(world);
+	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);
+	glBindVertexBuffer(0, VBO, 0, sizeof(glm::vec3));
 	glDrawArrays(GL_POINTS, 0, 1);
 	glBindVertexArray(0);
 	glUseProgram(0);
@@ -44,9 +44,10 @@ void MeshCylinderGeometry::setupMesh() {
 	shader.use();
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &vertex, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &baseCenter, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);

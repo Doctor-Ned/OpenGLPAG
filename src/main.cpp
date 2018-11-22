@@ -47,7 +47,7 @@ int main(int, char**) {
 #endif
 
 	// Create window with graphics context
-	const int WINDOW_WIDTH = 1600, WINDOW_HEIGHT = 1280;
+	const int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 800;
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
 	if (window == NULL) {
 		return 1;
@@ -98,9 +98,10 @@ int main(int, char**) {
 	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
 		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30), orbit4(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.60f, 30);
 	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
-	MeshCylinderGeometry cylinder(geometryShader, radius, height, sideAmount);
+	MeshCylinderGeometry cylinder(geometryShader, radius, height, sideAmount, "texture_cylinder.jpg");
 	GraphNode graphRoot;
-	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat), cylinderNode(0.2f, &cylinder);
+	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat);
+	RotatingNode cylinderNode(0.2f, &cylinder);
 	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
 	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL);
 
@@ -111,15 +112,18 @@ int main(int, char**) {
 
 	suitNode.setScale(0.04f);
 	catNode.setScale(0.5f);
-
-	orbitingNode2.addChild(&catNode);
-	orbitingNode3.addChild(&cylinderNode);
-
+	graphRoot.addChild(&cylinderNode);
+	suitNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 	graphRoot.addChild(&suitNode);
-	graphRoot.addChild(&orbitNode1);
-	graphRoot.addChild(&orbitNode2);
-	cylinderNode.addChild(&verticalOrbit);
-	orbitingNode2.addChild(&orbitNode3);
+
+	//orbitingNode2.addChild(&catNode);
+	//orbitingNode3.addChild(&cylinderNode);
+
+	//graphRoot.addChild(&suitNode);
+	//graphRoot.addChild(&orbitNode1);
+	//graphRoot.addChild(&orbitNode2);
+	//cylinderNode.addChild(&verticalOrbit);
+	//orbitingNode2.addChild(&orbitNode3);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -127,7 +131,7 @@ int main(int, char**) {
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(0, 2, 5.0f),
+		glm::vec3(0, 2, 3.0f),
 		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
@@ -145,6 +149,8 @@ int main(int, char**) {
 	simpleShader.bind(&uboViewProjection);
 	simpleShader.bind(&uboLight);
 
+	geometryShader.bind(&uboViewProjection);
+	geometryShader.bind(&uboLight);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -192,7 +198,6 @@ int main(int, char**) {
 					sideAmount = targetSides;
 					radius = targetRadius;
 					height = targetHeight;
-					cylinder.baseCenter.y = (-height / 2.0f);
 					refill = true;
 				}
 			}
@@ -237,7 +242,7 @@ int main(int, char**) {
 			//cube.recreate(recurseDepth);
 		}
 
-		orbitingNode4.setScale(sin(currentTime+0.5f));
+		orbitingNode4.setScale(sin(currentTime + 0.5f));
 
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
@@ -257,6 +262,11 @@ int main(int, char**) {
 		texturedShader.use();
 		texturedShader.setDisableTexture(!shouldUseTexture);
 		texturedShader.setColor(color);
+		glUseProgram(0);
+
+		geometryShader.use();
+		geometryShader.setDisableTexture(!shouldUseTexture);
+		geometryShader.setColor(color);
 		glUseProgram(0);
 
 		graphRoot.update(timeDelta * timeMultiplier);
