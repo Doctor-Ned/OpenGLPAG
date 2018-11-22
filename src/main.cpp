@@ -95,8 +95,8 @@ int main(int, char**) {
 	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
 		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30);
 	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
-	GraphNode graphRoot; // , cylinderNode(&cylinder), coneNode(&cone);
-	RotatingNode suitNode(10.0f, &nanosuit), catNode(1.0f, &cat), cylinderNode(0.5f, &cylinder); //, catNode(0.03f, &cat);
+	GraphNode graphRoot;
+	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat), cylinderNode(0.2f, &cylinder);
 	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
 	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL),
 		orbitingNode3(&orbitNode3, 0.15f, NULL);
@@ -104,7 +104,6 @@ int main(int, char**) {
 
 	suitNode.setScale(0.04f);
 	catNode.setScale(0.5f);
-	//orbitingNode2.setScale(0.5f);
 
 	orbitingNode2.addChild(&catNode);
 	orbitingNode3.addChild(&cylinderNode);
@@ -113,17 +112,6 @@ int main(int, char**) {
 	graphRoot.addChild(&orbitNode1);
 	graphRoot.addChild(&orbitNode2);
 	orbitingNode2.addChild(&orbitNode3);
-
-	//orbitingNode1.addChild(&orbitNode2);
-	//graphRoot.addChild(&orbitNode3);
-
-	//cylinderNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0/*f)));
-	//coneNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f)));
-	//graphRoot.addChild(&cylinderNode);
-	//graphRoot.addChild(&coneNode);
-	//graphRoot.addChild(&suitNode);
-	//graphRoot.addChild(&catNode);
-	//graphRoot.addChild(&orbitNode);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 

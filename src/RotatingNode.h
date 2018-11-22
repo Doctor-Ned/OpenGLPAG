@@ -6,7 +6,7 @@
 class RotatingNode : public GraphNode {
 public:
 	RotatingNode(float rotationSpeed, Mesh *mesh = NULL, GraphNode *parent = NULL);
-	void update(float timeDiff);
+	void update(double timeDiff);
 	void draw() { GraphNode::draw(); };
 	virtual void setRotationSpeed(float speed);
 	glm::mat4 getLocal() { return GraphNode::getLocal(); };
