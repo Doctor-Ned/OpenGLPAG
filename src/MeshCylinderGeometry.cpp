@@ -32,7 +32,13 @@ void MeshCylinderGeometry::draw(Shader shader, glm::mat4 world, float scale) {
 }
 
 void MeshCylinderGeometry::updateValues(float radius, float height, int sideAmount) {
+	if (radius <= 0) {
+		radius = 0.01f;
+	}
 	this->radius = radius;
+	if (height <= 0) {
+		height = 0.01f;
+	}
 	this->height = height;
 	if (sideAmount < 3) {
 		sideAmount = 3;
