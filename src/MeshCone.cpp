@@ -53,6 +53,27 @@ void MeshCone::updateValues(float radius, float height, int sideAmount) {
 	vertices.clear();
 }
 
+void MeshCone::drawGui(bool autoUpdate) {
+	static float _radius = radius;
+	static float _height = height;
+	static int _sideAmount = sideAmount;
+	ImGui::SliderFloat("Cone radius", &_radius, 0.01f, 2.0f);
+	ImGui::NewLine();
+	ImGui::SliderFloat("Cone height", &_height, 0.01f, 2.0f);
+	ImGui::NewLine();
+	ImGui::SliderInt("Cone sides", &_sideAmount, 3, 50);
+	ImGui::NewLine();
+
+	if (autoUpdate || ImGui::Button("Apply cone changes")) {
+		if (_radius != radius || _height != height || _sideAmount != sideAmount) {
+			radius = _radius;
+			height = _height;
+			sideAmount = _sideAmount;
+			updateValues(radius, height, sideAmount);
+		}
+	}
+}
+
 void MeshCone::createBottomTriangle(std::vector<TextureVertex>* vertices, float angle1, float angle2) {
 	TextureVertex center, closer, farther;
 	center.Position = baseCenter;

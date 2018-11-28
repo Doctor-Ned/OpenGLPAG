@@ -12,6 +12,7 @@ public:
 	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void updateValues(float radius, float height, int sideAmount);
+	void drawGui(bool autoUpdate = true);
 	glm::vec3 baseCenter;
 protected:
 	void createBottomTriangle(std::vector<TextureVertex> *vertices, float angle1, float angle2);

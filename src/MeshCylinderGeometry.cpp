@@ -48,6 +48,27 @@ void MeshCylinderGeometry::updateValues(float radius, float height, int sideAmou
 	bufferData();
 }
 
+void MeshCylinderGeometry::drawGui(bool autoUpdate) {
+	static float _radius = radius;
+	static float _height = height;
+	static int _sideAmount = sideAmount;
+	ImGui::SliderFloat("GeoCylinder radius", &_radius, 0.01f, 2.0f);
+	ImGui::NewLine();
+	ImGui::SliderFloat("GeoCylinder height", &_height, 0.01f, 2.0f);
+	ImGui::NewLine();
+	ImGui::SliderInt("GeoCylinder sides", &_sideAmount, 3, 50);
+	ImGui::NewLine();
+
+	if (autoUpdate || ImGui::Button("Apply geocylinder changes")) {
+		if (_radius != radius || _height != height || _sideAmount != sideAmount) {
+			radius = _radius;
+			height = _height;
+			sideAmount = _sideAmount;
+			updateValues(radius, height, sideAmount);
+		}
+	}
+}
+
 void MeshCylinderGeometry::createBottomTriangle(std::vector<glm::vec3>* data, float angle1, float angle2) {
 	glm::vec3 closer = baseCenter, farther = baseCenter;
 

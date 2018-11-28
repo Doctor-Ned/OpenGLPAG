@@ -14,10 +14,11 @@ public:
 	void draw(GeometryShader shader, glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void updateValues(float radius, float height, int sideAmount);
+	void drawGui(bool autoUpdate = true);
+	glm::vec3 baseCenter;
 protected:
 	void createBottomTriangle(std::vector<glm::vec3> *data, float angle1, float angle2);
 	void bufferData();
-	glm::vec3 baseCenter;
 	virtual void setupMesh();
 	float height;
 	float radius;

@@ -7,4 +7,5 @@ Release/
 bin/
 obj/
 .vs/
-/Build
+/Build/*
+!/Build/recreate-cmake.bat
