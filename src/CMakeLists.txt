@@ -8,12 +8,12 @@ file(GLOB_RECURSE SHADER_FILES
 	*.glsl)
 
 # Add model/texture files
-file(GLOB_RECURSE MODEL_FILES
-	*.obj
-	*.mtl
-	*.jpg
-	*.png
-	*.tga)
+file(GLOB MODEL_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/*.obj
+	${CMAKE_CURRENT_SOURCE_DIR}/*.mtl
+	${CMAKE_CURRENT_SOURCE_DIR}/*.jpg
+	${CMAKE_CURRENT_SOURCE_DIR}/*.png
+	${CMAKE_CURRENT_SOURCE_DIR}/*.tga)
 	
 # Add header files
 file(GLOB_RECURSE HEADER_FILES 
