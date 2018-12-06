@@ -11,6 +11,7 @@
 #include "RotatingNode.h"
 #include "GeometryShader.h"
 #include "MeshCylinderGeometry.h"
+#include "Camera.h"
 
 #include <stb_image.h>
 
@@ -23,6 +24,75 @@
 
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
+
+float timeDelta = 0.0f;
+bool firstMouse = true;
+float lastX, lastY;
+Camera camera;
+bool mouseHidden = false;
+
+bool mouseTogglePressed = false;
+
+void process_keyboard_movement(GLFWwindow *window) {
+	if (mouseHidden) {
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+			camera.moveForward(timeDelta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+			camera.moveBackward(timeDelta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+			camera.moveLeft(timeDelta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			camera.moveRight(timeDelta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+			camera.moveDown(timeDelta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+			camera.moveUp(timeDelta);
+		}
+	}
+}
+
+void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (action == GLFW_PRESS) {
+		switch (key) {
+			case GLFW_KEY_ESCAPE:
+				glfwSetWindowShouldClose(window, true);
+				break;
+			case GLFW_KEY_SPACE:
+				if (mouseHidden) {
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				} else {
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					firstMouse = true;
+				}
+				mouseHidden = !mouseHidden;
+				break;
+		}
+	}
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (mouseHidden) {
+		if (firstMouse) {
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos;
+
+		lastX = xpos;
+		lastY = ypos;
+
+		camera.rotateX(xoffset*timeDelta);
+		camera.rotateY(yoffset*timeDelta);
+	}
 }
 
 int main(int, char**) {
@@ -82,6 +152,14 @@ int main(int, char**) {
 
 	glEnable(GL_DEPTH_TEST);   // this is so important. Spent 2 hours looking for it
 
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetKeyCallback(window, keyboard_callback);
+	if (!mouseHidden) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	} else {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
 	//load shaders
 
 	Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
@@ -135,14 +213,9 @@ int main(int, char**) {
 	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
-	glm::mat4 view = glm::lookAt(
-		glm::vec3(0, 2, 3.0f),
-		glm::vec3(0, 0, 0),
-		glm::vec3(0, 1, 0)
-	);
 	glm::mat4 model(1.0f);
 
-	UboViewProjection uboViewProjection(view, projection);
+	UboViewProjection uboViewProjection(camera.getView(), projection);
 	UboLight uboLight(lightPosition, lightColor);
 
 	texturedShader.bind(&uboViewProjection);
@@ -160,7 +233,7 @@ int main(int, char**) {
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-
+		process_keyboard_movement(window);
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -169,10 +242,9 @@ int main(int, char**) {
 		static int targetSize = outputSize;
 		static bool outline = false;
 		static bool shouldUseTexture = true, shouldAutoUpdate = true;
-		static glm::vec2 rotation(0.25f, 0.0f), prevRotation(0.0f, 0.0f);
+		static glm::vec2 rotation(0.0f, 0.0f), prevRotation(0.0f, 0.0f);
 		static double glfwTime;
 		static double currentTime = 0.0f;
-		static double timeDelta;
 		static float timeMultiplier = 0.1f;
 
 		static float catOrbitSpeed = 1.0f, catRotationSpeed = 1.0f;
@@ -180,6 +252,7 @@ int main(int, char**) {
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
 		currentTime = glfwTime;
+
 
 		ImGui::Begin("Configuration");
 		{
@@ -242,6 +315,8 @@ int main(int, char**) {
 
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
+
+		uboViewProjection.inject(camera.getView(), projection);
 
 		texturedShader.use();
 		texturedShader.setDisableTexture(!shouldUseTexture);
