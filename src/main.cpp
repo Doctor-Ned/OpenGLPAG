@@ -1,11 +1,13 @@
 #include "UboLight.h"
 #include "UboViewProjection.h"
+#include "UboTextureColor.h"
 #include <cstdio>
 #include "MeshCylinder.h"
 #include "MeshCone.h"
 #include "MeshTorus.h"
 #include "MeshSphere.h"
 #include "Model.h"
+#include "ModelInstanced.h"
 #include "MeshOrbit.h"
 #include "OrbitingNode.h"
 #include "RotatingNode.h"
@@ -36,23 +38,30 @@ bool mouseTogglePressed = false;
 
 void process_keyboard_movement(GLFWwindow *window) {
 	if (mouseHidden) {
+		float speed = timeDelta;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+			speed *= 3.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+			speed *= 0.1f;
+		}
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			camera.moveForward(timeDelta);
+			camera.moveForward(speed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			camera.moveBackward(timeDelta);
+			camera.moveBackward(speed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			camera.moveLeft(timeDelta);
+			camera.moveLeft(speed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			camera.moveRight(timeDelta);
+			camera.moveRight(speed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-			camera.moveDown(timeDelta);
+			camera.moveDown(speed);
 		}
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-			camera.moveUp(timeDelta);
+			camera.moveUp(speed);
 		}
 	}
 }
@@ -100,6 +109,7 @@ int main(int, char**) {
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
+
 
 	// Decide GL+GLSL versions
 #if __APPLE__
@@ -163,50 +173,35 @@ int main(int, char**) {
 	//load shaders
 
 	Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
-	Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
-	Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
+	//Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
+	//Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
+	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
+	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelFragmentShader.glsl");
 	GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
+
+	std::vector<Shader> updatableShaders;
+
+	updatableShaders.push_back(texturedShader);
+	//updatableShaders.push_back(solidShader);
+	//updatableShaders.push_back(simpleShader);
+	updatableShaders.push_back(modelShader);
+	updatableShaders.push_back(instanceModelShader);
+	updatableShaders.push_back(geometryShader);
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
-	//MeshCylinder cylinderCode(texturedShader, 0.15f, 0.5f, 3, "texture_cylinder.jpg");
-
-	MeshSphere sphere(texturedShader, 0.15f, 3, "texture_cylinder.jpg");
-	//MeshTorus torus(texturedShader, 0.15f, 0.5f, 3, "texture_cylinder.jpg");
-	MeshCone cone(texturedShader, 0.25f, 0.6f, 15, "texture_triangle.jpg");
-	MeshOrbit orbit1(solidShader, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f, 30), orbit2(solidShader, glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 30)
-		, orbit3(solidShader, glm::vec3(0.0f, 1.0f, 0.0f), 0.35f, 30), orbit4(solidShader, glm::vec3(1.0f, 1.0f, 0.0f), 0.75f, 30);
-	Model nanosuit(texturedShader, "nanosuit\\nanosuit.obj"), cat(texturedShader, "cat\\cat.obj");
-	//MeshCylinderGeometry cylinderGeoShader(geometryShader, radius, height, sideAmount, "texture_cylinder.jpg");
 	GraphNode graphRoot;
-	RotatingNode suitNode(1.0f, &nanosuit), catNode(0.6f, &cat);
 
-	RotatingNode preVerticalNode(0.2f, NULL);
-	GraphNode someNode(&sphere);
-	preVerticalNode.addChild(&someNode);
+	int width = 5, length = 8, offsetSize = width * length;
+	glm::vec3 *offsets = createHorizontalTransformArray(width, length, glm::vec2(-0.5f, -0.5f), glm::vec2(0.5f, 0.5f), 0.0f);
 
-	OrbitNode orbitNode1(&orbit1), orbitNode2(&orbit2), orbitNode3(&orbit3);
-	OrbitingNode orbitingNode1(&orbitNode1, 0.12f, &cone), orbitingNode2(&orbitNode2, 0.09f, NULL);
 
-	OrbitNode verticalOrbit(&orbit4);
-	verticalOrbit.setLocal(glm::rotate(glm::mat4(1.0f), (float)(M_PI / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-
-	OrbitingNode orbitingNode3(&orbitNode3, 0.15f, NULL), orbitingNode4(&verticalOrbit, 0.08f, &cat);
-
-	suitNode.setScale(0.04f);
-	catNode.setScale(0.5f);
-	suitNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
-	graphRoot.addChild(&suitNode);
-
-	orbitingNode2.addChild(&catNode);
-	orbitingNode3.addChild(&preVerticalNode);
-
-	graphRoot.addChild(&suitNode);
-	graphRoot.addChild(&orbitNode1);
-	graphRoot.addChild(&orbitNode2);
-	preVerticalNode.addChild(&verticalOrbit);
-	orbitingNode2.addChild(&orbitNode3);
+	ModelInstanced catInstance(instanceModelShader, "cat\\cat.obj", offsets, offsetSize);
+	Model cat(texturedShader, "cat\\cat.obj");
+	GraphNode catNode(&catInstance, &graphRoot);
+	catNode.setScale(0.25f);
+	//GraphNode catSingle(&cat, &graphRoot);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -217,19 +212,13 @@ int main(int, char**) {
 
 	UboViewProjection uboViewProjection(camera.getView(), projection);
 	UboLight uboLight(lightPosition, lightColor);
+	UboTextureColor uboTextureColor(false, color);
 
-	texturedShader.bind(&uboViewProjection);
-	texturedShader.bind(&uboLight);
-
-	solidShader.bind(&uboViewProjection);
-	solidShader.bind(&uboLight);
-
-	simpleShader.bind(&uboViewProjection);
-	simpleShader.bind(&uboLight);
-
-	geometryShader.bind(&uboViewProjection);
-	geometryShader.bind(&uboLight);
-
+	for (int i = 0; i < updatableShaders.size(); i++) {
+		updatableShaders[i].bind(&uboViewProjection);
+		updatableShaders[i].bind(&uboLight);
+		updatableShaders[i].bind(&uboTextureColor);
+	}
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -262,7 +251,6 @@ int main(int, char**) {
 				outputSize = targetSize;
 			}
 			ImGui::NewLine();
-			sphere.drawGui(shouldAutoUpdate);
 			ImGui::NewLine();
 			ImGui::Checkbox("Auto-update", &shouldAutoUpdate);
 			ImGui::NewLine();
@@ -272,9 +260,6 @@ int main(int, char**) {
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
 			ImGui::SliderFloat("Cat orbiting speed", &catOrbitSpeed, 0.0f, 20.0f);
 			ImGui::SliderFloat("Cat rotation speed", &catRotationSpeed, 0.0f, 20.0f);
-			orbitingNode2.setOrbitSpeed(catOrbitSpeed);
-			catNode.setRotationSpeed(catRotationSpeed);
-			//orbitNode1.setRadius(testFloat);
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
@@ -299,8 +284,6 @@ int main(int, char**) {
 			uboLight.inject(lightPosition, lightColor);
 		}
 
-		orbitingNode4.setScale((sin(currentTime) + 1.0f) / 2.0f);
-
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
 		// Rendering
@@ -317,16 +300,7 @@ int main(int, char**) {
 		glViewport((SMALLER_SIZE - outputSize) / 2, (SMALLER_SIZE - outputSize) / 2, outputSize, outputSize);
 
 		uboViewProjection.inject(camera.getView(), projection);
-
-		texturedShader.use();
-		texturedShader.setDisableTexture(!shouldUseTexture);
-		texturedShader.setColor(color);
-		glUseProgram(0);
-
-		geometryShader.use();
-		geometryShader.setDisableTexture(!shouldUseTexture);
-		geometryShader.setColor(color);
-		glUseProgram(0);
+		uboTextureColor.inject(!shouldUseTexture, color);
 
 		graphRoot.update(timeDelta * timeMultiplier);
 		graphRoot.draw();

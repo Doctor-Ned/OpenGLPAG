@@ -53,6 +53,7 @@ void Shader::refreshUniforms() {
 	}
 }
 
+// deprecated, should be injected via UboTextureColor
 void Shader::setDisableTexture(bool disable) {
 	if (this->disableTexture == NULL) {
 		this->disableTexture = new bool();
@@ -69,6 +70,7 @@ void Shader::setScale(float scale) {
 	*(this->scale) = scale;
 }
 
+// currently injected via UboTextureColor, though it might be useful when dealing with non-texture shaders
 void Shader::setColor(glm::vec4 color) {
 	if (this->color == NULL) {
 		this->color = new glm::vec4();

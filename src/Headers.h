@@ -26,4 +26,19 @@
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
+static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max, float yPosition = 0.0f) {
+	glm::vec3 *result = new glm::vec3[width * length];
+	float firstX = width == 1 ? (max.x + min.x) / 2.0f : min.x;
+	float xStep = width == 1 ? 0.0f : (max.x - min.x) / (float)(width - 1);
+	float firstZ = length == 1 ? (max.y - min.y) / 2.0f : min.y;
+	float zStep = length == 1 ? 0.0f : (max.y - min.y) / (float)(length - 1);
+	int counter = 0;
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < width; j++) {
+			result[counter++] = glm::vec3(i*xStep + firstX, yPosition, j*zStep + firstZ);
+		}
+	}
+	return result;
+}
+
 #endif
