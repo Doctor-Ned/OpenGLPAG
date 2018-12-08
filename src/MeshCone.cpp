@@ -7,8 +7,6 @@ MeshCone::MeshCone(Shader shader, float radius, float height, int sideAmount, ch
 	setupMesh();
 }
 
-void MeshCone::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshCone::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

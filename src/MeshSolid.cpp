@@ -5,8 +5,6 @@ MeshSolid::MeshSolid(Shader shader, glm::vec3 color, std::vector<Vertex> vertice
 	setupMesh();
 }
 
-void MeshSolid::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 MeshSolid::MeshSolid(Shader shader, glm::vec3 color) : color(color), Mesh(shader) {}
 
 void MeshSolid::draw(Shader shader, glm::mat4 world, float scale) {

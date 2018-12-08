@@ -7,8 +7,6 @@ MeshTexture::MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std
 	setupMesh();
 }
 
-void MeshTexture::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshTexture::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

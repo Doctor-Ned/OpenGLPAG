@@ -9,12 +9,6 @@ public:
 	void update(double timeDiff);
 	void draw() { GraphNode::draw(); };
 	void setOrbitSpeed(float orbitSpeed);
-	glm::mat4 getLocal() { return GraphNode::getLocal(); };
-	glm::mat4 getWorld() { return GraphNode::getWorld(); };
-	void setScale(float scale) { GraphNode::setScale(scale); };
-	void setLocal(glm::mat4 local) { GraphNode::setLocal(local); };
-	void addChild(GraphNode *child) { GraphNode::addChild(child); };
-	void removeChild(GraphNode *child) { GraphNode::removeChild(child); };
 private:
 	float angle;
 	float orbitSpeed;

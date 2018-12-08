@@ -14,7 +14,6 @@ struct SimpleVertex {
 class MeshSimple : public Mesh {
 public:
 	MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices);
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 protected:
 	MeshSimple(Shader shader);

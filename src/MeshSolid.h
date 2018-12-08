@@ -14,7 +14,6 @@ struct Vertex {
 class MeshSolid : public Mesh {
 public:
 	MeshSolid(Shader shader, glm::vec3 color, std::vector<Vertex> vertices, std::vector<unsigned int> indices);
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 protected:
 	MeshSolid(Shader shader, glm::vec3 color);

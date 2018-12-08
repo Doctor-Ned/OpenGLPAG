@@ -10,7 +10,6 @@
 class MeshTorus : public MeshTexture {
 public:
 	MeshTorus(Shader shader, float radiusIn, float radiusOut, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, 0.0f, 0.0f));
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void updateValues(float radiusIn, float radiusOut, int sideAmount);
 	void drawGui(bool autoUpdate = true);

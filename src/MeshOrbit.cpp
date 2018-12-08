@@ -5,8 +5,6 @@ MeshOrbit::MeshOrbit(Shader shader, glm::vec3 color, float radius, int sideAmoun
 	setupMesh();
 }
 
-void MeshOrbit::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshOrbit::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

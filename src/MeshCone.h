@@ -9,7 +9,6 @@
 class MeshCone : public MeshTexture {
 public:
 	MeshCone(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter = glm::vec3(0.0f, 0.0f, 0.0f));
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void updateValues(float radius, float height, int sideAmount);
 	void drawGui(bool autoUpdate = true);

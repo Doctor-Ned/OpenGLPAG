@@ -5,8 +5,6 @@ MeshModel::MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vect
 	setupMesh();
 }
 
-void MeshModel::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

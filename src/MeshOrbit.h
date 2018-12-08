@@ -9,7 +9,6 @@
 class MeshOrbit : public MeshSolid {
 public:
 	MeshOrbit(Shader shader, glm::vec3 color, float radius, int sideAmount);
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	void setRadius(float radius);
 	float getRadius();

@@ -7,8 +7,6 @@ MeshTorus::MeshTorus(Shader shader, float radiusIn, float radiusOut, int sideAmo
 	setupMesh();
 }
 
-void MeshTorus::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshTorus::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

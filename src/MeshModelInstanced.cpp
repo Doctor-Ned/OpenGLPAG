@@ -5,8 +5,6 @@ MeshModelInstanced::MeshModelInstanced(Shader shader, std::vector<ModelVertex> v
 	setupMesh();
 }
 
-void MeshModelInstanced::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshModelInstanced::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);

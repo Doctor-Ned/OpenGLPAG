@@ -9,7 +9,6 @@
 class MeshModelInstanced : public Mesh {
 public:
 	MeshModelInstanced(Shader shader, std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures, glm::vec3 *offsets, int offsetSize);
-	void draw(glm::mat4 world, float scale = 1.0f);
 	void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 protected:
 	void setupMesh();

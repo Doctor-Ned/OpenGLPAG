@@ -7,8 +7,6 @@ MeshSphere::MeshSphere(Shader shader, float radius, int precision, char *texture
 	setupMesh();
 }
 
-void MeshSphere::draw(glm::mat4 world, float scale) { draw(shader, world, scale); }
-
 void MeshSphere::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);
