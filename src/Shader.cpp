@@ -115,6 +115,18 @@ void Shader::setViewPosition(glm::vec3 viewPosition) {
 	*(this->viewPosition) = viewPosition;
 }
 
+void Shader::setViewDirection(glm::vec3 viewDirection) {
+	use();
+	if (this->viewDirection == NULL) {
+		this->viewDirection = new glm::vec3();
+	}
+	GLint location = getUniformLocation("viewDirection");
+	if (location != -1) {
+		glUniform3f(location, viewDirection.x, viewDirection.y, viewDirection.z);
+	}
+	*(this->viewDirection) = viewDirection;
+}
+
 void Shader::setShininess(float shininess) {
 	use();
 	if (this->shininess == NULL) {
@@ -145,6 +157,10 @@ glm::mat4 Shader::getModel() {
 
 glm::vec3 Shader::getViewPosition() {
 	return *viewPosition;
+}
+
+glm::vec3 Shader::getViewDirection() {
+	return *viewDirection;
 }
 
 float Shader::getShininess() {

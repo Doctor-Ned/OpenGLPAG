@@ -243,7 +243,7 @@ int main(int, char**) {
 		static float timeMultiplier = 0.1f;
 		static int shader = 0;
 		static int targetShader = shader + 1;
-		static float shininess = 2.0f;
+		static float shininess = 16.0f;
 
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;

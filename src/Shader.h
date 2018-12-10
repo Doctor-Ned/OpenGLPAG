@@ -16,12 +16,14 @@ public:
 	void setColor(glm::vec4 color);
 	void setModel(glm::mat4 model);
 	void setViewPosition(glm::vec3 viewPosition);
+	void setViewDirection(glm::vec3 viewDirection);
 	void setShininess(float shininess);
 	bool getTextureDisabled();
 	float getScale();
 	glm::vec4 getColor();
 	glm::mat4 getModel();
 	glm::vec3 getViewPosition();
+	glm::vec3 getViewDirection();
 	float getShininess();
 	virtual void bind(Ubo *ubo);
 	GLint getUniformLocation(const char *name);
@@ -37,7 +39,7 @@ protected:
 	char *vertexPath;
 	glm::vec4 *color = NULL;
 	glm::mat4 *model = NULL;
-	glm::vec3 *viewPosition = NULL;
+	glm::vec3 *viewPosition = NULL, *viewDirection = NULL;
 	float *scale = NULL;
 	float *shininess = NULL;
 	bool *disableTexture = NULL;

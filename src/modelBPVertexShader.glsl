@@ -31,6 +31,6 @@ void main() {
     vs_out.TexCoords = inTexCoord;
     vs_out.Pos = vec3(model * vec4(pos, 1.0f));
 	vs_out.Normal = normalize(vec3(model * vec4(inNormal, 0.0f)));
-	vs_out.ViewPosition = vec3(model * vec4(viewPosition, 1.0f));
+	vs_out.ViewPosition = normalize(vec3(model * vec4(viewPosition, 1.0f)));
     gl_Position = projection * view * vec4(vs_out.Pos, 1.0f);
 }
