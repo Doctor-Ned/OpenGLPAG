@@ -172,23 +172,23 @@ int main(int, char**) {
 
 	//load shaders
 
-	Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
+	//Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
 	//Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
 	//Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
 	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
 	Shader modelBPShader("modelBPVertexShader.glsl", "modelBPFragmentShader.glsl");
 	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelFragmentShader.glsl");
-	GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
+	//GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
 
 	std::vector<Shader> updatableShaders;
 
-	updatableShaders.push_back(texturedShader);
+	//updatableShaders.push_back(texturedShader);
 	//updatableShaders.push_back(solidShader);
 	//updatableShaders.push_back(simpleShader);
 	updatableShaders.push_back(modelShader);
 	updatableShaders.push_back(modelBPShader);
 	updatableShaders.push_back(instanceModelShader);
-	updatableShaders.push_back(geometryShader);
+	//updatableShaders.push_back(geometryShader);
 
 	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
@@ -243,6 +243,7 @@ int main(int, char**) {
 		static float timeMultiplier = 0.1f;
 		static int shader = 0;
 		static int targetShader = shader + 1;
+		static float shininess = 2.0f;
 
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
@@ -264,6 +265,8 @@ int main(int, char**) {
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
+			ImGui::NewLine();
+			ImGui::SliderFloat("Shininess", &shininess, 0.0f, 128.0f);
 			ImGui::NewLine();
 			ImGui::SliderInt("Shader", &targetShader, 0, 2);
 			ImGui::NewLine();
@@ -328,6 +331,7 @@ int main(int, char**) {
 
 		for (int i = 0; i < updatableShaders.size(); i++) {
 			updatableShaders[i].setViewPosition(camera.getPos());
+			updatableShaders[i].setShininess(shininess);
 		}
 
 		graphRoot.update(timeDelta * timeMultiplier);
@@ -346,9 +350,9 @@ int main(int, char**) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	texturedShader.remove();
-	//glDeleteBuffers(1, &VBO);
-	//glDeleteBuffers(1, &cubeVAO);
+	for (int i = 0; i < updatableShaders.size(); i++) {
+		updatableShaders[i].remove();
+	}
 
 	glfwDestroyWindow(window);
 	glfwTerminate();

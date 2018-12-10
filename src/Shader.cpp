@@ -55,44 +55,76 @@ void Shader::refreshUniforms() {
 
 // deprecated, should be injected via UboTextureColor
 void Shader::setDisableTexture(bool disable) {
+	use();
 	if (this->disableTexture == NULL) {
 		this->disableTexture = new bool();
 	}
-	glUniform1i(getUniformLocation("disableTexture"), disable ? 1 : 0);
+	GLint location = getUniformLocation("disableTexture");
+	if (location != -1) {
+		glUniform1i(location, disable ? 1 : 0);
+	}
 	*disableTexture = disable;
 }
 
 void Shader::setScale(float scale) {
+	use();
 	if (this->scale == NULL) {
 		this->scale = new float();
 	}
-	glUniform1f(getUniformLocation("scale"), scale);
+	GLint location = getUniformLocation("scale");
+	if (location != -1) {
+		glUniform1f(location, scale);
+	}
 	*(this->scale) = scale;
 }
 
 // currently injected via UboTextureColor, though it might be useful when dealing with non-texture shaders
 void Shader::setColor(glm::vec4 color) {
+	use();
 	if (this->color == NULL) {
 		this->color = new glm::vec4();
 	}
-	glUniform4f(getUniformLocation("color"), color.x, color.y, color.z, color.w);
+	GLint location = getUniformLocation("color");
+	if (location != -1) {
+		glUniform4f(location, color.x, color.y, color.z, color.w);
+	}
 	*(this->color) = color;
 }
 
 void Shader::setModel(glm::mat4 model) {
+	use();
 	if (this->model == NULL) {
 		this->model = new glm::mat4();
 	}
-	glUniformMatrix4fv(getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+	GLint location = getUniformLocation("model");
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+	}
 	*(this->model) = model;
 }
 
 void Shader::setViewPosition(glm::vec3 viewPosition) {
+	use();
 	if (this->viewPosition == NULL) {
 		this->viewPosition = new glm::vec3();
 	}
-	glUniform3f(getUniformLocation("viewPosition"), viewPosition.x, viewPosition.y, viewPosition.z);
+	GLint location = getUniformLocation("viewPosition");
+	if (location != -1) {
+		glUniform3f(location, viewPosition.x, viewPosition.y, viewPosition.z);
+	}
 	*(this->viewPosition) = viewPosition;
+}
+
+void Shader::setShininess(float shininess) {
+	use();
+	if (this->shininess == NULL) {
+		this->shininess = new float();
+	}
+	GLint location = getUniformLocation("shininess");
+	if (location != -1) {
+		glUniform1f(location, shininess);
+	}
+	*(this->shininess) = shininess;
 }
 
 bool Shader::getTextureDisabled() {
@@ -115,9 +147,15 @@ glm::vec3 Shader::getViewPosition() {
 	return *viewPosition;
 }
 
+float Shader::getShininess() {
+	return *shininess;
+}
+
 void Shader::bind(Ubo * ubo) {
 	GLuint index = glGetUniformBlockIndex(id, ubo->getBlockName());
+	if (index != -1) {
 	glUniformBlockBinding(id, index, ubo->getBinding());
+	}
 }
 
 GLint Shader::getUniformLocation(const char * name) {

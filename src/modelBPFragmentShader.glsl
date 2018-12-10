@@ -18,6 +18,7 @@ in VS_OUT {
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
+uniform float shininess;
 
 out vec4 outColor;
 
@@ -31,8 +32,8 @@ void main() {
     // specular
     vec3 viewDir = normalize(fs_in.ViewPosition - fs_in.Pos);
     vec3 reflectDir = reflect(-lightDir, fs_in.Normal);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(fs_in.Normal, halfwayDir), 0.0), 32.0);
-    vec3 specular = vec3(0.3) * spec;
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(fs_in.Normal, halfwayDir), 0.0), shininess);
+    vec3 specular = spec * texture(texture_specular1, fs_in.TexCoords).rgb;
     outColor = vec4(ambient + diffuse + specular, 1.0);
 }
