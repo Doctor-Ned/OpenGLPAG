@@ -87,6 +87,14 @@ void Shader::setModel(glm::mat4 model) {
 	*(this->model) = model;
 }
 
+void Shader::setViewPosition(glm::vec3 viewPosition) {
+	if (this->viewPosition == NULL) {
+		this->viewPosition = new glm::vec3();
+	}
+	glUniform3f(getUniformLocation("viewPosition"), viewPosition.x, viewPosition.y, viewPosition.z);
+	*(this->viewPosition) = viewPosition;
+}
+
 bool Shader::getTextureDisabled() {
 	return *disableTexture;
 }
@@ -101,6 +109,10 @@ glm::vec4 Shader::getColor() {
 
 glm::mat4 Shader::getModel() {
 	return *model;
+}
+
+glm::vec3 Shader::getViewPosition() {
+	return *viewPosition;
 }
 
 void Shader::bind(Ubo * ubo) {

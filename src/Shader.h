@@ -15,10 +15,12 @@ public:
 	void setScale(float scale);
 	void setColor(glm::vec4 color);
 	void setModel(glm::mat4 model);
+	void setViewPosition(glm::vec3 viewPosition);
 	bool getTextureDisabled();
 	float getScale();
 	glm::vec4 getColor();
 	glm::mat4 getModel();
+	glm::vec3 getViewPosition();
 	virtual void bind(Ubo *ubo);
 	GLint getUniformLocation(const char *name);
 protected:
@@ -33,6 +35,7 @@ protected:
 	char *vertexPath;
 	glm::vec4 *color = NULL;
 	glm::mat4 *model = NULL;
+	glm::vec3 *viewPosition = NULL;
 	float *scale = NULL;
 	bool *disableTexture = NULL;
 };

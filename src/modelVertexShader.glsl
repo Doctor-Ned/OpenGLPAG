@@ -21,8 +21,8 @@ void main() {
 	vec3 pos = inPosition * scale;
     exTexCoord = inTexCoord;
     exPosition = vec3(model * vec4(pos, 1.0f));
-    exNormal = vec3(model * vec4(inNormal, 0.0f));
-	exTangent = vec3(model * vec4(inTangent, 0.0f));
-	exBitangent = vec3(model * vec4(inBitangent, 0.0f));
+    exNormal = normalize(vec3(model * vec4(inNormal, 0.0f)));
+	exTangent = normalize(vec3(model * vec4(inTangent, 0.0f)));
+	exBitangent = normalize(vec3(model * vec4(inBitangent, 0.0f)));
     gl_Position = projection * view * vec4(exPosition, 1.0f);
 }

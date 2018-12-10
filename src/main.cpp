@@ -197,11 +197,12 @@ int main(int, char**) {
 	glm::vec3 *offsets = createHorizontalTransformArray(width, length, glm::vec2(-0.5f, -0.5f), glm::vec2(0.5f, 0.5f), 0.0f);
 
 
-	ModelInstanced catInstance(instanceModelShader, "cat\\cat.obj", offsets, offsetSize);
-	Model cat(texturedShader, "cat\\cat.obj");
-	GraphNode catNode(&catInstance, &graphRoot);
-	catNode.setScale(0.25f);
-	//GraphNode catSingle(&cat, &graphRoot);
+	//ModelInstanced nanosuitInstance(instanceModelShader, "nanosuit\\nanosuit.obj", offsets, offsetSize);
+	Model nanosuit(modelShader, "nanosuit\\nanosuit.obj");
+	//GraphNode nanosuitNode(&nanosuitInstance, &graphRoot);
+	//nanosuitNode.setScale(0.25f);
+	GraphNode nanosuitSingle(&nanosuit, &graphRoot);
+	nanosuitSingle.setScale(0.05f);
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -236,8 +237,6 @@ int main(int, char**) {
 		static double currentTime = 0.0f;
 		static float timeMultiplier = 0.1f;
 
-		static float catOrbitSpeed = 1.0f, catRotationSpeed = 1.0f;
-
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
 		currentTime = glfwTime;
@@ -258,8 +257,6 @@ int main(int, char**) {
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
-			ImGui::SliderFloat("Cat orbiting speed", &catOrbitSpeed, 0.0f, 20.0f);
-			ImGui::SliderFloat("Cat rotation speed", &catRotationSpeed, 0.0f, 20.0f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
@@ -301,6 +298,10 @@ int main(int, char**) {
 
 		uboViewProjection.inject(camera.getView(), projection);
 		uboTextureColor.inject(!shouldUseTexture, color);
+
+		for (int i = 0; i < updatableShaders.size(); i++) {
+			updatableShaders[i].setViewPosition(camera.getPos());
+		}
 
 		graphRoot.update(timeDelta * timeMultiplier);
 		graphRoot.draw();

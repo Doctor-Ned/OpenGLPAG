@@ -23,9 +23,8 @@ void main() {
 	float ambientStrength = 0.1f;
 	vec3 ambient = ambientStrength * vec3(lightColor);
 	
-	vec3 norm = normalize(exNormal);
 	vec3 lightDirection = normalize(vec3(lightPosition) - exPosition);
-	float diff = max(dot(norm, lightDirection), 0.0f);
+	float diff = max(dot(exNormal, lightDirection), 0.0f);
 	vec3 diffuse = diff * vec3(lightColor);
 	outColor=vec4(ambient+diffuse,1.0f) * color;
 	if(!disableTexture) outColor = outColor * texture(texture_diffuse1, exTexCoord);

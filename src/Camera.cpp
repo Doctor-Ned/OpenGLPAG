@@ -15,6 +15,18 @@ glm::mat4 Camera::getView() {
 	return view;
 }
 
+glm::vec3 Camera::getFront() {
+	return cameraFront;
+}
+
+glm::vec3 Camera::getPos() {
+	return cameraPos;
+}
+
+glm::vec3 Camera::getUp() {
+	return cameraUp;
+}
+
 void Camera::rotateX(float timeDelta) {
 	if (timeDelta != 0.0f) {
 		yaw += timeDelta * rotSpeed;
