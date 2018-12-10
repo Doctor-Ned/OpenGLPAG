@@ -4,7 +4,6 @@
 #include "Headers.h"
 #include "MeshTexture.h"
 #include <string>
-#include <glm/gtx/rotate_vector.hpp>
 #include <vector>
 
 class MeshTorus : public MeshTexture {

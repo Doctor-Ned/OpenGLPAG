@@ -20,17 +20,17 @@ layout (std140) uniform Light {
 };
 
 out VS_OUT {
-	vec3 Pos;
-	vec2 TexCoords;
-	vec3 Normal;
-	vec3 ViewPosition;
+	vec3 pos;
+	vec2 texCoords;
+	vec3 normal;
+	vec3 viewPosition;
 } vs_out;
 
 void main() {
 	vec3 pos = inPosition * scale;
-    vs_out.TexCoords = inTexCoord;
-    vs_out.Pos = vec3(model * vec4(pos, 1.0f));
-	vs_out.Normal = normalize(vec3(model * vec4(inNormal, 0.0f)));
-	vs_out.ViewPosition = normalize(vec3(model * vec4(viewPosition, 1.0f)));
-    gl_Position = projection * view * vec4(vs_out.Pos, 1.0f);
+    vs_out.texCoords = inTexCoord;
+    vs_out.pos = vec3(model * vec4(pos, 1.0f));
+	vs_out.normal = normalize(vec3(model * vec4(inNormal, 0.0f)));
+	vs_out.viewPosition = normalize(vec3(model * vec4(viewPosition, 1.0f)));
+    gl_Position = projection * view * vec4(vs_out.pos, 1.0f);
 }

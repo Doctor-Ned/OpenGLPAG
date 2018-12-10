@@ -1,33 +1,37 @@
 #version 430 core
 
 struct DirLight {
-	vec3 direction;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 direction;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	mat4 model;
 };
 
 struct PointLight {
-	vec3 position;
+	vec4 position;
 	float constant;
 	float linear;
 	float quadratic;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	mat4 model;
+	float padding;
 };
 
 struct SpotLight {
-	vec3 position;
-	vec3 direction;
+	vec4 position;
+	vec4 direction;
 	float constant;
 	float linear;
 	float quadratic;
 	float cutOff;
 	float outerCutOff;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	mat4 model;
 };
 
 #define MAX_LIGHTS_OF_TYPE 16
@@ -40,6 +44,7 @@ layout (std140) uniform Lights {
 	int dirLightAmount;
 	int pointLightAmount;
 	int spotLightAmount;
+	int padding;
 	DirLight dirLights[MAX_LIGHTS_OF_TYPE];
 	PointLight pointLights[MAX_LIGHTS_OF_TYPE];
 	SpotLight spotLights[MAX_LIGHTS_OF_TYPE];
@@ -60,37 +65,40 @@ uniform mat4 model;
 out vec4 outColor;
 
 vec3 calcDirLight(DirLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
-	vec3 direction = normalize(vec3(model * vec4(-light.direction, 1.0f)));
+	vec3 direction = normalize(vec3(light.model * (-light.direction)));
     float diff = max(dot(direction, fs_in.normal), 0.0);
 
 	vec3 reflectDir = reflect(-direction, fs_in.normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 halfwayDir = normalize(direction + viewDir);
+    float spec = pow(max(dot(fs_in.normal, halfwayDir), 0.0), shininess);
 
-	return ((light.ambient * diffuse) + (light.diffuse * diff * diffuse) + (light.specular * spec * specular));
+	return ((vec3(light.ambient) * diffuse) + (vec3(light.diffuse) * diff * diffuse) + (vec3(light.specular) * spec * specular));
 }
 
 vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
-	vec3 position = vec3(model * vec4(light.position, 1.0f));
+	vec3 position = vec3(light.model * light.position);
 	vec3 direction = normalize(position - fs_in.pos);
 	float diff = max(dot(direction, fs_in.normal), 0.0);
-
+	
 	vec3 reflectDir = reflect(-direction, fs_in.normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 halfwayDir = normalize(direction + viewDir);
+    float spec = pow(max(dot(fs_in.normal, halfwayDir), 0.0), shininess);
 
 	float dist = length(position - fs_in.pos);
 	float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
 
-	return (((light.ambient * diffuse) + (light.diffuse * diff * diffuse) + (light.specular * spec * specular)) * attenuation);
+	return (((vec3(light.ambient) * diffuse) + (vec3(light.diffuse) * diff * diffuse) + (vec3(light.specular) * spec * specular)) * attenuation);
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
-	vec3 position = vec3(model * vec4(light.position, 1.0f));
+	vec3 position = vec3(light.model * light.position);
 	vec3 direction = normalize(position - fs_in.pos);
-	vec3 spotDirection = normalize(vec3(model * vec4(light.direction, 1.0f)));
+	vec3 spotDirection = normalize(vec3(light.model *light.direction));
 	float diff = max(dot(direction, fs_in.normal), 0.0);
 	
 	vec3 reflectDir = reflect(-direction, fs_in.normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 halfwayDir = normalize(direction + viewDir);
+    float spec = pow(max(dot(fs_in.normal, halfwayDir), 0.0), shininess);
 	
 	float dist = length(position - fs_in.pos);
 	float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
@@ -99,11 +107,12 @@ vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
 	float epsilon = light.cutOff - light.outerCutOff;
 	float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
-	return (((light.ambient * diffuse) + (light.diffuse * diff * diffuse) + (light.specular * spec * specular)) * attenuation * intensity);
+	return (((vec3(light.ambient) * diffuse) + (vec3(light.diffuse) * diff * diffuse) + (vec3(light.specular) * spec * specular)) * attenuation * intensity);
 }
 
 void main() {
-	vec3 diffuse = disableTexture ? color.rgb : texture(texture_diffuse1, fs_in.texCoords).rgb;
+	vec3 diffuse = color.rgb;
+	if(!disableTexture) diffuse *= texture(texture_diffuse1, fs_in.texCoords).rgb;
     vec3 ambient = 0.05 * diffuse;
     vec3 specular = texture(texture_specular1, fs_in.texCoords).rgb;
 	vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);

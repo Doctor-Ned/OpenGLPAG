@@ -1,4 +1,4 @@
-#include "UboLight.h"
+#include "UboLights.h"
 #include "UboViewProjection.h"
 #include "UboTextureColor.h"
 #include <cstdio>
@@ -14,6 +14,9 @@
 #include "GeometryShader.h"
 #include "MeshCylinderGeometry.h"
 #include "Camera.h"
+#include "DirLightNode.h"
+#include "PointLightNode.h"
+#include "SpotLightNode.h"
 
 #include <stb_image.h>
 
@@ -172,25 +175,17 @@ int main(int, char**) {
 
 	//load shaders
 
-	//Shader texturedShader("textureVertexShader.glsl", "textureFragmentShader.glsl");
-	//Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
-	//Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
 	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
 	Shader modelBPShader("modelBPVertexShader.glsl", "modelBPFragmentShader.glsl");
 	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelFragmentShader.glsl");
-	//GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
 
 	std::vector<Shader> updatableShaders;
 
-	//updatableShaders.push_back(texturedShader);
-	//updatableShaders.push_back(solidShader);
-	//updatableShaders.push_back(simpleShader);
 	updatableShaders.push_back(modelShader);
 	updatableShaders.push_back(modelBPShader);
 	updatableShaders.push_back(instanceModelShader);
-	//updatableShaders.push_back(geometryShader);
 
-	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), prevLightColor = lightColor;
+	glm::vec4 color(1.00f, 1.00f, 1.00f, 1.00f), clearColor(0.352f, 0.392f, 0.92f, 1.00f), lightColor(1.00f, 1.00f, 1.00f, 1.00f), prevLightColor = lightColor;
 	const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 
 	GraphNode graphRoot;
@@ -198,6 +193,18 @@ int main(int, char**) {
 	int width = 5, length = 8, offsetSize = width * length;
 	glm::vec3 *offsets = createHorizontalTransformArray(width, length, glm::vec2(-0.5f, -0.5f), glm::vec2(0.5f, 0.5f), 0.0f);
 
+	std::vector<DirLight*> dirLights;
+	std::vector<PointLight*> pointLights;
+	std::vector<SpotLight*> spotLights;
+
+	DirLight dir1;
+	dir1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	dir1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	dir1.diffuse = lightColor;
+	dir1.direction = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+	dir1.model = glm::mat4(1.0f);
+
+	dirLights.push_back(&dir1);
 
 	//ModelInstanced nanosuitInstance(instanceModelShader, "nanosuit\\nanosuit.obj", offsets, offsetSize);
 	Model nanosuit(modelShader, "nanosuit\\nanosuit.obj");
@@ -206,7 +213,7 @@ int main(int, char**) {
 	GraphNode nanosuitSingle(&nanosuit, &graphRoot);
 	nanosuitSingle.setScale(0.05f);
 
-	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
+	DirLightNode dirNode(&dir1, NULL, &graphRoot);
 
 	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
 
@@ -217,12 +224,17 @@ int main(int, char**) {
 	updatableMeshes.push_back(&nanosuit);
 
 	UboViewProjection uboViewProjection(camera.getView(), projection);
-	UboLight uboLight(lightPosition, lightColor);
+	//UboLight uboLight(lightPosition, lightColor);
 	UboTextureColor uboTextureColor(false, color);
+	int dirSize = dirLights.size(), pointSize = pointLights.size(), spotSize = spotLights.size();
+	DirLight **dirPointer = dirSize == 0 ? NULL : &dirLights[0];
+	PointLight **pointPointer = pointSize == 0 ? NULL : &pointLights[0];
+	SpotLight **spotPointer = spotSize == 0 ? NULL : &spotLights[0];
+	UboLights uboLights(dirSize, pointSize, spotSize, dirPointer, pointPointer, spotPointer);
 
 	for (int i = 0; i < updatableShaders.size(); i++) {
 		updatableShaders[i].bind(&uboViewProjection);
-		updatableShaders[i].bind(&uboLight);
+		updatableShaders[i].bind(&uboLights);
 		updatableShaders[i].bind(&uboTextureColor);
 	}
 
@@ -272,7 +284,7 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
-			ImGui::ColorEdit3("Light color", (float*)&lightColor);
+			ImGui::ColorEdit3("Light color", (float*)&dir1.diffuse);
 			ImGui::NewLine();
 			ImGui::Checkbox("Outline", &outline);
 			ImGui::ColorEdit3("Clear color", (float*)&clearColor);
@@ -287,6 +299,8 @@ int main(int, char**) {
 			model = glm::rotate(model, rotation.y, yAxis);
 			graphRoot.setLocal(model);
 		}
+
+		//dir1.direction = glm::rotate(dir1.direction, 0.008f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		if (shader != targetShader) {
 			shader = targetShader;
@@ -306,11 +320,6 @@ int main(int, char**) {
 			}
 		}
 
-		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
-			prevLightColor = lightColor;
-			uboLight.inject(lightPosition, lightColor);
-		}
-
 		//outputSize = ((sin(glfwGetTime()) + 1.0f)*(SMALLER_SIZE-50.0f) / 2.0f) + 50.0f;
 
 		// Rendering
@@ -328,6 +337,7 @@ int main(int, char**) {
 
 		uboViewProjection.inject(camera.getView(), projection);
 		uboTextureColor.inject(!shouldUseTexture, color);
+		uboLights.inject(dirSize, pointSize, spotSize, dirPointer, pointPointer, spotPointer);
 
 		for (int i = 0; i < updatableShaders.size(); i++) {
 			updatableShaders[i].setViewPosition(camera.getPos());

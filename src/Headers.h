@@ -26,6 +26,9 @@
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
+
+#include <glm/gtx/rotate_vector.hpp>
+
 static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max, float yPosition = 0.0f) {
 	glm::vec3 *result = new glm::vec3[width * length];
 	float firstX = width == 1 ? (max.x + min.x) / 2.0f : min.x;
@@ -41,34 +44,44 @@ static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec
 	return result;
 }
 
+#define DIRLIGHT_SIZE 4 * 4 * 4 + 4 * 4 * 4           // 4*vec4 + mat4
+
+#define POINTLIGHT_SIZE 4 * 4 + 4 * 4 * 4 + 4 * 4 * 4  // 4*float + 4*vec4 + mat4
+
+#define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4   // 5*float + 5*vec4 + mat4
+
 struct DirLight {
-	glm::vec3 direction;
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+	glm::vec4 direction;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+	glm::vec4 specular;
+	glm::mat4 model;
 };
 
 struct PointLight {
-	glm::vec3 position;
+	glm::vec4 position;
 	float constant;
 	float linear;
 	float quadratic;
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+	glm::vec4 specular;
+	glm::mat4 model;
+	float padding;
 };
 
 struct SpotLight {
-	glm::vec3 position;
-	glm::vec3 direction;
+	glm::vec4 position;
+	glm::vec4 direction;
 	float constant;
 	float linear;
 	float quadratic;
 	float cutOff;
 	float outerCutOff;
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+	glm::vec4 specular;
+	glm::mat4 model;
 };
 
 #endif
