@@ -176,6 +176,7 @@ int main(int, char**) {
 	//Shader solidShader("solidVertexShader.glsl", "solidFragmentShader.glsl");
 	//Shader simpleShader("simpleVertexShader.glsl", "simpleFragmentShader.glsl");
 	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
+	Shader modelBPShader("modelBPVertexShader.glsl", "modelBPFragmentShader.glsl");
 	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelFragmentShader.glsl");
 	GeometryShader geometryShader("cylinderVertexShader.glsl", "cylinderFragmentShader.glsl", "cylinderGeometryShader.glsl");
 
@@ -185,6 +186,7 @@ int main(int, char**) {
 	//updatableShaders.push_back(solidShader);
 	//updatableShaders.push_back(simpleShader);
 	updatableShaders.push_back(modelShader);
+	updatableShaders.push_back(modelBPShader);
 	updatableShaders.push_back(instanceModelShader);
 	updatableShaders.push_back(geometryShader);
 
@@ -211,6 +213,9 @@ int main(int, char**) {
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
 	glm::mat4 model(1.0f);
 
+	std::vector<Mesh*> updatableMeshes;
+	updatableMeshes.push_back(&nanosuit);
+
 	UboViewProjection uboViewProjection(camera.getView(), projection);
 	UboLight uboLight(lightPosition, lightColor);
 	UboTextureColor uboTextureColor(false, color);
@@ -236,6 +241,8 @@ int main(int, char**) {
 		static double glfwTime;
 		static double currentTime = 0.0f;
 		static float timeMultiplier = 0.1f;
+		static int shader = 0;
+		static int targetShader = shader + 1;
 
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
@@ -258,6 +265,8 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
 			ImGui::NewLine();
+			ImGui::SliderInt("Shader", &targetShader, 0, 2);
+			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
 			ImGui::ColorEdit3("Light color", (float*)&lightColor);
@@ -274,6 +283,24 @@ int main(int, char**) {
 			model = glm::rotate(model, rotation.x, xAxis);
 			model = glm::rotate(model, rotation.y, yAxis);
 			graphRoot.setLocal(model);
+		}
+
+		if (shader != targetShader) {
+			shader = targetShader;
+			Shader *s = NULL;
+			switch (shader) {
+				case 0:
+					s = &modelShader;
+					break;
+				case 1:
+					s = &modelBPShader;
+					break;
+			}
+			if (s != NULL) {
+				for (int i = 0; i < updatableMeshes.size(); i++) {
+					updatableMeshes[i]->setShader(*s);
+				}
+			}
 		}
 
 		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
