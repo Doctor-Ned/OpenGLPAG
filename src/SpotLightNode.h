@@ -7,9 +7,25 @@ class SpotLightNode : public GraphNode {
 public:
 	SpotLightNode(SpotLight *light, Mesh *mesh = NULL, GraphNode *parent = NULL);
 	virtual void update(double timeDiff);
+	void drawGui(bool autoUpdate = true);
 	SpotLight *getLight();
 protected:
 	SpotLight *light;
+	bool enabled = true;
+	glm::vec4 lastAmbient;
+	glm::vec4 lastDiffuse;
+	glm::vec4 lastSpecular;
+	float rotationZ;
+	float rotationY;
+	float appliedZ;
+	float appliedY;
+	glm::vec4 pos;
+	float constant;
+	float linear;
+	float quadratic;
+	float cutOff;
+	float outerCutOff;
+	bool lastEnabled;
 };
 
 #endif

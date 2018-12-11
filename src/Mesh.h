@@ -10,6 +10,8 @@ class Mesh {
 public:
 	void draw(glm::mat4 world);
 	void draw(glm::mat4 world, float scale);
+	void setUseLight(bool useLight);
+	bool getUseLight();
 	virtual void draw(Shader shader, glm::mat4 world, float scale = 1.0f) = 0;
 	virtual void drawGui(bool autoUpdate = true);
 	virtual void setShader(Shader shader);
@@ -20,6 +22,7 @@ protected:
 	GLuint VBO, EBO;
 	std::vector<unsigned int> indices;
 	Shader shader;
+	bool useLight = true;
 	virtual void setupMesh() = 0;
 };
 

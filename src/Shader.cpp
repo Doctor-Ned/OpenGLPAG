@@ -151,6 +151,30 @@ void Shader::setShininess(float shininess) {
 	*(this->shininess) = shininess;
 }
 
+void Shader::setUseSpecular(bool useSpecular) {
+	use();
+	if (this->useSpecularMap == NULL) {
+		this->useSpecularMap = new bool();
+	}
+	GLint location = getUniformLocation("useSpecularMap");
+	if (location != -1) {
+		glUniform1i(location, useSpecular ? 1 : 0);
+	}
+	*(this->useSpecularMap) = useSpecular;
+}
+
+void Shader::setUseLight(bool useLight) {
+	use();
+	if (this->useLight == NULL) {
+		this->useLight = new bool();
+	}
+	GLint location = getUniformLocation("useLight");
+	if (location != -1) {
+		glUniform1i(location, useLight ? 1 : 0);
+	}
+	*(this->useLight) = useLight;
+}
+
 bool Shader::getTextureDisabled() {
 	return *disableTexture;
 }
@@ -177,6 +201,14 @@ glm::vec3 Shader::getViewDirection() {
 
 bool Shader::getBlinnPhong() {
 	return blinnPhong;
+}
+
+bool Shader::getUseSpecular() {
+	return *useSpecularMap;
+}
+
+bool Shader::getUseLight() {
+	return *useLight;
 }
 
 float Shader::getShininess() {

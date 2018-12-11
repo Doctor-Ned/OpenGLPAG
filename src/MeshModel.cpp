@@ -9,6 +9,7 @@ void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);
 	shader.setModel(world);
+	shader.setUseLight(useLight);
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
 	GLuint normalNr = 1;
@@ -30,6 +31,8 @@ void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 		glUniform1i(shader.getUniformLocation((name + number).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
+
+	shader.setUseSpecular(specularNr > 1);
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

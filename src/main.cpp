@@ -18,6 +18,7 @@
 #include "DirLightNode.h"
 #include "PointLightNode.h"
 #include "SpotLightNode.h"
+#include "MeshPlane.h"
 
 #include <stb_image.h>
 
@@ -176,16 +177,17 @@ int main(int, char**) {
 
 
 	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0), zAxis(0, 0, 1);
 
 	//load shaders
 
-	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
+	//Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
 	Shader modelBPShader("modelBPVertexShader.glsl", "modelBPFragmentShader.glsl");
-	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelFragmentShader.glsl");
+	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelBPFragmentShader.glsl");
 
 	std::vector<Shader> updatableShaders;
 
-	updatableShaders.push_back(modelShader);
+	//updatableShaders.push_back(modelShader);
 	updatableShaders.push_back(modelBPShader);
 	updatableShaders.push_back(instanceModelShader);
 
@@ -205,27 +207,92 @@ int main(int, char**) {
 	dir1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	dir1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	dir1.diffuse = lightColor;
-	dir1.direction = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+	dir1.direction = glm::normalize(glm::vec4(0.0f, -1.0f, 0.0f, 1.0f));
 	dir1.model = glm::mat4(1.0f);
 
 	dirLights.push_back(&dir1);
 
+	PointLight point1, point2;
+	point1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	point1.diffuse = lightColor;
+	point1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	point1.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	point1.model = glm::mat4(1.0f);
+	point1.constant = 1.0f;
+	point1.linear = 2.0f;
+	point1.quadratic = 3.0f;
+	
+	point2 = point1;
+
+	pointLights.push_back(&point1);
+	//pointLights.push_back(&point2);
+
+	SpotLight spot1, spot2;
+	spot1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	spot1.diffuse = lightColor;
+	spot1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	spot1.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	spot1.direction = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+	spot1.model = glm::mat4(1.0f);
+	spot1.constant = 1.0f;
+	spot1.linear = 2.0f;
+	spot1.quadratic = 3.0f;
+	spot1.cutOff = 1.0f;
+	spot1.outerCutOff = 2.0f;
+
+	spot2 = spot1;
+
+	spotLights.push_back(&spot1);
+	//spotLights.push_back(&spot2);
+
 	//ModelInstanced nanosuitInstance(instanceModelShader, "nanosuit\\nanosuit.obj", offsets, offsetSize);
-	Model nanosuit(modelShader, "nanosuit\\nanosuit.obj");
+	Model nanosuit(modelBPShader, "nanosuit\\nanosuit.obj");
+	glm::vec3 *cabinOffsets = createHorizontalTransformArray(14, 7, glm::vec2(-8.0f, -12.0f), glm::vec2(8.0f, 12.0f), 0.0f);
+	ModelInstanced cabin(instanceModelShader, "cabin\\cabin.obj", cabinOffsets, 14 * 7);
+
+	MeshSphere pointMesh(modelBPShader, 0.2f, 8, "red.jpg");
+	pointMesh.setUseLight(false);
+
+	MeshCone reflector(modelBPShader, 0.1f, 0.3f, 8, "red.jpg");
+	reflector.setUseLight(false);
+
+
 	//GraphNode nanosuitNode(&nanosuitInstance, &graphRoot);
 	//nanosuitNode.setScale(0.25f);
+
+	MeshPlane plane(modelBPShader, 30.0f, 30.0f, "grass.jpg");
+	//plane.setUseLight(false);
+
 	GraphNode nanosuitSingle(&nanosuit, &graphRoot);
 	nanosuitSingle.setScale(0.05f);
 
+	GraphNode cabins(&cabin, &graphRoot);
+	cabins.setScale(0.01f);
+
 	DirLightNode dirNode(&dir1, NULL, &graphRoot);
 
-	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0);
+
+	PointLightNode point1Node(&point1, &pointMesh, &graphRoot);
+	//PointLightNode point2Node(&point1, &pointMesh, &graphRoot);
+
+
+	SpotLightNode spot1Node(&spot1, NULL, &graphRoot);
+	//SpotLightNode spot2Node(&spot2, NULL, &graphRoot);
+	GraphNode refl1Node(&reflector, &spot1Node);
+	//GraphNode refl2Node(&reflector, &spot2Node);
+
+	//refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
+	//refl2Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
+
+	GraphNode planeNode(&plane, &graphRoot);
+
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SMALLER_SIZE / (float)SMALLER_SIZE, 0.1f, 100.0f);
 	glm::mat4 model(1.0f);
 
 	std::vector<Mesh*> updatableMeshes;
 	updatableMeshes.push_back(&nanosuit);
+	updatableMeshes.push_back(&plane);
 
 	UboViewProjection uboViewProjection(camera.getView(), projection);
 	UboLight uboLight(lightPosition, lightColor);
@@ -276,24 +343,28 @@ int main(int, char**) {
 				outputSize = targetSize;
 			}
 			ImGui::NewLine();
-			ImGui::NewLine();
 			ImGui::Checkbox("Auto-update", &shouldAutoUpdate);
 			ImGui::NewLine();
-			ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
+			dirNode.drawGui(shouldAutoUpdate);
+			point1Node.drawGui(shouldAutoUpdate);
+			//point2Node.drawGui(shouldAutoUpdate);
+			spot1Node.drawGui(shouldAutoUpdate);
+			//spot2Node.drawGui(shouldAutoUpdate);
+			//ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Time multiplier", &timeMultiplier, 0.0f, 10.0f);
 			ImGui::NewLine();
 			ImGui::SliderFloat("Shininess", &shininess, 0.0f, 128.0f);
 			ImGui::NewLine();
-			ImGui::SliderInt("Shader", &targetShader, 0, 2);
-			ImGui::NewLine();
+			//ImGui::SliderInt("Shader", &targetShader, 0, 1);
+			//ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
 			ImGui::Checkbox("Blinn Phong (Lambert otherwise)", &blinnPhong);
 			ImGui::NewLine();
-			ImGui::ColorEdit3("Light color", (float*)&dir1.diffuse);
-			ImGui::NewLine();
+			//ImGui::ColorEdit3("Light color", (float*)&dir1.diffuse);
+			//ImGui::NewLine();
 			ImGui::Checkbox("Outline", &outline);
 			ImGui::ColorEdit3("Clear color", (float*)&clearColor);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -320,9 +391,6 @@ int main(int, char**) {
 			Shader *s = NULL;
 			switch (shader) {
 				case 0:
-					s = &modelShader;
-					break;
-				case 1:
 					s = &modelBPShader;
 					break;
 			}

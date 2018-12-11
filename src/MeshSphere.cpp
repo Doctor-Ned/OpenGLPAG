@@ -11,6 +11,8 @@ void MeshSphere::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);
 	shader.setModel(world);
+	shader.setUseLight(useLight);
+	shader.setUseSpecular(false);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
 	glBindVertexArray(VAO);
 	glBindVertexBuffer(0, VBO, 0, sizeof(TextureVertex));

@@ -66,6 +66,8 @@ uniform sampler2D texture_specular1;
 uniform float shininess;
 uniform mat4 model;
 uniform int blinnPhong;
+uniform int useSpecularMap;
+uniform int useLight;
 
 out vec4 outColor;
 
@@ -119,9 +121,10 @@ void main() {
 	vec3 diffuse = color.rgb;
 	if(!disableTexture) diffuse *= texture(texture_diffuse1, fs_in.texCoords).rgb;
     vec3 ambient = 0.05 * diffuse;
-
-	if(blinnPhong > 0) {
-		vec3 specular = texture(texture_specular1, fs_in.texCoords).rgb;
+	if(useLight == 0) {
+		outColor = vec4(ambient + diffuse, 1.0f);
+	} else if(blinnPhong > 0) {
+		vec3 specular = useSpecularMap > 0 ? texture(texture_specular1, fs_in.texCoords).rgb : vec3(0.5f);
 		vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
 		vec3 color = vec3(0.0f);
@@ -130,10 +133,10 @@ void main() {
 			color += calcDirLight(dirLights[i], diffuse, specular, viewDir);
 		}
 		for(int i=0;i<pointLightAmount;i++) {
-			color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
+			//color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
 		}
 		for(int i=0;i<spotLightAmount;i++) {
-			color += calcSpotLight(spotLights[i], diffuse, specular, viewDir);
+			//color += calcSpotLight(spotLights[i], diffuse, specular, viewDir);
 		}
 
 		outColor = vec4(color, 1.0f);

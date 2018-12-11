@@ -19,6 +19,8 @@ public:
 	void setViewDirection(glm::vec3 viewDirection);
 	void setBlinnPhong(bool blinnPhong);
 	void setShininess(float shininess);
+	void setUseSpecular(bool useSpecular);
+	void setUseLight(bool useLight);
 	bool getTextureDisabled();
 	float getScale();
 	glm::vec4 getColor();
@@ -26,6 +28,8 @@ public:
 	glm::vec3 getViewPosition();
 	glm::vec3 getViewDirection();
 	bool getBlinnPhong();
+	bool getUseSpecular();
+	bool getUseLight();
 	float getShininess();
 	virtual void bind(Ubo *ubo);
 	GLint getUniformLocation(const char *name);
@@ -44,7 +48,7 @@ protected:
 	glm::vec3 *viewPosition = NULL, *viewDirection = NULL;
 	float *scale = NULL;
 	float *shininess = NULL;
-	bool *disableTexture = NULL, *blinnPhong = NULL;
+	bool *disableTexture = NULL, *blinnPhong = NULL, *useSpecularMap = NULL, *useLight = NULL;
 };
 
 #endif

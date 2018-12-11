@@ -37,7 +37,7 @@ static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec
 	float zStep = length == 1 ? 0.0f : (max.y - min.y) / (float)(length - 1);
 	int counter = 0;
 	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < width; j++) {
+		for (int j = 0; j < length; j++) {
 			result[counter++] = glm::vec3(i*xStep + firstX, yPosition, j*zStep + firstZ);
 		}
 	}

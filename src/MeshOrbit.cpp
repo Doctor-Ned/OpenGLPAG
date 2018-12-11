@@ -2,6 +2,7 @@
 
 MeshOrbit::MeshOrbit(Shader shader, glm::vec3 color, float radius, int sideAmount)
 	: radius(radius), sideAmount(sideAmount), MeshSolid(shader, color) {
+	useLight = false;
 	setupMesh();
 }
 
@@ -9,6 +10,7 @@ void MeshOrbit::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
 	shader.setScale(scale);
 	shader.setModel(world);
+	shader.setUseLight(useLight);
 	glBindVertexArray(VAO);
 	glBindVertexBuffer(0, VBO, 0, sizeof(Vertex));
 	glDrawArrays(GL_LINES, 0, sideAmount * 2);

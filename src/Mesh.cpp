@@ -5,6 +5,12 @@ void Mesh::draw(glm::mat4 world) {
 void Mesh::draw(glm::mat4 world, float scale) {
 	draw(shader, world, scale);
 }
+void Mesh::setUseLight(bool useLight) {
+	this->useLight = useLight;
+}
+bool Mesh::getUseLight() {
+	return useLight;
+}
 void Mesh::drawGui(bool autoUpdate) {}
 void Mesh::setShader(Shader shader) {
 	this->shader = shader;
