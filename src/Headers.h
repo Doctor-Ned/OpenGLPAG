@@ -44,11 +44,13 @@ static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec
 	return result;
 }
 
+#define MAX_LIGHTS_OF_TYPE 16          // this MUST be identical to the value from the shader
+
 #define DIRLIGHT_SIZE 4 * 4 * 4 + 4 * 4 * 4           // 4*vec4 + mat4
 
 #define POINTLIGHT_SIZE 4 * 4 + 4 * 4 * 4 + 4 * 4 * 4  // 4*float + 4*vec4 + mat4
 
-#define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4   // 5*float + 5*vec4 + mat4
+#define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4 + 4 * 3   // 5*float + 5*vec4 + mat4 + vec3
 
 struct DirLight {
 	glm::vec4 direction;
@@ -63,25 +65,26 @@ struct PointLight {
 	float constant;
 	float linear;
 	float quadratic;
+	float padding;
 	glm::vec4 ambient;
 	glm::vec4 diffuse;
 	glm::vec4 specular;
 	glm::mat4 model;
-	float padding;
 };
 
 struct SpotLight {
 	glm::vec4 position;
 	glm::vec4 direction;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+	glm::vec4 specular;
+	glm::mat4 model;
+	glm::vec3 padding;
 	float constant;
 	float linear;
 	float quadratic;
 	float cutOff;
 	float outerCutOff;
-	glm::vec4 ambient;
-	glm::vec4 diffuse;
-	glm::vec4 specular;
-	glm::mat4 model;
 };
 
 #endif

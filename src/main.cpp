@@ -1,5 +1,7 @@
 #include "UboLight.h"
-#include "UboLights.h"
+#include "UboDirLights.h"
+#include "UboPointLights.h"
+#include "UboSpotLights.h"
 #include "UboViewProjection.h"
 #include "UboTextureColor.h"
 #include <cstdio>
@@ -206,7 +208,7 @@ int main(int, char**) {
 	DirLight dir1;
 	dir1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	dir1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	dir1.diffuse = lightColor;
+	dir1.diffuse = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
 	dir1.direction = glm::normalize(glm::vec4(0.0f, -1.0f, 0.0f, 1.0f));
 	dir1.model = glm::mat4(1.0f);
 
@@ -214,13 +216,13 @@ int main(int, char**) {
 
 	PointLight point1, point2;
 	point1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	point1.diffuse = lightColor;
+	point1.diffuse = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
 	point1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	point1.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	point1.model = glm::mat4(1.0f);
-	point1.constant = 1.0f;
-	point1.linear = 2.0f;
-	point1.quadratic = 3.0f;
+	point1.constant = 0.38f;
+	point1.linear = 0.42f;
+	point1.quadratic = 0.18f;
 	
 	point2 = point1;
 
@@ -231,14 +233,14 @@ int main(int, char**) {
 	spot1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	spot1.diffuse = lightColor;
 	spot1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	spot1.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	spot1.direction = glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+	spot1.position = glm::vec4(0.95f, 0.95f, 0.95f, 1.0f);
+	spot1.direction = glm::vec4(0.0f, -1.0f, 0.0f, 1.0f);
 	spot1.model = glm::mat4(1.0f);
-	spot1.constant = 1.0f;
-	spot1.linear = 2.0f;
-	spot1.quadratic = 3.0f;
-	spot1.cutOff = 1.0f;
-	spot1.outerCutOff = 2.0f;
+	spot1.constant = 0.18f;
+	spot1.linear = 0.1f;
+	spot1.quadratic = 0.1f;
+	spot1.cutOff = glm::radians(15.0f);
+	spot1.outerCutOff = glm::radians(28.0f);
 
 	spot2 = spot1;
 
@@ -277,11 +279,13 @@ int main(int, char**) {
 
 
 	SpotLightNode spot1Node(&spot1, NULL, &graphRoot);
+	spot1Node.rotationZ = glm::radians(43.0f);
+	spot1Node.rotationX = glm::radians(38.0f);
 	//SpotLightNode spot2Node(&spot2, NULL, &graphRoot);
 	GraphNode refl1Node(&reflector, &spot1Node);
 	//GraphNode refl2Node(&reflector, &spot2Node);
 
-	refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
+	refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI, zAxis));
 	//refl2Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
 
 	GraphNode planeNode(&plane, &graphRoot);
@@ -301,12 +305,17 @@ int main(int, char**) {
 	DirLight **dirPointer = dirSize == 0 ? NULL : &dirLights[0];
 	PointLight **pointPointer = pointSize == 0 ? NULL : &pointLights[0];
 	SpotLight **spotPointer = spotSize == 0 ? NULL : &spotLights[0];
-	UboLights uboLights(dirSize, pointSize, spotSize, dirPointer, pointPointer, spotPointer);
+	UboDirLights uboDirLights(dirSize, dirPointer);
+	UboPointLights uboPointLights(pointSize, pointPointer);
+	UboSpotLights uboSpotLights(spotSize, spotPointer);
+	//UboLights uboLights(dirSize, pointSize, spotSize, dirPointer, pointPointer, spotPointer);
 
 	for (int i = 0; i < updatableShaders.size(); i++) {
 		updatableShaders[i].bind(&uboViewProjection);
 		updatableShaders[i].bind(&uboLight);
-		updatableShaders[i].bind(&uboLights);
+		updatableShaders[i].bind(&uboDirLights);
+		updatableShaders[i].bind(&uboPointLights);
+		updatableShaders[i].bind(&uboSpotLights);
 		updatableShaders[i].bind(&uboTextureColor);
 	}
 
@@ -418,7 +427,10 @@ int main(int, char**) {
 
 		uboViewProjection.inject(camera.getView(), projection);
 		uboTextureColor.inject(!shouldUseTexture, color);
-		uboLights.inject(dirSize, pointSize, spotSize, dirPointer, pointPointer, spotPointer);
+		uboDirLights.inject(dirSize, dirPointer);
+		uboPointLights.inject(pointSize, pointPointer);
+		uboSpotLights.inject(spotSize, spotPointer);
+
 
 		for (int i = 0; i < updatableShaders.size(); i++) {
 			updatableShaders[i].setViewPosition(camera.getPos());

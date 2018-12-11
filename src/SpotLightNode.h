@@ -9,16 +9,16 @@ public:
 	virtual void update(double timeDiff);
 	void drawGui(bool autoUpdate = true);
 	SpotLight *getLight();
+	float rotationZ;
+	float rotationX;
 protected:
 	SpotLight *light;
 	bool enabled = true;
 	glm::vec4 lastAmbient;
 	glm::vec4 lastDiffuse;
 	glm::vec4 lastSpecular;
-	float rotationZ;
-	float rotationY;
 	float appliedZ;
-	float appliedY;
+	float appliedX;
 	glm::vec4 pos;
 	float constant;
 	float linear;
