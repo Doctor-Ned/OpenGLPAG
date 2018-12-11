@@ -9,6 +9,8 @@ public:
 	void update(double timeDiff);
 	void draw() { GraphNode::draw(); };
 	void setOrbitSpeed(float orbitSpeed);
+	void setAngle(float angle);
+	float getAngle();
 private:
 	float angle;
 	float orbitSpeed;

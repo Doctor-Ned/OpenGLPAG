@@ -47,6 +47,7 @@ void MeshSphere::updateValues(float radius, int precision) {
 }
 
 void MeshSphere::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	static float _radius = radius;
 	static int _precision = precision;
 	ImGui::SliderFloat("Sphere radius", &_radius, 0.01f, 2.0f);
@@ -61,6 +62,7 @@ void MeshSphere::drawGui(bool autoUpdate) {
 			updateValues(radius, precision);
 		}
 	}
+	ImGui::PopID();
 }
 
 void MeshSphere::createSphereSegment(std::vector<TextureVertex>* vertices, float angle, float radStep) {

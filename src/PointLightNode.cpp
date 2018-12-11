@@ -14,6 +14,7 @@ void PointLightNode::update(double timeDiff) {
 }
 
 void PointLightNode::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	ImGui::Checkbox("PointLight enabled", &lastEnabled);
 	ImGui::NewLine();
 	if (lastEnabled) {
@@ -53,6 +54,7 @@ void PointLightNode::drawGui(bool autoUpdate) {
 			}
 		}
 	}
+	ImGui::PopID();
 }
 
 PointLight * PointLightNode::getLight() {

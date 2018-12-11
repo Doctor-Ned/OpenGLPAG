@@ -54,6 +54,7 @@ void MeshCone::updateValues(float radius, float height, int sideAmount) {
 }
 
 void MeshCone::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	static float _radius = radius;
 	static float _height = height;
 	static int _sideAmount = sideAmount;
@@ -72,6 +73,7 @@ void MeshCone::drawGui(bool autoUpdate) {
 			updateValues(radius, height, sideAmount);
 		}
 	}
+	ImGui::PopID();
 }
 
 void MeshCone::createBottomTriangle(std::vector<TextureVertex>* vertices, float angle1, float angle2) {

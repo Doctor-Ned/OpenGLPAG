@@ -223,15 +223,17 @@ int main(int, char**) {
 	point1.constant = 0.38f;
 	point1.linear = 0.42f;
 	point1.quadratic = 0.18f;
-	
+
 	point2 = point1;
 
+	point2.diffuse = glm::vec4(0.5f, 0.5f, 0.0f, 1.0f);
+
 	pointLights.push_back(&point1);
-	//pointLights.push_back(&point2);
+	pointLights.push_back(&point2);
 
 	SpotLight spot1, spot2;
 	spot1.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	spot1.diffuse = lightColor;
+	spot1.diffuse = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	spot1.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	spot1.position = glm::vec4(0.95f, 0.95f, 0.95f, 1.0f);
 	spot1.direction = glm::vec4(0.0f, -1.0f, 0.0f, 1.0f);
@@ -242,51 +244,70 @@ int main(int, char**) {
 	spot1.cutOff = glm::radians(15.0f);
 	spot1.outerCutOff = glm::radians(28.0f);
 
-	spot2 = spot1;
+	*(&spot2) = *(&spot1);
+
+	spot2.diffuse = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+	spot2.position = glm::vec4(0.95f, 1.67f, -0.48f, 1.0f);
+	spot2.direction = glm::vec4(0.0f, -1.0f, 0.0f, 1.0f);
+	spot2.constant = 0.18f;
+	spot2.linear = 0.1f;
+	spot2.quadratic = 0.1f;
+	spot2.cutOff = glm::radians(6.0f);
+	spot2.outerCutOff = glm::radians(19.0f);
 
 	spotLights.push_back(&spot1);
-	//spotLights.push_back(&spot2);
+	spotLights.push_back(&spot2);
 
 	//ModelInstanced nanosuitInstance(instanceModelShader, "nanosuit\\nanosuit.obj", offsets, offsetSize);
 	Model nanosuit(modelBPShader, "nanosuit\\nanosuit.obj");
 	glm::vec3 *cabinOffsets = createHorizontalTransformArray(14, 7, glm::vec2(-8.0f, -12.0f), glm::vec2(8.0f, 12.0f), 0.0f);
 	ModelInstanced cabin(instanceModelShader, "cabin\\cabin.obj", cabinOffsets, 14 * 7);
+	Model cat(modelBPShader, "cat\\cat.obj");
 
-	MeshSphere pointMesh(modelBPShader, 0.2f, 8, "red.jpg");
+	MeshSphere pointMesh(modelBPShader, 0.05f, 20, "red.jpg");
 	pointMesh.setUseLight(false);
 
-	MeshCone reflector(modelBPShader, 0.1f, 0.3f, 8, "red.jpg");
+	MeshCone reflector(modelBPShader, 0.05f, 0.2f, 20, "red.jpg");
 	reflector.setUseLight(false);
 
-
-	//GraphNode nanosuitNode(&nanosuitInstance, &graphRoot);
-	//nanosuitNode.setScale(0.25f);
-
-	MeshPlane plane(modelBPShader, 30.0f, 30.0f, "grass.jpg");
+	MeshPlane plane(modelBPShader, 40.0f, 40.0f, "grass.jpg");
 	//plane.setUseLight(false);
 
-	GraphNode nanosuitSingle(&nanosuit, &graphRoot);
-	nanosuitSingle.setScale(0.05f);
+	GraphNode suitNode(&nanosuit, &graphRoot);
+	suitNode.setScale(0.05f);
+
+	GraphNode catNode(&cat, &graphRoot);
+	catNode.setScale(0.55f);
+	catNode.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, -1.3f)));
 
 	GraphNode cabins(&cabin, &graphRoot);
 	cabins.setScale(0.01f);
 
 	DirLightNode dirNode(&dir1, NULL, &graphRoot);
 
+	OrbitNode orbit(NULL, &graphRoot);
+	orbit.setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	PointLightNode point1Node(&point1, &pointMesh, &graphRoot);
-	//PointLightNode point2Node(&point1, &pointMesh, &graphRoot);
+	OrbitingNode orb1(&orbit, 5.0f), orb2(&orbit, 5.0f);
+	orb2.setAngle(glm::radians(180.0f));
 
+	PointLightNode point1Node(&point1, &pointMesh, &orb1);
+	PointLightNode point2Node(&point2, &pointMesh, &orb2);
+
+
+	
 
 	SpotLightNode spot1Node(&spot1, NULL, &graphRoot);
 	spot1Node.rotationZ = glm::radians(43.0f);
 	spot1Node.rotationX = glm::radians(38.0f);
-	//SpotLightNode spot2Node(&spot2, NULL, &graphRoot);
+	SpotLightNode spot2Node(&spot2, NULL, &graphRoot);
+	spot2Node.rotationZ = glm::radians(-13.0f);
+	spot2Node.rotationX = glm::radians(23.0f);
 	GraphNode refl1Node(&reflector, &spot1Node);
-	//GraphNode refl2Node(&reflector, &spot2Node);
+	GraphNode refl2Node(&reflector, &spot2Node);
 
 	refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI, zAxis));
-	//refl2Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
+	refl2Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI, zAxis));
 
 	GraphNode planeNode(&plane, &graphRoot);
 
@@ -356,9 +377,9 @@ int main(int, char**) {
 			ImGui::NewLine();
 			dirNode.drawGui(shouldAutoUpdate);
 			point1Node.drawGui(shouldAutoUpdate);
-			//point2Node.drawGui(shouldAutoUpdate);
+			point2Node.drawGui(shouldAutoUpdate);
 			spot1Node.drawGui(shouldAutoUpdate);
-			//spot2Node.drawGui(shouldAutoUpdate);
+			spot2Node.drawGui(shouldAutoUpdate);
 			//ImGui::SliderAngle("X rotation", &(rotation.x), -180.0f, 180.0f);
 			ImGui::SliderAngle("Y rotation", &(rotation.y), -180.0f, 180.0f);
 			ImGui::NewLine();

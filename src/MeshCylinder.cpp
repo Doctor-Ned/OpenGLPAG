@@ -55,6 +55,7 @@ void MeshCylinder::updateValues(float radius, float height, int sideAmount) {
 }
 
 void MeshCylinder::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	static float _radius = radius;
 	static float _height = height;
 	static int _sideAmount = sideAmount;
@@ -73,6 +74,7 @@ void MeshCylinder::drawGui(bool autoUpdate) {
 			updateValues(radius, height, sideAmount);
 		}
 	}
+	ImGui::PopID();
 }
 
 void MeshCylinder::createBottomTriangle(std::vector<TextureVertex>* vertices, float angle1, float angle2) {

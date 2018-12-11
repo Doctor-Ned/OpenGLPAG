@@ -14,3 +14,11 @@ void OrbitingNode::update(double timeDiff) {
 void OrbitingNode::setOrbitSpeed(float orbitSpeed) {
 	this->orbitSpeed = orbitSpeed;
 }
+
+void OrbitingNode::setAngle(float angle) {
+	this->angle = angle;
+}
+
+float OrbitingNode::getAngle() {
+	return angle;
+}

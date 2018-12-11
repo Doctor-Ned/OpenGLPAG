@@ -51,6 +51,7 @@ void MeshTorus::updateValues(float radiusIn, float radiusOut, int sideAmount) {
 }
 
 void MeshTorus::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	static float _radiusIn = radiusIn;
 	static float _radiusOut = radiusOut;
 	static int _sideAmount = sideAmount;
@@ -72,6 +73,7 @@ void MeshTorus::drawGui(bool autoUpdate) {
 			updateValues(radiusIn, radiusOut, sideAmount);
 		}
 	}
+	ImGui::PopID();
 }
 
 void MeshTorus::createTorusSegment(std::vector<TextureVertex>* vertices, float angle, float radStep) {

@@ -14,6 +14,7 @@ void DirLightNode::update(double timeDiff) {
 }
 
 void DirLightNode::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	ImGui::Checkbox("DirLight enabled", &lastEnabled);
 	ImGui::NewLine();
 	if (lastEnabled) {
@@ -51,6 +52,7 @@ void DirLightNode::drawGui(bool autoUpdate) {
 			}
 		}
 	}
+	ImGui::PopID();
 }
 
 DirLight * DirLightNode::getLight() {

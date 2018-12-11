@@ -20,6 +20,7 @@ void SpotLightNode::update(double timeDiff) {
 }
 
 void SpotLightNode::drawGui(bool autoUpdate) {
+	ImGui::PushID((uintptr_t)this);
 	ImGui::Checkbox("SpotLight enabled", &lastEnabled);
 	ImGui::NewLine();
 	if (lastEnabled) {
@@ -78,6 +79,7 @@ void SpotLightNode::drawGui(bool autoUpdate) {
 			}
 		}
 	}
+	ImGui::PopID();
 }
 
 SpotLight * SpotLightNode::getLight() {
