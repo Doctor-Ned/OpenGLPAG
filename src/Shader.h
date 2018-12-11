@@ -17,6 +17,7 @@ public:
 	void setModel(glm::mat4 model);
 	void setViewPosition(glm::vec3 viewPosition);
 	void setViewDirection(glm::vec3 viewDirection);
+	void setBlinnPhong(bool blinnPhong);
 	void setShininess(float shininess);
 	bool getTextureDisabled();
 	float getScale();
@@ -24,6 +25,7 @@ public:
 	glm::mat4 getModel();
 	glm::vec3 getViewPosition();
 	glm::vec3 getViewDirection();
+	bool getBlinnPhong();
 	float getShininess();
 	virtual void bind(Ubo *ubo);
 	GLint getUniformLocation(const char *name);
@@ -42,7 +44,7 @@ protected:
 	glm::vec3 *viewPosition = NULL, *viewDirection = NULL;
 	float *scale = NULL;
 	float *shininess = NULL;
-	bool *disableTexture = NULL;
+	bool *disableTexture = NULL, *blinnPhong = NULL;
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include "UboLight.h"
 #include "UboLights.h"
 #include "UboViewProjection.h"
 #include "UboTextureColor.h"
@@ -173,6 +174,9 @@ int main(int, char**) {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
+
+	glm::vec4 lightPosition(1.0f, 1.0f, 1.0f, 1.0f);
+
 	//load shaders
 
 	Shader modelShader("modelVertexShader.glsl", "modelFragmentShader.glsl");
@@ -224,7 +228,7 @@ int main(int, char**) {
 	updatableMeshes.push_back(&nanosuit);
 
 	UboViewProjection uboViewProjection(camera.getView(), projection);
-	//UboLight uboLight(lightPosition, lightColor);
+	UboLight uboLight(lightPosition, lightColor);
 	UboTextureColor uboTextureColor(false, color);
 	int dirSize = dirLights.size(), pointSize = pointLights.size(), spotSize = spotLights.size();
 	DirLight **dirPointer = dirSize == 0 ? NULL : &dirLights[0];
@@ -234,6 +238,7 @@ int main(int, char**) {
 
 	for (int i = 0; i < updatableShaders.size(); i++) {
 		updatableShaders[i].bind(&uboViewProjection);
+		updatableShaders[i].bind(&uboLight);
 		updatableShaders[i].bind(&uboLights);
 		updatableShaders[i].bind(&uboTextureColor);
 	}
@@ -256,6 +261,7 @@ int main(int, char**) {
 		static int shader = 0;
 		static int targetShader = shader + 1;
 		static float shininess = 16.0f;
+		static bool blinnPhong = true;
 
 		glfwTime = glfwGetTime();
 		timeDelta = glfwTime - currentTime;
@@ -284,6 +290,8 @@ int main(int, char**) {
 			ImGui::NewLine();
 			ImGui::Checkbox("Use texture", &shouldUseTexture);
 			ImGui::NewLine();
+			ImGui::Checkbox("Blinn Phong (Lambert otherwise)", &blinnPhong);
+			ImGui::NewLine();
 			ImGui::ColorEdit3("Light color", (float*)&dir1.diffuse);
 			ImGui::NewLine();
 			ImGui::Checkbox("Outline", &outline);
@@ -298,6 +306,11 @@ int main(int, char**) {
 			model = glm::rotate(model, rotation.x, xAxis);
 			model = glm::rotate(model, rotation.y, yAxis);
 			graphRoot.setLocal(model);
+		}
+
+		if (glm::any(glm::notEqual(lightColor, prevLightColor))) {
+			prevLightColor = lightColor;
+			uboLight.inject(lightPosition, lightColor);
 		}
 
 		//dir1.direction = glm::rotate(dir1.direction, 0.008f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -342,6 +355,7 @@ int main(int, char**) {
 		for (int i = 0; i < updatableShaders.size(); i++) {
 			updatableShaders[i].setViewPosition(camera.getPos());
 			updatableShaders[i].setShininess(shininess);
+			updatableShaders[i].setBlinnPhong(blinnPhong);
 		}
 
 		graphRoot.update(timeDelta * timeMultiplier);

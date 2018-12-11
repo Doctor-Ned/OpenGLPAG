@@ -49,6 +49,10 @@ layout (std140) uniform Lights {
 	PointLight pointLights[MAX_LIGHTS_OF_TYPE];
 	SpotLight spotLights[MAX_LIGHTS_OF_TYPE];
 };
+layout (std140) uniform Light {
+	vec4 lightPosition;
+	vec4 lightColor;
+};
 
 in VS_OUT {
 	vec3 pos;
@@ -61,6 +65,7 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform float shininess;
 uniform mat4 model;
+uniform int blinnPhong;
 
 out vec4 outColor;
 
@@ -114,20 +119,28 @@ void main() {
 	vec3 diffuse = color.rgb;
 	if(!disableTexture) diffuse *= texture(texture_diffuse1, fs_in.texCoords).rgb;
     vec3 ambient = 0.05 * diffuse;
-    vec3 specular = texture(texture_specular1, fs_in.texCoords).rgb;
-	vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
-	vec3 color = vec3(0.0f);
+	if(blinnPhong > 0) {
+		vec3 specular = texture(texture_specular1, fs_in.texCoords).rgb;
+		vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
-	for(int i=0;i<dirLightAmount;i++) {
-		color += calcDirLight(dirLights[i], diffuse, specular, viewDir);
-	}
-	for(int i=0;i<pointLightAmount;i++) {
-		color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
-	}
-	for(int i=0;i<spotLightAmount;i++) {
-		color += calcSpotLight(spotLights[i], diffuse, specular, viewDir);
-	}
+		vec3 color = vec3(0.0f);
 
-    outColor = vec4(color, 1.0f);
+		for(int i=0;i<dirLightAmount;i++) {
+			color += calcDirLight(dirLights[i], diffuse, specular, viewDir);
+		}
+		for(int i=0;i<pointLightAmount;i++) {
+			color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
+		}
+		for(int i=0;i<spotLightAmount;i++) {
+			color += calcSpotLight(spotLights[i], diffuse, specular, viewDir);
+		}
+
+		outColor = vec4(color, 1.0f);
+	} else {
+		vec3 lightDirection = normalize(vec3(lightPosition) - fs_in.pos);
+		float diff = max(dot(fs_in.normal, lightDirection), 0.0f);
+		diffuse *= diff * vec3(lightColor);
+		outColor = vec4(ambient + diffuse, 1.0f);
+	}
 }

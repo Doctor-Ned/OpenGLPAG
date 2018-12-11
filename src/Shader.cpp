@@ -127,6 +127,18 @@ void Shader::setViewDirection(glm::vec3 viewDirection) {
 	*(this->viewDirection) = viewDirection;
 }
 
+void Shader::setBlinnPhong(bool blinnPhong) {
+	use();
+	if (this->blinnPhong == NULL) {
+		this->blinnPhong = new bool();
+	}
+	GLint location = getUniformLocation("blinnPhong");
+	if (location != -1) {
+		glUniform1i(location, blinnPhong ? 1 : 0);
+	}
+	*(this->blinnPhong) = blinnPhong;
+}
+
 void Shader::setShininess(float shininess) {
 	use();
 	if (this->shininess == NULL) {
@@ -161,6 +173,10 @@ glm::vec3 Shader::getViewPosition() {
 
 glm::vec3 Shader::getViewDirection() {
 	return *viewDirection;
+}
+
+bool Shader::getBlinnPhong() {
+	return blinnPhong;
 }
 
 float Shader::getShininess() {
