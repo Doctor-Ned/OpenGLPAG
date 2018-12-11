@@ -281,7 +281,7 @@ int main(int, char**) {
 	GraphNode refl1Node(&reflector, &spot1Node);
 	//GraphNode refl2Node(&reflector, &spot2Node);
 
-	//refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
+	refl1Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
 	//refl2Node.setLocal(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, zAxis));
 
 	GraphNode planeNode(&plane, &graphRoot);

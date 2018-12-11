@@ -133,7 +133,7 @@ void main() {
 			color += calcDirLight(dirLights[i], diffuse, specular, viewDir);
 		}
 		for(int i=0;i<pointLightAmount;i++) {
-			//color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
+			color += calcPointLight(pointLights[i], diffuse, specular, viewDir);
 		}
 		for(int i=0;i<spotLightAmount;i++) {
 			//color += calcSpotLight(spotLights[i], diffuse, specular, viewDir);

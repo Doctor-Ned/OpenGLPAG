@@ -44,20 +44,20 @@ void SpotLightNode::drawGui(bool autoUpdate) {
 	}
 
 	if (autoUpdate || ImGui::Button("Apply SpotLight changes")) {
-		light->position = pos;
 		light->constant = constant;
 		light->linear = linear;
 		light->quadratic = quadratic;
 		light->cutOff = cutOff;
 		light->outerCutOff = outerCutOff;
-		local = glm::translate(glm::mat4(1.0f), glm::vec3(light->position));
-		if (rotationZ != appliedZ || rotationY != appliedY) {
+		if (rotationZ != appliedZ || rotationY != appliedY || light->position != pos) {
+			light->position = pos;
+			local = glm::translate(glm::mat4(1.0f), glm::vec3(light->position));
 			appliedZ = rotationZ;
 			appliedY = rotationY;
 			local = glm::rotate(local, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
 			local = glm::rotate(local, rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+			dirty = true;
 		}
-		dirty = true;
 		light->model = getWorld();
 		if (lastEnabled != enabled) {
 			enabled = lastEnabled;
