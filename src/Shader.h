@@ -21,12 +21,16 @@ public:
 	void setShininess(float shininess);
 	void setUseSpecular(bool useSpecular);
 	void setUseLight(bool useLight);
+	void setView(glm::mat4 view);
+	void setProjection(glm::mat4 projection);
 	bool getTextureDisabled();
 	float getScale();
 	glm::vec4 getColor();
 	glm::mat4 getModel();
 	glm::vec3 getViewPosition();
 	glm::vec3 getViewDirection();
+	glm::mat4 getView();
+	glm::mat4 getProjection();
 	bool getBlinnPhong();
 	bool getUseSpecular();
 	bool getUseLight();
@@ -44,7 +48,7 @@ protected:
 	char *fragmentPath;
 	char *vertexPath;
 	glm::vec4 *color = NULL;
-	glm::mat4 *model = NULL;
+	glm::mat4 *model = NULL, *view = NULL, *projection = NULL;
 	glm::vec3 *viewPosition = NULL, *viewDirection = NULL;
 	float *scale = NULL;
 	float *shininess = NULL;

@@ -21,6 +21,7 @@
 #include "PointLightNode.h"
 #include "SpotLightNode.h"
 #include "MeshPlane.h"
+#include "Skybox.h"
 
 #include <stb_image.h>
 
@@ -187,6 +188,18 @@ int main(int, char**) {
 	Shader modelBPShader("modelBPVertexShader.glsl", "modelBPFragmentShader.glsl");
 	Shader instanceModelShader("instanceModelVertexShader.glsl", "modelBPFragmentShader.glsl");
 
+	std::vector<std::string> skyboxFaces{
+		"hw_nightsky\\nightsky_lf.tga",
+		"hw_nightsky\\nightsky_rt.tga",
+		"hw_nightsky\\nightsky_up.tga",
+		"hw_nightsky\\nightsky_dn.tga",
+		"hw_nightsky\\nightsky_ft.tga",
+		"hw_nightsky\\nightsky_bk.tga",
+	};
+
+	Shader skyboxShader("skyboxVertexShader.glsl", "skyboxFragmentShader.glsl");
+	Skybox skybox(skyboxShader, skyboxFaces);
+
 	std::vector<Shader> updatableShaders;
 
 	//updatableShaders.push_back(modelShader);
@@ -295,7 +308,7 @@ int main(int, char**) {
 	PointLightNode point2Node(&point2, &pointMesh, &orb2);
 
 
-	
+
 
 	SpotLightNode spot1Node(&spot1, NULL, &graphRoot);
 	spot1Node.rotationZ = glm::radians(43.0f);
@@ -463,6 +476,8 @@ int main(int, char**) {
 		graphRoot.draw();
 
 		if (outline)glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		skybox.draw(camera.getUntranslatedView(), projection);
 
 		glViewport(0, 0, display_w, display_h);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

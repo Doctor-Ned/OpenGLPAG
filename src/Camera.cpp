@@ -15,6 +15,10 @@ glm::mat4 Camera::getView() {
 	return view;
 }
 
+glm::mat4 Camera::getUntranslatedView() {
+	return glm::mat4(glm::mat3(getView()));
+}
+
 glm::vec3 Camera::getFront() {
 	return cameraFront;
 }

@@ -9,16 +9,10 @@ struct TextureVertex {
 	glm::vec2 TexCoords;
 };
 
-struct Texture {
-	GLuint id;
-	std::string path;
-};
-
 class MeshTexture : public Mesh {
 public:
 	MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char *textureFile);
 	void draw(Shader shader, glm::mat4 world, float scale=1.0f);
-	static Texture createTexture(char *textureFile);
 protected:
 	MeshTexture(Shader shader);
 	void setupMesh();

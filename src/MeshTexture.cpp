@@ -1,5 +1,4 @@
 #include "MeshTexture.h"
-#include <stb_image.h>
 
 MeshTexture::MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char * textureFile)
 	: vertices(vertices), Mesh(shader, indices) {
@@ -17,27 +16,6 @@ void MeshTexture::draw(Shader shader, glm::mat4 world, float scale) {
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	glUseProgram(0);
-}
-
-Texture MeshTexture::createTexture(char * textureFile) {
-	Texture texture;
-	int imgWidth, imgHeight, imgChannels;
-	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, 0);
-	if (!imgData) {
-		fprintf(stderr, "Failed to load texture from file \"%s\"!", textureFile);
-		exit(1);
-	}
-	GLuint imgTexture;
-	glGenTextures(1, &imgTexture);
-	glBindTexture(GL_TEXTURE_2D, imgTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(imgData);
-	texture.id = imgTexture;
-	texture.path = textureFile;
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return texture;
 }
 
 MeshTexture::MeshTexture(Shader shader) : Mesh(shader) {}

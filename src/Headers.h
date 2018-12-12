@@ -6,6 +6,7 @@
 #include "imgui_impl_opengl3.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb_image.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -42,6 +43,57 @@ static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec
 		}
 	}
 	return result;
+}
+
+struct Texture {
+	GLuint id;
+	std::string path;
+};
+
+static Texture createTexture(char *textureFile) {
+	Texture texture;
+	int imgWidth, imgHeight, imgChannels;
+	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, 0);
+	if (!imgData) {
+		fprintf(stderr, "Failed to load texture from file \"%s\"!", textureFile);
+		exit(1);
+	}
+	GLuint imgTexture;
+	glGenTextures(1, &imgTexture);
+	glBindTexture(GL_TEXTURE_2D, imgTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(imgData);
+	texture.id = imgTexture;
+	texture.path = textureFile;
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return texture;
+}
+
+static GLuint loadCubemap(std::vector<std::string> faces) {
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	int width, height, nrComponents;
+	for (unsigned int i = 0; i < faces.size(); i++) {
+		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+		if (data) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		} else {
+			printf("Cubemap texture failed to load at path '%s'!\n", faces[i].c_str());
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
 }
 
 #define MAX_LIGHTS_OF_TYPE 16          // this MUST be identical to the value from the shader

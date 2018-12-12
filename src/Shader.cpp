@@ -175,6 +175,30 @@ void Shader::setUseLight(bool useLight) {
 	*(this->useLight) = useLight;
 }
 
+void Shader::setView(glm::mat4 view) {
+	use();
+	if (this->view == NULL) {
+		this->view = new glm::mat4();
+	}
+	GLint location = getUniformLocation("view");
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(view));
+	}
+	*(this->view) = view;
+}
+
+void Shader::setProjection(glm::mat4 projection) {
+	use();
+	if (this->projection == NULL) {
+		this->projection = new glm::mat4();
+	}
+	GLint location = getUniformLocation("projection");
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projection));
+	}
+	*(this->projection) = projection;
+}
+
 bool Shader::getTextureDisabled() {
 	return *disableTexture;
 }
@@ -199,8 +223,16 @@ glm::vec3 Shader::getViewDirection() {
 	return *viewDirection;
 }
 
+glm::mat4 Shader::getView() {
+	return *view;
+}
+
+glm::mat4 Shader::getProjection() {
+	return *projection;
+}
+
 bool Shader::getBlinnPhong() {
-	return blinnPhong;
+	return *blinnPhong;
 }
 
 bool Shader::getUseSpecular() {

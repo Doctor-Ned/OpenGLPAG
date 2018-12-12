@@ -31,8 +31,8 @@ void DirLightNode::drawGui(bool autoUpdate) {
 			appliedZ = rotationZ;
 			appliedX = rotationX;
 			local = glm::mat4(1.0f);
-			local = glm::rotate(local, appliedX, glm::vec3(1.0f, 0.0f, 0.0f));
 			local = glm::rotate(local, appliedZ, glm::vec3(0.0f, 0.0f, 1.0f));
+			local = glm::rotate(local, appliedX, glm::vec3(1.0f, 0.0f, 0.0f));
 			dirty = true;
 			light->model = getWorld();
 		}
