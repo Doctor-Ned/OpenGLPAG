@@ -32,6 +32,8 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
+const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f;
+
 static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max, float yPosition = 0.0f) {
 	glm::vec3 *result = new glm::vec3[width * length];
 	float firstX = width == 1 ? (max.x + min.x) / 2.0f : min.x;
@@ -55,7 +57,7 @@ struct Texture {
 static Texture createTexture(char *textureFile) {
 	Texture texture;
 	int imgWidth, imgHeight, imgChannels;
-	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, 0);
+	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
 	if (!imgData) {
 		fprintf(stderr, "Failed to load texture from file \"%s\"!", textureFile);
 		exit(1);
@@ -64,7 +66,7 @@ static Texture createTexture(char *textureFile) {
 	glGenTextures(1, &imgTexture);
 	glBindTexture(GL_TEXTURE_2D, imgTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imgData);
 	texture.id = imgTexture;

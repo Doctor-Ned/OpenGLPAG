@@ -17,7 +17,7 @@ class TextRenderer {
 public:
 	std::map<GLchar, Character> characters;
 	Shader *textShader;
-	TextRenderer(GLuint width, GLuint height);
+	TextRenderer();
 	void load(std::string font, GLuint fontSize);
 	void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, bool center = false, glm::vec3 color = glm::vec3(1.0f));
 private:

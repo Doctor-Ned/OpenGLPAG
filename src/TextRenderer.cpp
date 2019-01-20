@@ -1,14 +1,12 @@
 #include <iostream>
 #include "TextRenderer.h"
 #include "freetype/ftparams.h"
-#include <stdlib.h>
-#include <stdlib.h>
 
 
-TextRenderer::TextRenderer(GLuint width, GLuint height) {
+TextRenderer::TextRenderer() {
 	// Load and configure shader
 	textShader = new Shader("textVertexShader.glsl", "textFragmentShader.glsl");
-	textShader->setProjection(glm::ortho(0.0f, static_cast<GLfloat>(width), static_cast<GLfloat>(height), 0.0f));
+	textShader->setProjection(glm::ortho(0.0f, static_cast<GLfloat>(WINDOW_WIDTH), static_cast<GLfloat>(WINDOW_HEIGHT), 0.0f));
 	textShader->setInt("text", 0);
 	// Configure VAO/VBO for texture quads
 	glGenVertexArrays(1, &this->vao);

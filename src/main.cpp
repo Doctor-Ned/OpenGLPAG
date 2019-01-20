@@ -9,22 +9,30 @@
 #include <GLFW/glfw3.h> // Include glfw3.h after OpenGL definitions
 #include "freetype/ftparams.h"
 #include "TextRenderer.h"
+#include "UiButton.h"
 
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+
+UiButton *button;
 
 void process_keyboard_movement(GLFWwindow *window) {
 
 }
 
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
+	
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-
+	button->mouse_callback(window, xpos, ypos);
 }
+
+void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) {
+	button->mouse_button_callback(window, butt, action, mods);
+}
+
 
 int main(int, char**) {
 	// Setup window
@@ -51,7 +59,6 @@ int main(int, char**) {
 #endif
 
 	// Create window with graphics context
-	const int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 720;
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
 	if (window == NULL) {
 		return 1;
@@ -78,6 +85,7 @@ int main(int, char**) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 
 	glm::vec3 xAxis(1, 0, 0), yAxis(0, 1, 0), zAxis(0, 0, 1);
@@ -85,9 +93,18 @@ int main(int, char**) {
 	//const int SMALLER_SIZE = WINDOW_WIDTH > WINDOW_HEIGHT ? WINDOW_HEIGHT : WINDOW_WIDTH;
 	glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	TextRenderer textRenderer(WINDOW_WIDTH, WINDOW_HEIGHT);
+	Shader uiTextureShader("uiTextureVertexShader.glsl", "uiTextureFragmentShader.glsl");
+
+	TextRenderer textRenderer;
 	textRenderer.load("res\\fonts\\ButterLayer.ttf", 30.0f);
 
+	button = new UiButton(&uiTextureShader, "res\\ui\\ButtonIdle.png", "res\\ui\\ButtonHover.png", "res\\ui\\ButtonClicked.png"
+		, glm::vec2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 4.0f), glm::vec2(260.0f, 70.0f));
+	char* textTest = "lubie placki", *textTest2 = "jednak nie lubie";
+	char** text = new char* {textTest};
+	button->setButtonCallback([text, textTest, textTest2]() {
+		text[0] = *text == textTest ? textTest2 : textTest;
+	});
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -99,8 +116,8 @@ int main(int, char**) {
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		textRenderer.renderText("lubie placki", WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f, 1.0f, true);
-
+		textRenderer.renderText(text[0], WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f, 1.0f, true);
+		button->render();
 		glViewport(0, 0, display_w, display_h);
 		glfwMakeContextCurrent(window);
 		glfwSwapBuffers(window);
