@@ -56,10 +56,6 @@ layout (std140) uniform SpotLights {
 	int spotLightAmount;
 	SpotLight spotLights[MAX_LIGHTS_OF_TYPE];
 };
-layout (std140) uniform Light {
-	vec4 lightPosition;
-	vec4 lightColor;
-};
 
 in VS_OUT {
 	vec3 pos;
@@ -72,7 +68,6 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform float shininess;
 uniform mat4 model;
-uniform int blinnPhong;
 uniform int useSpecularMap;
 uniform int useLight;
 
@@ -107,7 +102,6 @@ vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir)
 vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
 	vec3 position = vec3(light.model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	vec3 direction = normalize(position - fs_in.pos);
-	//vec3 spotDirection = normalize(vec3(light.model * -light.direction));
 	vec3 spotDirection = normalize(vec3(light.model * vec4(vec3(-light.direction), 0.0f)));
 	float diff = max(dot(direction, fs_in.normal), 0.0);
 
@@ -130,8 +124,6 @@ vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
 	vec3 spe = vec3(light.specular) * spec * specular * intensity;
 
 	return (amb + dif + spe) * attenuation;
-
-	//return (((vec3(light.ambient) * diffuse) + (vec3(light.diffuse) * diff * diffuse) + (vec3(light.specular) * spec * specular)) * attenuation * intensity);
 }
 
 void main() {
@@ -140,7 +132,7 @@ void main() {
     vec3 ambient = 0.05 * diffuse;
 	if(useLight == 0) {
 		outColor = vec4(ambient + diffuse, 1.0f);
-	} else if(blinnPhong > 0) {
+	} else {
 		vec3 specular = useSpecularMap > 0 ? texture(texture_specular1, fs_in.texCoords).rgb : vec3(0.5f);
 		vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
@@ -157,10 +149,5 @@ void main() {
 		}
 
 		outColor = vec4(color, 1.0f);
-	} else {
-		vec3 lightDirection = normalize(vec3(lightPosition) - fs_in.pos);
-		float diff = max(dot(fs_in.normal, lightDirection), 0.0f);
-		diffuse *= diff * vec3(lightColor);
-		outColor = vec4(ambient + diffuse, 1.0f);
 	}
 }

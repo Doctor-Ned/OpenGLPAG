@@ -127,18 +127,6 @@ void Shader::setViewDirection(glm::vec3 viewDirection) {
 	*(this->viewDirection) = viewDirection;
 }
 
-void Shader::setBlinnPhong(bool blinnPhong) {
-	use();
-	if (this->blinnPhong == NULL) {
-		this->blinnPhong = new bool();
-	}
-	GLint location = getUniformLocation("blinnPhong");
-	if (location != -1) {
-		glUniform1i(location, blinnPhong ? 1 : 0);
-	}
-	*(this->blinnPhong) = blinnPhong;
-}
-
 void Shader::setShininess(float shininess) {
 	use();
 	if (this->shininess == NULL) {
@@ -229,6 +217,14 @@ glm::mat4 Shader::getView() {
 
 glm::mat4 Shader::getProjection() {
 	return *projection;
+}
+
+void Shader::setInt(char* name, int value) {
+	use();
+	GLint location = getUniformLocation(name);
+	if (location != -1) {
+		glUniform1i(location, value);
+	}
 }
 
 bool Shader::getBlinnPhong() {

@@ -2,6 +2,25 @@
 find_package(OpenGL REQUIRED)
 set(OPENGL_LIBRARY ${OPENGL_LIBRARIES})
 
+# freetype
+
+
+set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
+set(FREETYPE_INCLUDE_DIRS "${THIRDPARTY_DIR}/include")
+set(FREETYPE_LIBRARY "${FREETYPE_DIR}/freetype.lib")
+
+#set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
+#set(FREETYPE_INCLUDE_DIRS "${THIRDPARTY_DIR}/include")
+#set(FREETYPE_LIBRARY "${FREETYPE_DIR}/freetype.lib")
+#include("${THIRDPARTY_DIR}/FindFreetype.cmake")
+#find_package(Freetype REQUIRED)
+# IF(NOT FREETYPE_FOUND)
+  # FIND_LIBRARY(FREETYPE_LIBRARIES NAMES freetype.dll freetype.lib PATHS ${FREETYPE_DIR} DOC "Freetype library")
+  # #FIND_PATH(FREETYPE_INCLUDE_DIRS ftbuild.h "./includes" DOC "Freetype includes")
+# ENDIF(NOT FREETYPE_FOUND)
+find_package(Freetype REQUIRED)
+#target_include_directories(${FREETYPE_INCLUDE_DIRS})
+
 # assimp
 find_library(ASSIMP_LIBRARY "assimp" "/usr/lib" "/usr/local/lib")
 find_path(ASSIMP_INCLUDE_DIR "assimp/mesh.h" "/usr/include" "/usr/local/include")

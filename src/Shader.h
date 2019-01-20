@@ -17,7 +17,6 @@ public:
 	void setModel(glm::mat4 model);
 	void setViewPosition(glm::vec3 viewPosition);
 	void setViewDirection(glm::vec3 viewDirection);
-	void setBlinnPhong(bool blinnPhong);
 	void setShininess(float shininess);
 	void setUseSpecular(bool useSpecular);
 	void setUseLight(bool useLight);
@@ -31,6 +30,7 @@ public:
 	glm::vec3 getViewDirection();
 	glm::mat4 getView();
 	glm::mat4 getProjection();
+	void setInt(char* name, int value);
 	bool getBlinnPhong();
 	bool getUseSpecular();
 	bool getUseLight();

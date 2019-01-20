@@ -8,6 +8,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
 
+#include "ft2build.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 
 #ifndef M_PI

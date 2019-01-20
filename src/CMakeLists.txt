@@ -6,14 +6,6 @@ file(GLOB_RECURSE SOURCE_FILES
 # Add shader files
 file(GLOB_RECURSE SHADER_FILES
 	*.glsl)
-
-# Add model/texture files
-file(GLOB MODEL_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.obj
-	${CMAKE_CURRENT_SOURCE_DIR}/*.mtl
-	${CMAKE_CURRENT_SOURCE_DIR}/*.jpg
-	${CMAKE_CURRENT_SOURCE_DIR}/*.png
-	${CMAKE_CURRENT_SOURCE_DIR}/*.tga)
 	
 # Add header files
 file(GLOB_RECURSE HEADER_FILES 
@@ -23,20 +15,8 @@ file(GLOB_RECURSE HEADER_FILES
 file(COPY ${SHADER_FILES}
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 	 
-file(COPY ${MODEL_FILES}
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
- 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/nanosuit
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-	
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cat
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-	
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/cabin
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-	
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/hw_nightsky
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${FREETYPE_DIR}/freetype.dll
+	 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SHADER_FILES} ${HEADER_FILES} ${SOURCE_FILES})
@@ -50,6 +30,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${GLAD_INCLUDE_DIR}")
 target_include_directories(${PROJECT_NAME} PUBLIC "${GLM_INCLUDE_DIR}")
 target_include_directories(${PROJECT_NAME} PUBLIC "${IMGUI_INCLUDE_DIR}")
 target_include_directories(${PROJECT_NAME} PUBLIC "${STB_IMAGE_INCLUDE_DIR}")
+target_include_directories(${PROJECT_NAME} PUBLIC "${FREETYPE_INCLUDE_DIRS}")
 
 target_link_libraries(${PROJECT_NAME} "${OPENGL_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} "${ASSIMP_LIBRARY}")
@@ -57,6 +38,10 @@ target_link_libraries(${PROJECT_NAME} "${GLFW_LIBRARY}")
 target_link_libraries(${PROJECT_NAME} "${GLAD_LIBRARY}"      "${CMAKE_DL_LIBS}")
 target_link_libraries(${PROJECT_NAME} "${IMGUI_LIBRARY}"     "${CMAKE_DL_LIBS}")
 target_link_libraries(${PROJECT_NAME} "${STB_IMAGE_LIBRARY}" "${CMAKE_DL_LIBS}")
+#target_link_libraries(${PROJECT_NAME} "${FREETYPE_LIBRARY}")
+#INCLUDE(FindFreetype)
+#INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${FREETYPE_LIBRARIES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
 target_compile_definitions(${PROJECT_NAME} PRIVATE LIBRARY_SUFFIX="")
