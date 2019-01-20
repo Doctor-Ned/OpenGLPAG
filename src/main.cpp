@@ -10,12 +10,15 @@
 #include "freetype/ftparams.h"
 #include "TextRenderer.h"
 #include "UiButton.h"
+#include "UiTextButton.h"
+#include "UiSlider.h"
 
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-UiButton *button;
+UiTextButton *button;
+UiSlider *slider;
 
 void process_keyboard_movement(GLFWwindow *window) {
 
@@ -27,10 +30,12 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	button->mouse_callback(window, xpos, ypos);
+	slider->mouse_callback(window, xpos, ypos);
 }
 
 void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) {
 	button->mouse_button_callback(window, butt, action, mods);
+	slider->mouse_button_callback(window, butt, action, mods);
 }
 
 
@@ -81,6 +86,8 @@ int main(int, char**) {
 	}
 
 	glEnable(GL_DEPTH_TEST);   // this is so important. Spent 2 hours looking for it
+	//glAlphaFunc(GL_GREATER, 0.1f);
+	//glEnable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -94,12 +101,20 @@ int main(int, char**) {
 	glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	Shader uiTextureShader("uiTextureVertexShader.glsl", "uiTextureFragmentShader.glsl");
+	Shader uiColorShader("uiColorVertexShader.glsl", "uiColorFragmentShader.glsl");
 
 	TextRenderer textRenderer;
 	textRenderer.load("res\\fonts\\ButterLayer.ttf", 30.0f);
 
-	button = new UiButton(&uiTextureShader, "res\\ui\\ButtonIdle.png", "res\\ui\\ButtonHover.png", "res\\ui\\ButtonClicked.png"
-		, glm::vec2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 4.0f), glm::vec2(260.0f, 70.0f));
+	slider = new UiSlider(&uiTextureShader, "res\\ui\\ButtonIdle.png", "res\\ui\\ButtonHover.png", "res\\ui\\ButtonClicked.png", glm::vec2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT * 3.0f / 4.0f), glm::vec2(450.0f, 50.0f)
+		, &uiColorShader, 10.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.5f), glm::vec2(50.0f, 50.0f), 0.5f, 0.0f, 1.0f);
+	slider->setCallback([](float a) {
+		printf("Siemanko: %f\n", a);
+	});
+
+
+	button = new UiTextButton(&uiTextureShader, "res\\ui\\ButtonIdle.png", "res\\ui\\ButtonHover.png", "res\\ui\\ButtonClicked.png"
+		, glm::vec2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 4.0f), glm::vec2(260.0f, 70.0f), &textRenderer, "guwno", glm::vec3(0.5f, 0.5f, 0.5f));
 	char* textTest = "lubie placki", *textTest2 = "jednak nie lubie";
 	char** text = new char* {textTest};
 	button->setButtonCallback([text, textTest, textTest2]() {
@@ -118,6 +133,7 @@ int main(int, char**) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		textRenderer.renderText(text[0], WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f, 1.0f, true);
 		button->render();
+		slider->render();
 		glViewport(0, 0, display_w, display_h);
 		glfwMakeContextCurrent(window);
 		glfwSwapBuffers(window);

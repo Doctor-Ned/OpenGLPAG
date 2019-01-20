@@ -18,8 +18,10 @@ public:
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos) override;
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override;
 	void setButtonCallback(std::function<void()> callback);
+	void setPosition(glm::vec2 position, bool center=true);
 	UiButtonState getState();
 protected:
+	void setup();
 	Texture textureHover, textureClicked;
 	UiButtonState state = Idle;
 	bool clicked = false, hover = false;

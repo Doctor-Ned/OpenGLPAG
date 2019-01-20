@@ -4,9 +4,8 @@
 #include "Headers.h"
 #include "Shader.h"
 
-struct UiColorVertex {
+struct UiVertex {
 	glm::vec2 Position;
-	glm::vec4 Color;
 };
 
 struct UiTextureVertex {

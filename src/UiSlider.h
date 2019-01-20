@@ -3,16 +3,26 @@
 
 #include "Headers.h"
 #include "UiElement.h"
+#include <functional>
+#include "UiButton.h"
 
 class UiSlider : public UiElement {
 public:
-	UiSlider(Shader *shader, char* textureIdle, char* textureHover, char* textureClicked, glm::vec2 position, glm::vec2 size, float lineThickness, glm::vec2 buttonSize
-		, float value, float min, float max, bool center = true);
+	UiSlider(Shader *shader, char* textureIdle, char* textureHover, char* textureClicked, glm::vec2 position, glm::vec2 size, Shader *lineShader
+		, double lineThickness, glm::vec4 lineColor , glm::vec2 buttonSize, float value, float min, float max, bool center = true);
 	void render() override;
+	void setCallback(std::function<void(float)> callback);
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos) override;
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override;
 protected:
-	void(*callback)(float) = nullptr;
+	float value, min, max;
+	double lineThickness;
+	glm::vec2 buttonSize;
+	glm::vec4 lineColor;
+	UiButton *button;
+	double moveX;
+	bool moving = false;
+	std::function<void(float)> callback = [](float) {};
 };
 
 #endif

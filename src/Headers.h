@@ -108,6 +108,21 @@ static GLuint loadCubemap(std::vector<std::string> faces) {
 
 #define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4 + 4 * 3   // 5*float + 5*vec4 + mat4 + vec3
 
+static double remap(double value, double sourceMin, double sourceMax, double targetMin, double targetMax,
+	bool revertTarget = false, bool snapIfInvalid = true) {
+	if (value < sourceMin || value > sourceMax) {
+		if (snapIfInvalid) {
+			return value < sourceMin ? targetMin : targetMax;
+		}
+	}
+	double result = (value - sourceMin) / (sourceMax - sourceMin) * (targetMax - targetMin) + targetMin;
+	if (revertTarget) {
+		result = targetMax - result + targetMin;
+	}
+
+	return result;
+}
+
 struct DirLight {
 	glm::vec4 direction;
 	glm::vec4 ambient;
