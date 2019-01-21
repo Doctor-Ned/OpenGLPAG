@@ -3,8 +3,9 @@
 #include "freetype/ftparams.h"
 
 
-TextRenderer::TextRenderer() {
+TextRenderer::TextRenderer(GLfloat defaultScale) {
 	// Load and configure shader
+	this->defaultScale = defaultScale;
 	textShader = new Shader("textVertexShader.glsl", "textFragmentShader.glsl");
 	textShader->setProjection(glm::ortho(0.0f, static_cast<GLfloat>(WINDOW_WIDTH), static_cast<GLfloat>(WINDOW_HEIGHT), 0.0f));
 	textShader->setInt("text", 0);
@@ -84,7 +85,7 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
 	textShader->setColor(glm::vec4(color,1.0f));
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(vao);
-
+	scale *= defaultScale;
 	std::string::const_iterator c;
 	
 	if(center) {

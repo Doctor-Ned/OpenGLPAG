@@ -16,8 +16,8 @@ SceneManager::SceneManager() {
 void SceneManager::setup() {
 	uiTextureShader = new Shader("uiTextureVertexShader.glsl", "uiTextureFragmentShader.glsl");
 	uiColorShader = new Shader("uiColorVertexShader.glsl", "uiColorFragmentShader.glsl");
-	textRenderer = new TextRenderer();
-	textRenderer->load("res\\fonts\\ButterLayer.ttf", 30.0f);
+	textRenderer = new TextRenderer(0.5f);
+	textRenderer->load("res\\fonts\\ButterLayer.ttf", 60.0f);
 	mainMenuScene = new MainMenuScene();
 	optionsScene = new OptionsScene();
 	mainMenuScene->setOptionsCallback([this]() {currentScene = optionsScene; });
