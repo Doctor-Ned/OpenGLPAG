@@ -41,6 +41,10 @@ glm::mat4 GraphNode::getWorld() {
 	return world;
 }
 
+GraphNode* GraphNode::getParent() {
+	return parent;
+}
+
 void GraphNode::setScale(float scale) {
 	this->scale = scale;
 }
@@ -65,7 +69,12 @@ void GraphNode::removeChild(GraphNode* child) {
 	if (child->parent == this) {
 		child->parent = nullptr;
 	}
-	std::remove(children.begin(), children.end(), child);
+	for(int i=0;i<children.size();i++) {
+		if(children[i] == child) {
+			children.erase(children.begin() + i);
+			break;
+		}
+	}
 }
 
 Mesh* GraphNode::getMesh() {

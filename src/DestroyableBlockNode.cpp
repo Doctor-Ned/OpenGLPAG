@@ -1,8 +1,11 @@
 #include "DestroyableBlockNode.h"
-DestroyableBlockNode::DestroyableBlockNode(MeshBox * mesh, GraphNode * parent) : BlockNode(mesh, parent) {}
-DestroyableBlockNode::DestroyableBlockNode(MeshColorBox* mesh, GraphNode* parent) : BlockNode(mesh, parent) {}
+#include "SceneManager.h"
 
-void DestroyableBlockNode::onCollision() {
+DestroyableBlockNode::DestroyableBlockNode(MeshBox * mesh, int points, GraphNode * parent) : BlockNode(mesh, parent), points(points) {}
+DestroyableBlockNode::DestroyableBlockNode(MeshColorBox* mesh, int points, GraphNode* parent) : BlockNode(mesh, parent), points(points) {}
+
+void DestroyableBlockNode::onCollision(GameScene *gameScene) {
 	parent->removeChild(this);
+	gameScene->addPoints(points);
 	//TODO: sound? visual effect?
 }

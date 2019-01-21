@@ -2,12 +2,15 @@
 #define DESTROYABLEBLOCKNODE_H
 
 #include "BlockNode.h"
+class GameScene;
 
 class DestroyableBlockNode : public BlockNode {
 public:
-	DestroyableBlockNode(MeshBox* mesh, GraphNode* parent = nullptr);
-	DestroyableBlockNode(MeshColorBox* mesh, GraphNode* parent = nullptr);
-	void onCollision() override;
+	DestroyableBlockNode(MeshBox* mesh, int points, GraphNode* parent = nullptr);
+	DestroyableBlockNode(MeshColorBox* mesh, int points, GraphNode* parent = nullptr);
+	void onCollision(GameScene *gameScene) override;
+protected:
+	int points;
 };
 
 #endif

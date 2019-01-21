@@ -13,6 +13,7 @@
 #include "UiTextButton.h"
 #include "UiSlider.h"
 #include "SceneManager.h"
+#include <time.h>
 
 static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -80,6 +81,8 @@ int main(int, char**) {
 		fprintf(stderr, "Failed to initialize OpenGL loader!\n");
 		return 1;
 	}
+
+	srand(time(nullptr));
 
 	glEnable(GL_DEPTH_TEST); // this is so important. Spent 2 hours looking for it
 	//glAlphaFunc(GL_GREATER, 0.1f);

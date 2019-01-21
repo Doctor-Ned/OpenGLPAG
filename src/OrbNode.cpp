@@ -31,6 +31,10 @@ glm::vec2 OrbNode::getDirection() {
 	return direction;
 }
 
+glm::vec3 OrbNode::actualCenter() {
+	return getWorld()[3];
+}
+
 float OrbNode::getRadius() {
 	return radius;
 }
@@ -46,4 +50,5 @@ void OrbNode::bounce(CollisionState state) {
 			direction.x = -direction.x;
 			break;
 	}
+	direction = glm::normalize(direction);
 }

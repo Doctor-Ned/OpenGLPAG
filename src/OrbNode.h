@@ -13,6 +13,7 @@ public:
 	void update(double timeDiff) override;
 	bool tryCollide(BlockNode *block);
 	glm::vec2 getDirection();
+	glm::vec3 actualCenter();
 	float getRadius();
 	float speed;
 protected:

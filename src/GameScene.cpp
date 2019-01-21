@@ -4,6 +4,7 @@
 #include "MeshColorPlane.h"
 #include "BlockNode.h"
 #include "DestroyableBlockNode.h"
+#include <algorithm>
 
 GameScene::GameScene() {
 	sceneManager = &SceneManager::getInstance();
@@ -20,6 +21,9 @@ GameScene::GameScene() {
 		"res\\skybox\\bk.tga",
 	};
 
+	buttonBackToMenu = new UiTextButton(sceneManager->getUiTextureShader(), BUTTON_LONG_IDLE, BUTTON_LONG_HOVER, BUTTON_LONG_CLICKED, glm::vec2(WINDOW_CENTER_X, WINDOW_HEIGHT*0.65f),
+		BUTTON_STANDARD_SIZE, textRenderer, "Return to menu");
+	buttonBackToMenu->setButtonCallback([this]() {sceneManager->backToMenu(); });
 
 	skybox = new Skybox(*sceneManager->getSkyboxShader(), skyboxFaces);
 	camera = new Camera(glm::vec3(0.0f, 1.0f, 2.0f + introDistance), glm::vec3(0.0f, 0.0f, -1.0f),
@@ -38,13 +42,9 @@ GameScene::GameScene() {
 
 	sceneManager->getUboDirLights()->inject(1, &dirs[0]);
 
-	graphScene = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
+	sceneGraph = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-	//GraphNode* test = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 2.0f, 2.0f,
-	//	glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
-	//	graphScene);
-	//test->getMesh()->setUseLight(false);
-	//test->setLocal(rotate(glm::mat4(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
+
 	int blockAmount = 8, layers = 5;
 	float currentX, currentY, blockWidth;
 	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
@@ -53,10 +53,29 @@ GameScene::GameScene() {
 		currentY = BLOCK_MAX_Y - l * (BLOCK_MARGIN + BLOCK_HEIGHT);
 		for (int i = 0; i < blockAmount; i++) {
 			blocks.push_back(new DestroyableBlockNode(new MeshColorBox(*sceneManager->getColorShader(),
-				glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)), graphScene));
+				glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH)
+				, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)), 100, sceneGraph));
 			currentX += blockWidth + BLOCK_MARGIN;
 		}
 	}
+
+	movingBlockWidth = MOVINGBLOCK_BASE_WIDTH / (sceneManager->difficulty * 0.75f);
+
+	bottomBlock = new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X, -0.1f, BLOCK_MIN_Z - WALL_Z_ADDITION)
+		, glm::vec3(BLOCK_MAX_X, 0.05f, BLOCK_MIN_Z + WALL_Z_ADDITION + BLOCK_DEPTH), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph);
+
+	walls.push_back(new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X - WALL_THICKNESS, 0.0f, BLOCK_MIN_Z - WALL_Z_ADDITION)
+		, glm::vec3(BLOCK_MIN_X, WALL_TOP_Y - WALL_THICKNESS, BLOCK_MIN_Z + BLOCK_DEPTH + WALL_Z_ADDITION), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph));
+	walls.push_back(new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MAX_X, 0.0f, BLOCK_MIN_Z - WALL_Z_ADDITION)
+		, glm::vec3(BLOCK_MAX_X + WALL_THICKNESS, WALL_TOP_Y - WALL_THICKNESS, BLOCK_MIN_Z + BLOCK_DEPTH + WALL_Z_ADDITION), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph));
+	walls.push_back(new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X - WALL_THICKNESS, WALL_TOP_Y - WALL_THICKNESS, BLOCK_MIN_Z - WALL_Z_ADDITION)
+		, glm::vec3(BLOCK_MAX_X + WALL_THICKNESS, WALL_TOP_Y, BLOCK_MIN_Z + BLOCK_DEPTH + WALL_Z_ADDITION), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph));
+
+	movingBlock = new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(-movingBlockWidth / 2.0f, MOVINGBLOCK_Y, BLOCK_MIN_Z),
+		glm::vec3(movingBlockWidth / 2.0f, MOVINGBLOCK_Y + MOVINGBLOCK_HEIGHT, BLOCK_MIN_Z + BLOCK_DEPTH), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)), sceneGraph);
+	movingBlockX = -movingBlockWidth / 2.0f;
+
+	updatePoints();
 }
 
 void GameScene::render() {
@@ -64,15 +83,23 @@ void GameScene::render() {
 	sceneManager->getModelShader()->setViewPosition(camera->getPos());
 	sceneManager->getTextureShader()->setViewPosition(camera->getPos());
 	sceneManager->getColorShader()->setViewPosition(camera->getPos());
-	graphScene->draw();
-	if (!intro) {
-		if (orb == nullptr) {
-			sprintf_s(orbText, "%d orbs left", availableOrbs);
-			textRenderer->renderText("Press SPACE to throw an orb.", WINDOW_CENTER_X, WINDOW_HEIGHT * 0.35f, 1.0f, true, glm::vec3(0.0f, 1.0f, 0.0f));
-			textRenderer->renderText(orbText, WINDOW_CENTER_X, WINDOW_HEIGHT *0.45f, 1.0f, true, glm::vec3(1.0f, 0.0f, 0.0f));
+	sceneGraph->draw();
+	skybox->draw(camera->getUntranslatedView(), projection);
+	if (!intro && !paused) {
+		if (!gameOver) {
+			if (orb == nullptr) {
+				sprintf_s(orbText, "%d orbs left", availableOrbs);
+				textRenderer->renderText("Press SPACE to throw an orb.", WINDOW_CENTER_X, WINDOW_HEIGHT * 0.35f, 1.0f, true, glm::vec3(0.0f, 1.0f, 0.0f));
+				textRenderer->renderText(orbText, WINDOW_CENTER_X, WINDOW_HEIGHT *0.45f, 1.0f, true, glm::vec3(1.0f, 0.0f, 0.0f));
+			}
+			textRenderer->renderText(pointsText, 20.0f, 20.0f, 1, false, glm::vec3(1.0f, 1.0f, 1.0f));
+		} else {
+			textRenderer->renderText("GAME OVER!", WINDOW_CENTER_X, WINDOW_CENTER_Y / 6.0f, 2.0f, true);
+			sprintf_s(pointsText, "Finished with %d points!", points);
+			textRenderer->renderText(pointsText, WINDOW_CENTER_X, WINDOW_CENTER_Y, 2.0f, true, glm::vec3(1.0f, 1.0f, 1.0f));
+			buttonBackToMenu->render();
 		}
 	}
-	skybox->draw(camera->getUntranslatedView(), projection);
 	if (paused) {
 		pauseScene->render();
 	}
@@ -97,18 +124,50 @@ void GameScene::update(double timeDelta) {
 			}
 			camera->moveForward(introDone - prevIntroDone, 1);
 			prevIntroDone = introDone;
+		} else if (gameOver) {
+			//nothing?
 		} else {
+			if (movingLeft && !movingRight) {
+				float target = std::max(BLOCK_MIN_X, movingBlockX - movingSpeed * (float)timeDelta);
+				float diff = target - movingBlockX;
+				movingBlockX = target;
+				movingBlock->setLocal(glm::translate(movingBlock->getLocal(), glm::vec3(diff, 0.0f, 0.0f)));
+			} else if (movingRight && !movingLeft) {
+				float target = std::min(BLOCK_MAX_X - movingBlockWidth, movingBlockX + movingSpeed * (float)timeDelta);
+				float diff = target - movingBlockX;
+				movingBlockX = target;
+				movingBlock->setLocal(glm::translate(movingBlock->getLocal(), glm::vec3(diff, 0.0f, 0.0f)));
+			}
 			if (orb != nullptr) {
-				for (int i = 0; i < blocks.size(); i++) {
-					if (orb->tryCollide(blocks[i])) {
-						BlockNode* block = blocks[i];
-						blocks.erase(blocks.begin() + i);
-						block->onCollision();
-						break;
+				if (orb->actualCenter().y < movingBlock->actualMax().y + ORB_RADIUS / 2.0f || !orb->tryCollide(movingBlock)) {
+					if (!orb->tryCollide(bottomBlock)) {
+						bool wallBounced = false;
+						for (int i = 0; i < walls.size(); i++) {
+							if (orb->tryCollide(walls[i])) {
+								walls[i]->onCollision(this);
+								wallBounced = true;
+								break;
+							}
+						}
+						if (!wallBounced) {
+							for (int i = 0; i < blocks.size(); i++) {
+								if (orb->tryCollide(blocks[i])) {
+									BlockNode* block = blocks[i];
+									blocks.erase(blocks.begin() + i);
+									block->onCollision(this);
+									orb->speed += ORB_SPEED / 10.0f;
+									break;
+								}
+							}
+						}
+					} else {
+						loseOrb();
 					}
+				} else {
+					movingBlock->onCollision(this);
 				}
 			}
-			graphScene->update(timeDelta);
+			sceneGraph->update(timeDelta);
 		}
 	} else {
 		pauseScene->update(timeDelta);
@@ -119,7 +178,21 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 	if (paused) {
 		pauseScene->keyboard_callback(window, key, scancode, action, mods);
 	} else {
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+		if (key == GLFW_KEY_LEFT) {
+			if (action == GLFW_PRESS) {
+				movingLeft = true;
+			} else if (action == GLFW_RELEASE) {
+				movingLeft = false;
+			}
+		}
+		if (key == GLFW_KEY_RIGHT) {
+			if (action == GLFW_PRESS) {
+				movingRight = true;
+			} else if (action == GLFW_RELEASE) {
+				movingRight = false;
+			}
+		}
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE && !gameOver) {
 			pause();
 		} else if (intro) {
 			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
@@ -128,8 +201,10 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 			}
 		} else {
 			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE && orb == nullptr) {
-				orb = new OrbNode(new MeshColorSphere(*sceneManager->getColorShader(), 0.05f, 20, glm::vec4(1.0, 0.0f, 0.0f, 1.0f)), 0.25f, glm::vec2(-1.0f, -1.0f), graphScene);
-				orb->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.6f, BLOCK_MIN_Z + BLOCK_DEPTH / 2.0f)));
+				orb = new OrbNode(new MeshColorSphere(*sceneManager->getColorShader(), ORB_RADIUS, 20, glm::vec4(1.0, 0.0f, 0.0f, 1.0f))
+					, ORB_SPEED * sceneManager->difficulty, glm::vec2(rand() % 2 == 0 ? -1.0f : 1.0f, 1.0f), sceneGraph);
+				glm::vec3 moveMin = movingBlock->actualMin(), moveMax = movingBlock->actualMax();
+				orb->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3((moveMin.x + moveMax.x) / 2.0f, moveMax.y + ORB_RADIUS + 0.001f, BLOCK_MIN_Z + BLOCK_DEPTH / 2.0f)));
 				availableOrbs--;
 			}
 		}
@@ -139,13 +214,36 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 void GameScene::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	if (paused) {
 		pauseScene->mouse_callback(window, xpos, ypos);
-	} else if (!intro) {}
+	} else if (gameOver) {
+		buttonBackToMenu->mouse_callback(window, xpos, ypos);
+	}
 }
 
 void GameScene::mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) {
 	if (paused) {
 		pauseScene->mouse_button_callback(window, butt, action, mods);
-	} else if (!intro) {}
+	} else if (gameOver) {
+		buttonBackToMenu->mouse_button_callback(window, butt, action, mods);
+	}
+}
+
+void GameScene::addPoints(int points) {
+	this->points += points;
+	updatePoints();
+}
+
+void GameScene::loseOrb() {
+	orb->getParent()->removeChild(orb);
+	delete orb;
+	orb = nullptr;
+	if (availableOrbs == 0) {
+		gameOver = true;
+	}
+	//todo: play a proper sound
+}
+
+void GameScene::updatePoints() {
+	sprintf_s(pointsText, "%d points", points);
 }
 
 void GameScene::pause() {

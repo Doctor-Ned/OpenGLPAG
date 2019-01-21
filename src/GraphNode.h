@@ -11,6 +11,7 @@ public:
 	virtual void update(double timeDiff);
 	glm::mat4 getLocal();
 	glm::mat4 getWorld();
+	GraphNode *getParent();
 	void setScale(float scale);
 	void setLocal(glm::mat4 local);
 	void addChild(GraphNode* child);
