@@ -38,7 +38,7 @@ struct SpotLight {
 #define MAX_LIGHTS_OF_TYPE 16
 
 layout (std140) uniform TextureColor {
-	vec4 color;
+	vec4 tcolor;
 	bool disableTexture;
 };
 layout (std140) uniform DirLights {
@@ -59,16 +59,13 @@ layout (std140) uniform SpotLights {
 
 in VS_OUT {
 	vec3 pos;
-	vec2 texCoords;
 	vec3 normal;
 	vec3 viewPosition;
 } fs_in;
 
-uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_specular1;
+uniform vec4 color;
 uniform float shininess;
 uniform mat4 model;
-uniform int useSpecularMap;
 uniform int useLight;
 
 out vec4 outColor;
@@ -127,16 +124,15 @@ vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
 }
 
 void main() {
-	vec3 diffuse = color.rgb;
-	if(!disableTexture) diffuse *= texture(texture_diffuse1, fs_in.texCoords).rgb;
+	vec3 diffuse = tcolor.rgb * color.rgb;
     vec3 ambient = 0.05 * diffuse;
 	if(useLight == 0) {
-		outColor = vec4(ambient + diffuse, 1.0f);
+		outColor = vec4(color.rgb, 1.0f);
 	} else {
-		vec3 specular = useSpecularMap > 0 ? texture(texture_specular1, fs_in.texCoords).rgb : vec3(0.5f);
+		vec3 specular = vec3(0.5f);
 		vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
-		vec3 color = vec3(0.0f);
+		vec3 color = ambient;
 
 		for(int i=0;i<dirLightAmount;i++) {
 			color += calcDirLight(dirLights[i], diffuse, specular, viewDir);

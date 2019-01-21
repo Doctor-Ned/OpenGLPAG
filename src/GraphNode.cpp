@@ -65,3 +65,7 @@ void GraphNode::removeChild(GraphNode *child) {
 	}
 	std::remove(children.begin(), children.end(), child);
 }
+
+Mesh* GraphNode::getMesh() {
+	return mesh;
+}

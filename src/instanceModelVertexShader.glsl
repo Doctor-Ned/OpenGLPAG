@@ -17,10 +17,6 @@ layout (std140) uniform ViewProjection {
 	mat4 view;
 	mat4 projection;
 };
-layout (std140) uniform Light {
-	vec4 lightPosition;
-	vec4 lightColor;
-};
 
 out VS_OUT {
 	vec3 pos;

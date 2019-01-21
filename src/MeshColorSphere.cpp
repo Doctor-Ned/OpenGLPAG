@@ -1,24 +1,21 @@
-#include "MeshSphere.h"
+#include "MeshColorSphere.h"
 
-MeshSphere::MeshSphere(Shader shader, float radius, int precision, char *texturePath, glm::vec3 baseCenter)
-	: radius(radius), precision(precision), baseCenter(baseCenter), MeshTexture(shader) {
-	texture = createTexture(texturePath);
+MeshColorSphere::MeshColorSphere(Shader shader, float radius, int precision, glm::vec4 color, glm::vec3 baseCenter)
+	: radius(radius), precision(precision), baseCenter(baseCenter), MeshSimple(shader, color) {
 	VBO = 0;
 	setupMesh();
 }
 
-void MeshSphere::draw(Shader shader, glm::mat4 world, float scale) {
-	MeshTexture::draw(shader, world, scale);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.id);
+void MeshColorSphere::draw(Shader shader, glm::mat4 world, float scale) {
+	MeshSimple::draw(shader, world, scale);
 	glBindVertexArray(VAO);
-	glBindVertexBuffer(0, VBO, 0, sizeof(TextureVertex));
+	glBindVertexBuffer(0, VBO, 0, sizeof(SimpleVertex));
 	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
-void MeshSphere::updateValues(float radius, int precision) {
+void MeshColorSphere::updateValues(float radius, int precision) {
 	if (radius <= 0) {
 		radius = 0.01f;
 	}
@@ -28,7 +25,7 @@ void MeshSphere::updateValues(float radius, int precision) {
 	}
 	this->precision = precision;
 
-	std::vector<TextureVertex> vertices;
+	std::vector<SimpleVertex> vertices;
 
 	float radStep = 2.0f*M_PI / precision;
 	float angle = 0.0f;
@@ -43,7 +40,7 @@ void MeshSphere::updateValues(float radius, int precision) {
 	vertices.clear();
 }
 
-void MeshSphere::drawGui(bool autoUpdate) {
+void MeshColorSphere::drawGui(bool autoUpdate) {
 	ImGui::PushID((uintptr_t)this);
 	static float _radius = radius;
 	static int _precision = precision;
@@ -62,7 +59,7 @@ void MeshSphere::drawGui(bool autoUpdate) {
 	ImGui::PopID();
 }
 
-void MeshSphere::createSphereSegment(std::vector<TextureVertex>* vertices, float angle, float radStep) {
+void MeshColorSphere::createSphereSegment(std::vector<SimpleVertex>* vertices, float angle, float radStep) {
 	glm::vec3 *circle = new glm::vec3[precision];
 
 	float circleAngle = -M_PI / 2.0f;
@@ -109,11 +106,11 @@ void MeshSphere::createSphereSegment(std::vector<TextureVertex>* vertices, float
 	}
 }
 
-void MeshSphere::createRectangle(std::vector<TextureVertex> *vertices, glm::vec3 *tL, glm::vec3 *tR, glm::vec3 *dR, glm::vec3 *dL) {
+void MeshColorSphere::createRectangle(std::vector<SimpleVertex> *vertices, glm::vec3 *tL, glm::vec3 *tR, glm::vec3 *dR, glm::vec3 *dL) {
 	glm::vec3 horizontal = *dR - *dL;
 	glm::vec3 vertical = *tL - *dL;
 	glm::vec3 normal = glm::cross(vertical, horizontal);
-	TextureVertex output[4];
+	SimpleVertex output[4];
 
 	for (int i = 0; i < 4; i++) {
 		output[i].Normal = normal;
@@ -123,15 +120,6 @@ void MeshSphere::createRectangle(std::vector<TextureVertex> *vertices, glm::vec3
 	output[2].Position = *dR + baseCenter;
 	output[3].Position = *dL + baseCenter;
 
-	output[0].TexCoords.x = 0.0f;
-	output[0].TexCoords.y = 1.0f;
-	output[1].TexCoords.x = 1.0f;
-	output[1].TexCoords.y = 1.0f;
-	output[2].TexCoords.x = 1.0f;
-	output[2].TexCoords.y = 0.0f;
-	output[3].TexCoords.x = 0.0f;
-	output[3].TexCoords.y = 0.0f;
-
 	vertices->push_back(output[0]);
 	vertices->push_back(output[3]);
 	vertices->push_back(output[2]);
@@ -140,11 +128,11 @@ void MeshSphere::createRectangle(std::vector<TextureVertex> *vertices, glm::vec3
 	vertices->push_back(output[1]);
 }
 
-void MeshSphere::createTriangle(std::vector<TextureVertex>* vertices, glm::vec3 * up, glm::vec3 * right, glm::vec3 * left) {
+void MeshColorSphere::createTriangle(std::vector<SimpleVertex>* vertices, glm::vec3 * up, glm::vec3 * right, glm::vec3 * left) {
 	glm::vec3 horizontal = *right - *left;
 	glm::vec3 vertical = *up - *left;
 	glm::vec3 normal = glm::cross(horizontal, vertical);
-	TextureVertex output[3];
+	SimpleVertex output[3];
 
 	for (int i = 0; i < 3; i++) {
 		output[i].Normal = normal;
@@ -153,19 +141,12 @@ void MeshSphere::createTriangle(std::vector<TextureVertex>* vertices, glm::vec3 
 	output[1].Position = *right + baseCenter;
 	output[2].Position = *left + baseCenter;
 
-	output[0].TexCoords.x = 0.5f;
-	output[0].TexCoords.y = 1.0f;
-	output[1].TexCoords.x = 1.0f;
-	output[1].TexCoords.y = 0.0f;
-	output[2].TexCoords.x = 0.0f;
-	output[2].TexCoords.y = 0.0f;
-
 	vertices->push_back(output[0]);
 	vertices->push_back(output[2]);
 	vertices->push_back(output[1]);
 }
 
-void MeshSphere::bufferData(std::vector<TextureVertex> *vertices) {
+void MeshColorSphere::bufferData(std::vector<SimpleVertex> *vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -176,21 +157,18 @@ void MeshSphere::bufferData(std::vector<TextureVertex> *vertices) {
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(TextureVertex), &(*vertices)[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(SimpleVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, Normal));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, TexCoords));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));
 
 	glBindVertexArray(0);
 }
 
-void MeshSphere::setupMesh() {
+void MeshColorSphere::setupMesh() {
 	glGenVertexArrays(1, &VAO);
 	updateValues(radius, precision);
 }

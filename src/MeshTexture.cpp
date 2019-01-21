@@ -2,20 +2,12 @@
 
 MeshTexture::MeshTexture(Shader shader, std::vector<TextureVertex> vertices, std::vector<unsigned int> indices, char * textureFile)
 	: vertices(vertices), Mesh(shader, indices) {
-	this->texture = createTexture(textureFile);
+	texture = createTexture(textureFile);
 	setupMesh();
 }
 
 void MeshTexture::draw(Shader shader, glm::mat4 world, float scale) {
-	shader.use();
-	shader.setScale(scale);
-	shader.setModel(world);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.id);
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-	glUseProgram(0);
+	Mesh::draw(shader, world, scale);
 }
 
 MeshTexture::MeshTexture(Shader shader) : Mesh(shader) {}

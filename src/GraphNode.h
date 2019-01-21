@@ -15,6 +15,7 @@ public:
 	void setLocal(glm::mat4 local);
 	void addChild(GraphNode *child);
 	void removeChild(GraphNode *child);
+	Mesh *getMesh();
 protected:
 	glm::mat4 local, world;
 	std::vector<GraphNode*> children;

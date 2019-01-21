@@ -7,6 +7,7 @@ MeshModelInstanced::MeshModelInstanced(Shader shader, std::vector<ModelVertex> v
 
 void MeshModelInstanced::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setShininess(shininess);
 	shader.setScale(scale);
 	shader.setModel(world);
 	shader.setUseLight(useLight);

@@ -7,6 +7,7 @@ MeshModel::MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vect
 
 void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 	shader.use();
+	shader.setShininess(shininess);
 	shader.setScale(scale);
 	shader.setModel(world);
 	shader.setUseLight(useLight);

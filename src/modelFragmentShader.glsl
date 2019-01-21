@@ -65,8 +65,10 @@ in VS_OUT {
 } fs_in;
 
 uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_specular1;
 uniform float shininess;
 uniform mat4 model;
+uniform int useSpecularMap;
 uniform int useLight;
 
 out vec4 outColor;
@@ -131,7 +133,7 @@ void main() {
 	if(useLight == 0) {
 		outColor = vec4(diffuse, 1.0f);
 	} else {
-		vec3 specular = vec3(0.5f);
+		vec3 specular = useSpecularMap > 0 ? texture(texture_specular1, fs_in.texCoords).rgb : vec3(0.5f);
 		vec3 viewDir = normalize(fs_in.viewPosition - fs_in.pos);
 
 		vec3 color = ambient;

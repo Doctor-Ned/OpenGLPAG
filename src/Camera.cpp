@@ -31,6 +31,11 @@ glm::vec3 Camera::getUp() {
 	return cameraUp;
 }
 
+void Camera::setPos(glm::vec3 pos) {
+	cameraPos = pos;
+	dirty = true;
+}
+
 void Camera::rotateX(float timeDelta) {
 	if (timeDelta != 0.0f) {
 		yaw += timeDelta * rotSpeed;

@@ -9,13 +9,35 @@ SceneManager& SceneManager::getInstance() {
 	return *instance;
 }
 
-SceneManager::SceneManager() {
-	
-}
-
 void SceneManager::setup() {
 	uiTextureShader = new Shader("uiTextureVertexShader.glsl", "uiTextureFragmentShader.glsl");
 	uiColorShader = new Shader("uiColorVertexShader.glsl", "uiColorFragmentShader.glsl");
+	skyboxShader = new Shader("skyboxVertexShader.glsl", "skyboxFragmentShader.glsl");
+	modelShader = new Shader("modelVertexShader.glsl", "modelFragmentShader.glsl");
+	textureShader = new Shader("textureVertexShader.glsl", "textureFragmentShader.glsl");
+	colorShader = new Shader("colorVertexShader.glsl", "colorFragmentShader.glsl");
+	uboDirLights = new UboDirLights(0, nullptr);
+	uboPointLights = new UboPointLights(0, nullptr);
+	uboSpotLights = new UboSpotLights(0, nullptr);
+	uboTextureColor = new UboTextureColor(false, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	uboViewProjection = new UboViewProjection(glm::mat4(1.0f), glm::mat4(1.0f));
+	std::vector<Ubo*> ubos;
+	ubos.push_back(uboDirLights);
+	ubos.push_back(uboPointLights);
+	ubos.push_back(uboSpotLights);
+	ubos.push_back(uboTextureColor);
+	ubos.push_back(uboViewProjection);
+	std::vector<Shader*> shaders;
+	shaders.push_back(modelShader);
+	shaders.push_back(textureShader);
+	shaders.push_back(colorShader);
+
+	for(int i=0;i<shaders.size();i++) {
+		for(int j=0;j<ubos.size();j++) {
+			shaders[i]->bind(ubos[j]);
+		}
+	}
+
 	textRenderer = new TextRenderer(0.5f);
 	textRenderer->load("res\\fonts\\ButterLayer.ttf", 60.0f);
 	mainMenuScene = new MainMenuScene();
@@ -62,4 +84,38 @@ Shader * SceneManager::getUiColorShader() {
 
 Shader * SceneManager::getUiTextureShader() {
 	return uiTextureShader;
+}
+
+Shader* SceneManager::getSkyboxShader() {
+	return skyboxShader;
+}
+
+Shader* SceneManager::getModelShader() {
+	return modelShader;
+}
+Shader* SceneManager::getTextureShader() {
+	return textureShader;
+}
+Shader* SceneManager::getColorShader() {
+	return colorShader;
+}
+
+UboDirLights* SceneManager::getUboDirLights() {
+	return uboDirLights;
+}
+
+UboPointLights * SceneManager::getUboPointLights() {
+	return uboPointLights;
+}
+
+UboSpotLights * SceneManager::getUboSpotLights() {
+	return uboSpotLights;
+}
+
+UboTextureColor * SceneManager::getUboTextureColor() {
+	return uboTextureColor;
+}
+
+UboViewProjection * SceneManager::getUboViewProjection() {
+	return uboViewProjection;
 }

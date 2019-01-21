@@ -5,16 +5,15 @@ MeshSimple::MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::v
 	setupMesh();
 }
 
-MeshSimple::MeshSimple(Shader shader) : Mesh(shader) {}
+MeshSimple::MeshSimple(Shader shader, glm::vec4 color) : Mesh(shader), color(color) {}
 
 void MeshSimple::draw(Shader shader, glm::mat4 world, float scale) {
-	shader.use();
-	shader.setScale(scale);
-	shader.setModel(world);
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-	glUseProgram(0);
+	Mesh::draw(shader, world, scale);
+	shader.setColor(color);
+}
+
+void MeshSimple::setColor(glm::vec4 color) {
+	this->color = color;
 }
 
 void MeshSimple::setupMesh() {

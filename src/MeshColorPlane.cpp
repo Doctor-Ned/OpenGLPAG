@@ -1,31 +1,28 @@
-#include "MeshPlane.h"
+#include "MeshColorPlane.h"
 
-MeshPlane::MeshPlane(Shader shader, float width, float length, char *texturePath, glm::vec3 baseCenter)
-	: width(width), length(length), baseCenter(baseCenter), MeshTexture(shader) {
-	texture = createTexture(texturePath);
+MeshColorPlane::MeshColorPlane(Shader shader, float width, float length, glm::vec4 color, glm::vec3 baseCenter)
+	: width(width), length(length), baseCenter(baseCenter), MeshSimple(shader, color) {
 	VBO = 0;
 	setupMesh();
 }
 
-void MeshPlane::draw(Shader shader, glm::mat4 world, float scale) {
-	MeshTexture::draw(shader, world, scale);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.id);
+void MeshColorPlane::draw(Shader shader, glm::mat4 world, float scale) {
+	MeshSimple::draw(shader, world, scale);
 	glBindVertexArray(VAO);
-	glBindVertexBuffer(0, VBO, 0, sizeof(TextureVertex));
+	glBindVertexBuffer(0, VBO, 0, sizeof(SimpleVertex));
 	glDrawArrays(GL_TRIANGLES, 0, vertexAmount);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
 
-void MeshPlane::updateValues(float width, float length) {
+void MeshColorPlane::updateValues(float width, float length) {
 	this->width = width;
 	this->length = length;
 
 	float halfWidth = width / 2.0f;
 	float halfLength = length / 2.0f;
 
-	TextureVertex vertices[4];
+	SimpleVertex vertices[4];
 
 	glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
@@ -33,11 +30,6 @@ void MeshPlane::updateValues(float width, float length) {
 	vertices[1].Normal = normal;  //ul
 	vertices[2].Normal = normal;  //ur
 	vertices[3].Normal = normal;  //br
-
-	vertices[0].TexCoords = glm::vec2(0.0f, 0.0f);
-	vertices[1].TexCoords = glm::vec2(0.0f, 1.0f);
-	vertices[2].TexCoords = glm::vec2(1.0f, 1.0f);
-	vertices[3].TexCoords = glm::vec2(1.0f, 0.0f);
 
 	vertices[0].Position = baseCenter;
 	vertices[1].Position = baseCenter;
@@ -56,7 +48,7 @@ void MeshPlane::updateValues(float width, float length) {
 	vertices[3].Position.x += halfWidth;
 	vertices[3].Position.z += halfLength;
 
-	std::vector<TextureVertex> data;
+	std::vector<SimpleVertex> data;
 	data.push_back(vertices[0]);
 	data.push_back(vertices[2]);
 	data.push_back(vertices[1]);
@@ -75,22 +67,19 @@ void MeshPlane::updateValues(float width, float length) {
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(TextureVertex), &data[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(SimpleVertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, Normal));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, TexCoords));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));
 
 	glBindVertexArray(0);
 	data.clear();
 }
 
-void MeshPlane::drawGui(bool autoUpdate) {
+void MeshColorPlane::drawGui(bool autoUpdate) {
 	static float _width = width;
 	static float _length = length;
 	ImGui::SliderFloat("Plane width", &_width, 0.0f, 5.0f);
@@ -107,7 +96,7 @@ void MeshPlane::drawGui(bool autoUpdate) {
 	}
 }
 
-void MeshPlane::setupMesh() {
+void MeshColorPlane::setupMesh() {
 	glGenVertexArrays(1, &VAO);
 	updateValues(width, length);
 }

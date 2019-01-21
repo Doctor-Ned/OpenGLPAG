@@ -4,6 +4,11 @@
 #include "MainMenuScene.h"
 #include "OptionsScene.h"
 #include "GameScene.h"
+#include "UboViewProjection.h"
+#include "UboDirLights.h"
+#include "UboPointLights.h"
+#include "UboTextureColor.h"
+#include "UboSpotLights.h"
 
 class SceneManager {
 public:
@@ -19,18 +24,32 @@ public:
 	bool quitPending = false;
 	Shader *getUiColorShader();
 	Shader *getUiTextureShader();
+	Shader *getSkyboxShader();
+	Shader *getModelShader();
+	Shader *getTextureShader();
+	Shader *getColorShader();
+	UboDirLights *getUboDirLights();
+	UboPointLights *getUboPointLights();
+	UboSpotLights *getUboSpotLights();
+	UboTextureColor *getUboTextureColor();
+	UboViewProjection *getUboViewProjection();
 	float difficulty = 1.0f;
 	SceneManager(SceneManager const&) = delete;
 	void operator=(SceneManager const&) = delete;
 protected:
-	SceneManager();
+	SceneManager() {}
 	void setup();
-	Shader *uiColorShader, *uiTextureShader;
+	Shader *uiColorShader, *uiTextureShader, *skyboxShader, *modelShader, *textureShader, *colorShader;
 	TextRenderer *textRenderer;
 	Scene *currentScene = nullptr;
 	MainMenuScene *mainMenuScene;
 	OptionsScene *optionsScene;
 	GameScene *gameScene;
+	UboDirLights *uboDirLights;
+	UboPointLights *uboPointLights;
+	UboSpotLights *uboSpotLights;
+	UboTextureColor *uboTextureColor;
+	UboViewProjection *uboViewProjection;
 };
 
 #endif
