@@ -1,9 +1,9 @@
 #include "Shader.h"
 #include <fstream>
 
-Shader::Shader(char * vertexPath, char * fragmentPath) : Shader(vertexPath, fragmentPath, true) {}
+Shader::Shader(char* vertexPath, char* fragmentPath) : Shader(vertexPath, fragmentPath, true) {}
 
-Shader::Shader(char * vertexPath, char * fragmentPath, bool initialise) {
+Shader::Shader(char* vertexPath, char* fragmentPath, bool initialise) {
 	this->vertexPath = vertexPath;
 	this->fragmentPath = fragmentPath;
 	id = glCreateProgram();
@@ -39,16 +39,16 @@ void Shader::remove() {
 }
 
 void Shader::refreshUniforms() {
-	if (disableTexture != NULL) {
+	if (disableTexture != nullptr) {
 		setDisableTexture(*disableTexture);
 	}
-	if (scale != NULL) {
+	if (scale != nullptr) {
 		setScale(*scale);
 	}
-	if (color != NULL) {
+	if (color != nullptr) {
 		setColor(*color);
 	}
-	if (model != NULL) {
+	if (model != nullptr) {
 		setModel(*model);
 	}
 }
@@ -56,7 +56,7 @@ void Shader::refreshUniforms() {
 // deprecated, should be injected via UboTextureColor
 void Shader::setDisableTexture(bool disable) {
 	use();
-	if (this->disableTexture == NULL) {
+	if (this->disableTexture == nullptr) {
 		this->disableTexture = new bool();
 	}
 	GLint location = getUniformLocation("disableTexture");
@@ -68,7 +68,7 @@ void Shader::setDisableTexture(bool disable) {
 
 void Shader::setScale(float scale) {
 	use();
-	if (this->scale == NULL) {
+	if (this->scale == nullptr) {
 		this->scale = new float();
 	}
 	GLint location = getUniformLocation("scale");
@@ -81,7 +81,7 @@ void Shader::setScale(float scale) {
 // currently injected via UboTextureColor, though it might be useful when dealing with non-texture shaders
 void Shader::setColor(glm::vec4 color) {
 	use();
-	if (this->color == NULL) {
+	if (this->color == nullptr) {
 		this->color = new glm::vec4();
 	}
 	GLint location = getUniformLocation("color");
@@ -93,19 +93,19 @@ void Shader::setColor(glm::vec4 color) {
 
 void Shader::setModel(glm::mat4 model) {
 	use();
-	if (this->model == NULL) {
+	if (this->model == nullptr) {
 		this->model = new glm::mat4();
 	}
 	GLint location = getUniformLocation("model");
 	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(model));
 	}
 	*(this->model) = model;
 }
 
 void Shader::setViewPosition(glm::vec3 viewPosition) {
 	use();
-	if (this->viewPosition == NULL) {
+	if (this->viewPosition == nullptr) {
 		this->viewPosition = new glm::vec3();
 	}
 	GLint location = getUniformLocation("viewPosition");
@@ -117,7 +117,7 @@ void Shader::setViewPosition(glm::vec3 viewPosition) {
 
 void Shader::setViewDirection(glm::vec3 viewDirection) {
 	use();
-	if (this->viewDirection == NULL) {
+	if (this->viewDirection == nullptr) {
 		this->viewDirection = new glm::vec3();
 	}
 	GLint location = getUniformLocation("viewDirection");
@@ -129,7 +129,7 @@ void Shader::setViewDirection(glm::vec3 viewDirection) {
 
 void Shader::setShininess(float shininess) {
 	use();
-	if (this->shininess == NULL) {
+	if (this->shininess == nullptr) {
 		this->shininess = new float();
 	}
 	GLint location = getUniformLocation("shininess");
@@ -141,7 +141,7 @@ void Shader::setShininess(float shininess) {
 
 void Shader::setUseSpecular(bool useSpecular) {
 	use();
-	if (this->useSpecularMap == NULL) {
+	if (this->useSpecularMap == nullptr) {
 		this->useSpecularMap = new bool();
 	}
 	GLint location = getUniformLocation("useSpecularMap");
@@ -153,7 +153,7 @@ void Shader::setUseSpecular(bool useSpecular) {
 
 void Shader::setUseLight(bool useLight) {
 	use();
-	if (this->useLight == NULL) {
+	if (this->useLight == nullptr) {
 		this->useLight = new bool();
 	}
 	GLint location = getUniformLocation("useLight");
@@ -165,24 +165,24 @@ void Shader::setUseLight(bool useLight) {
 
 void Shader::setView(glm::mat4 view) {
 	use();
-	if (this->view == NULL) {
+	if (this->view == nullptr) {
 		this->view = new glm::mat4();
 	}
 	GLint location = getUniformLocation("view");
 	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(view));
 	}
 	*(this->view) = view;
 }
 
 void Shader::setProjection(glm::mat4 projection) {
 	use();
-	if (this->projection == NULL) {
+	if (this->projection == nullptr) {
 		this->projection = new glm::mat4();
 	}
 	GLint location = getUniformLocation("projection");
 	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(projection));
 	}
 	*(this->projection) = projection;
 }
@@ -243,14 +243,14 @@ float Shader::getShininess() {
 	return *shininess;
 }
 
-void Shader::bind(Ubo * ubo) {
+void Shader::bind(Ubo* ubo) {
 	GLuint index = glGetUniformBlockIndex(id, ubo->getBlockName());
 	if (index != -1) {
-	glUniformBlockBinding(id, index, ubo->getBinding());
+		glUniformBlockBinding(id, index, ubo->getBinding());
 	}
 }
 
-GLint Shader::getUniformLocation(const char * name) {
+GLint Shader::getUniformLocation(const char* name) {
 	return glGetUniformLocation(id, name);
 }
 
@@ -260,13 +260,13 @@ GLuint Shader::createAndCompileShader(int shaderType, const char* file) {
 	std::ifstream data(file, std::ios::binary | std::ios::ate);
 	std::streamsize fileSize = data.tellg();
 	data.seekg(0, std::ios::beg);
-	char *shaderText = new char[fileSize + 1];
+	char* shaderText = new char[fileSize + 1];
 	shaderText[fileSize] = '\0';
 	if (data.read(shaderText, fileSize)) {
-		glShaderSource(shader, 1, (const GLchar**)&shaderText, 0);
+		glShaderSource(shader, 1, (const GLchar**)&shaderText, nullptr);
 		glCompileShader(shader);
 		GLint isFine, maxLength;
-		char *errorLog;
+		char* errorLog;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &isFine);
 		if (isFine == FALSE) {
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
@@ -277,11 +277,10 @@ GLuint Shader::createAndCompileShader(int shaderType, const char* file) {
 			return NULL;
 		}
 		return shader;
-	} else {
-		printf("Unable to read the shader file '%s'.", file);
-		exit(1);
-		return NULL;
 	}
+	printf("Unable to read the shader file '%s'.", file);
+	exit(1);
+	return NULL;
 }
 
 void Shader::linkShaderProgram() {
@@ -290,7 +289,7 @@ void Shader::linkShaderProgram() {
 	}
 	glLinkProgram(id);
 	GLint isFine, maxLength;
-	char *errorLog;
+	char* errorLog;
 	glGetProgramiv(id, GL_LINK_STATUS, (int *)&isFine);
 	if (isFine == FALSE) {
 		glGetProgramiv(id, GL_INFO_LOG_LENGTH, &maxLength);

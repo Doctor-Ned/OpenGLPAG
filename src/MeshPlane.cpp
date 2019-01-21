@@ -1,7 +1,7 @@
 #include "MeshPlane.h"
 
-MeshPlane::MeshPlane(Shader shader, float width, float length, char *texturePath, glm::vec3 baseCenter)
-	: width(width), length(length), baseCenter(baseCenter), MeshTexture(shader) {
+MeshPlane::MeshPlane(Shader shader, float width, float length, char* texturePath, glm::vec3 baseCenter)
+	: MeshTexture(shader), baseCenter(baseCenter), width(width), length(length) {
 	texture = createTexture(texturePath);
 	VBO = 0;
 	setupMesh();
@@ -29,10 +29,10 @@ void MeshPlane::updateValues(float width, float length) {
 
 	glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
-	vertices[0].Normal = normal;  //bl
-	vertices[1].Normal = normal;  //ul
-	vertices[2].Normal = normal;  //ur
-	vertices[3].Normal = normal;  //br
+	vertices[0].Normal = normal; //bl
+	vertices[1].Normal = normal; //ul
+	vertices[2].Normal = normal; //ur
+	vertices[3].Normal = normal; //br
 
 	vertices[0].TexCoords = glm::vec2(0.0f, 0.0f);
 	vertices[1].TexCoords = glm::vec2(0.0f, 1.0f);
@@ -78,7 +78,7 @@ void MeshPlane::updateValues(float width, float length) {
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(TextureVertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, Normal));

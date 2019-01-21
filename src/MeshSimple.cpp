@@ -1,7 +1,7 @@
 #include "MeshSimple.h"
 
 MeshSimple::MeshSimple(Shader shader, std::vector<SimpleVertex> vertices, std::vector<unsigned int> indices)
-	: vertices(vertices), Mesh(shader, indices) {
+	: Mesh(shader, indices), vertices(vertices) {
 	setupMesh();
 }
 
@@ -30,7 +30,7 @@ void MeshSimple::setupMesh() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));

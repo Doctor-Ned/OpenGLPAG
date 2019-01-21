@@ -1,7 +1,8 @@
 #include "MeshColorCylinder.h"
 
-MeshColorCylinder::MeshColorCylinder(Shader shader, float radius, float height, int sideAmount, glm::vec4 color, glm::vec3 baseCenter)
-	: radius(radius), height(height), sideAmount(sideAmount), baseCenter(baseCenter), MeshSimple(shader, color) {
+MeshColorCylinder::MeshColorCylinder(Shader shader, float radius, float height, int sideAmount, glm::vec4 color,
+                                     glm::vec3 baseCenter)
+	: MeshSimple(shader, color), baseCenter(baseCenter), height(height), radius(radius), sideAmount(sideAmount) {
 	VBO = 0;
 	setupMesh();
 }
@@ -31,7 +32,7 @@ void MeshColorCylinder::updateValues(float radius, float height, int sideAmount)
 
 	std::vector<SimpleVertex> vertices;
 
-	float radStep = 2.0f*M_PI / sideAmount;
+	float radStep = 2.0f * M_PI / sideAmount;
 	float angle = 0.0f;
 
 	bool last;
@@ -108,7 +109,7 @@ void MeshColorCylinder::createTopTriangle(std::vector<SimpleVertex>* vertices) {
 	//std::memcpy(&vertices[index], &vertices[index - 3], sizeof(SimpleVertex) * 3);
 	//std::copy(&(*vertices)[index], &(*vertices)[index] + sizeof(SimpleVertex) * 3, std::back_inserter(*vertices));
 	//index += 3;
-	SimpleVertex *vertex;
+	SimpleVertex* vertex;
 	for (int i = index; i < index + 3; i++) {
 		vertex = &(*vertices)[i];
 		vertex->Position.y += height;
@@ -133,7 +134,7 @@ void MeshColorCylinder::createSideTriangles(std::vector<SimpleVertex>* vertices)
 	//std::copy(&(*vertices)[index], &(*vertices)[index] + sizeof(SimpleVertex) * 6, std::back_inserter(*vertices));
 	//index += 6;
 	SimpleVertex *dwCent = &(*vertices)[index], *dwClos = &(*vertices)[index + 1], *dwFar = &(*vertices)[index + 2],
-		*upCent = &(*vertices)[index + 3], *upFar = &(*vertices)[index + 4], *upClos = &(*vertices)[index + 5];
+	             *upCent = &(*vertices)[index + 3], *upFar = &(*vertices)[index + 4], *upClos = &(*vertices)[index + 5];
 	SimpleVertex temp; //far and close have reverted names because i need to swap them
 	std::memcpy(&temp, upFar, sizeof(SimpleVertex));
 	std::memcpy(upFar, upClos, sizeof(SimpleVertex));
@@ -150,7 +151,7 @@ void MeshColorCylinder::createSideTriangles(std::vector<SimpleVertex>* vertices)
 
 	normal.x = perpendicular.x;
 	normal.z = perpendicular.y;
-	normal = glm::normalize(normal);
+	normal = normalize(normal);
 
 	dwCent->Normal = normal;
 	dwClos->Normal = normal;
@@ -160,7 +161,7 @@ void MeshColorCylinder::createSideTriangles(std::vector<SimpleVertex>* vertices)
 	upFar->Normal = normal;
 }
 
-void MeshColorCylinder::bufferData(std::vector<SimpleVertex> *vertices) {
+void MeshColorCylinder::bufferData(std::vector<SimpleVertex>* vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -174,7 +175,7 @@ void MeshColorCylinder::bufferData(std::vector<SimpleVertex> *vertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(SimpleVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));

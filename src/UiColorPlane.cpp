@@ -1,6 +1,8 @@
 #include "UiColorPlane.h"
 
-UiColorPlane::UiColorPlane(Shader * shader, glm::vec4 color, glm::vec2 position, glm::vec2 size, bool center) : UiElement(shader,nullptr,position,size,center) {
+UiColorPlane::
+UiColorPlane(Shader* shader, glm::vec4 color, glm::vec2 position, glm::vec2 size, bool center) : UiElement(
+	shader, nullptr, position, size, center) {
 	this->color = color;
 	const float minX = actualPosition.x;
 	const float minY = actualPosition.y;
@@ -32,11 +34,12 @@ UiColorPlane::UiColorPlane(Shader * shader, glm::vec4 color, glm::vec2 position,
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(UiVertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)nullptr);
 
 	glBindVertexArray(0);
 	data.clear();
 }
+
 void UiColorPlane::render() {
 	UiElement::render();
 	shader->setColor(color);
@@ -47,6 +50,6 @@ void UiColorPlane::render() {
 	glUseProgram(0);
 }
 
-void UiColorPlane::mouse_callback(GLFWwindow * window, double xpos, double ypos) {}
+void UiColorPlane::mouse_callback(GLFWwindow* window, double xpos, double ypos) {}
 
-void UiColorPlane::mouse_button_callback(GLFWwindow * window, int button, int action, int mods) {}
+void UiColorPlane::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {}

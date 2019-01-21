@@ -7,16 +7,17 @@ TextRenderer::TextRenderer(GLfloat defaultScale) {
 	// Load and configure shader
 	this->defaultScale = defaultScale;
 	textShader = new Shader("textVertexShader.glsl", "textFragmentShader.glsl");
-	textShader->setProjection(glm::ortho(0.0f, static_cast<GLfloat>(WINDOW_WIDTH), static_cast<GLfloat>(WINDOW_HEIGHT), 0.0f));
+	textShader->setProjection(glm::ortho(0.0f, static_cast<GLfloat>(WINDOW_WIDTH), static_cast<GLfloat>(WINDOW_HEIGHT),
+	                                     0.0f));
 	textShader->setInt("text", 0);
 	// Configure VAO/VBO for texture quads
 	glGenVertexArrays(1, &this->vao);
 	glGenBuffers(1, &this->vbo);
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
@@ -59,7 +60,7 @@ void TextRenderer::load(std::string font, GLuint fontSize) {
 			GL_UNSIGNED_BYTE,
 			face->glyph->bitmap.buffer
 		);
-	// Set texture options
+		// Set texture options
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -82,15 +83,15 @@ void TextRenderer::load(std::string font, GLuint fontSize) {
 
 void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, bool center, glm::vec3 color) {
 	textShader->use();
-	textShader->setColor(glm::vec4(color,1.0f));
+	textShader->setColor(glm::vec4(color, 1.0f));
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(vao);
 	scale *= defaultScale;
 	std::string::const_iterator c;
-	
-	if(center) {
+
+	if (center) {
 		float totalWidth = 0.0f, totalHeight = 0.0f;
-		for(c = text.begin(); c != text.end(); c++) {
+		for (c = text.begin(); c != text.end(); ++c) {
 			Character ch = characters[*c];
 			totalWidth += ch.Size.x * scale;
 			float height = ch.Size.y * scale;
@@ -100,7 +101,7 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
 		y -= totalHeight / 2.0f;
 	}
 
-	for (c = text.begin(); c != text.end(); c++) {
+	for (c = text.begin(); c != text.end(); ++c) {
 		Character ch = characters[*c];
 
 		GLfloat xpos = x + ch.Bearing.x * scale;
@@ -110,19 +111,20 @@ void TextRenderer::renderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
 		GLfloat h = ch.Size.y * scale;
 		// Update VBO for each character
 		GLfloat vertices[6][4] = {
-			{ xpos,     ypos + h,   0.0, 1.0 },
-			{ xpos + w, ypos,       1.0, 0.0 },
-			{ xpos,     ypos,       0.0, 0.0 },
+			{xpos, ypos + h, 0.0, 1.0},
+			{xpos + w, ypos, 1.0, 0.0},
+			{xpos, ypos, 0.0, 0.0},
 
-			{ xpos,     ypos + h,   0.0, 1.0 },
-			{ xpos + w, ypos + h,   1.0, 1.0 },
-			{ xpos + w, ypos,       1.0, 0.0 }
+			{xpos, ypos + h, 0.0, 1.0},
+			{xpos + w, ypos + h, 1.0, 1.0},
+			{xpos + w, ypos, 1.0, 0.0}
 		};
 		// Render glyph texture over quad
 		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
 		// Update content of VBO memory
 		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		// Be sure to use glBufferSubData and not glBufferData
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		// Render quad

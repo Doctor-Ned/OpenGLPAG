@@ -1,6 +1,6 @@
 #include "DirLightNode.h"
 
-DirLightNode::DirLightNode(DirLight * light, Mesh * mesh, GraphNode * parent) : light(light), GraphNode(mesh, parent) {
+DirLightNode::DirLightNode(DirLight* light, Mesh* mesh, GraphNode* parent) : GraphNode(mesh, parent), light(light) {
 	rotationZ = 0.0f;
 	rotationX = 0.0f;
 	appliedZ = 0.0f;
@@ -31,8 +31,8 @@ void DirLightNode::drawGui(bool autoUpdate) {
 			appliedZ = rotationZ;
 			appliedX = rotationX;
 			local = glm::mat4(1.0f);
-			local = glm::rotate(local, appliedZ, glm::vec3(0.0f, 0.0f, 1.0f));
-			local = glm::rotate(local, appliedX, glm::vec3(1.0f, 0.0f, 0.0f));
+			local = rotate(local, appliedZ, glm::vec3(0.0f, 0.0f, 1.0f));
+			local = rotate(local, appliedX, glm::vec3(1.0f, 0.0f, 0.0f));
 			dirty = true;
 			light->model = getWorld();
 		}
@@ -42,7 +42,8 @@ void DirLightNode::drawGui(bool autoUpdate) {
 				light->ambient = lastAmbient;
 				light->diffuse = lastDiffuse;
 				light->specular = lastSpecular;
-			} else {
+			}
+			else {
 				lastAmbient = light->ambient;
 				lastDiffuse = light->diffuse;
 				lastSpecular = light->specular;
@@ -55,6 +56,6 @@ void DirLightNode::drawGui(bool autoUpdate) {
 	ImGui::PopID();
 }
 
-DirLight * DirLightNode::getLight() {
+DirLight* DirLightNode::getLight() {
 	return light;
 }

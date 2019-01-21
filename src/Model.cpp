@@ -2,7 +2,7 @@
 
 #include <stb_image.h>
 
-Model::Model(Shader shader, char *path) : Mesh(shader) {
+Model::Model(Shader shader, char* path) : Mesh(shader) {
 	loadModel(std::string(path));
 }
 
@@ -15,9 +15,10 @@ void Model::draw(Shader shader, glm::mat4 world, float scale) {
 
 void Model::setupMesh() {}
 
-void Model::loadModel(std::string const & path) {
+void Model::loadModel(std::string const& path) {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile(
+		path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		printf("Assimp could not properly load the model. %s\n", importer.GetErrorString());
 		exit(1);
@@ -26,7 +27,7 @@ void Model::loadModel(std::string const & path) {
 	processNode(scene->mRootNode, scene);
 }
 
-void Model::processNode(aiNode * node, const aiScene * scene) {
+void Model::processNode(aiNode* node, const aiScene* scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes.push_back(processMesh(mesh, scene));
@@ -36,7 +37,7 @@ void Model::processNode(aiNode * node, const aiScene * scene) {
 	}
 }
 
-MeshModel Model::processMesh(aiMesh * mesh, const aiScene * scene) {
+MeshModel Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<ModelVertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<ModelTexture> textures;
@@ -63,7 +64,8 @@ MeshModel Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 			vec.x = mesh->mTextureCoords[0][i].x;
 			vec.y = mesh->mTextureCoords[0][i].y;
 			vertex.TexCoords = vec;
-		} else
+		}
+		else
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
 		vector.x = mesh->mTangents[i].x;
@@ -99,7 +101,7 @@ MeshModel Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 	return MeshModel(shader, vertices, indices, textures);
 }
 
-std::vector<ModelTexture> Model::loadMaterialTextures(aiMaterial * mat, aiTextureType type, std::string typeName) {
+std::vector<ModelTexture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	std::vector<ModelTexture> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString str;
@@ -124,7 +126,7 @@ std::vector<ModelTexture> Model::loadMaterialTextures(aiMaterial * mat, aiTextur
 	return textures;
 }
 
-GLuint Model::TextureFromFile(const char * path, const std::string & directory) {
+GLuint Model::TextureFromFile(const char* path, const std::string& directory) {
 	std::string filename = std::string(path);
 	filename = directory + '\\' + filename;
 
@@ -132,7 +134,7 @@ GLuint Model::TextureFromFile(const char * path, const std::string & directory) 
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 	if (data) {
 		GLenum format;
 		if (nrComponents == 1)
@@ -152,7 +154,8 @@ GLuint Model::TextureFromFile(const char * path, const std::string & directory) 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		stbi_image_free(data);
-	} else {
+	}
+	else {
 		printf("Failed to load texture from file '%s'!\n", path);
 		stbi_image_free(data);
 	}

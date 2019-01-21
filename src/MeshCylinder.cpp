@@ -1,7 +1,8 @@
 #include "MeshCylinder.h"
 
-MeshCylinder::MeshCylinder(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter)
-	: radius(radius), height(height), sideAmount(sideAmount), baseCenter(baseCenter), MeshTexture(shader) {
+MeshCylinder::MeshCylinder(Shader shader, float radius, float height, int sideAmount, char* texturePath,
+                           glm::vec3 baseCenter)
+	: MeshTexture(shader), baseCenter(baseCenter), height(height), radius(radius), sideAmount(sideAmount) {
 	texture = createTexture(texturePath);
 	VBO = 0;
 	setupMesh();
@@ -34,7 +35,7 @@ void MeshCylinder::updateValues(float radius, float height, int sideAmount) {
 
 	std::vector<TextureVertex> vertices;
 
-	float radStep = 2.0f*M_PI / sideAmount;
+	float radStep = 2.0f * M_PI / sideAmount;
 	float angle = 0.0f;
 
 	bool last;
@@ -121,7 +122,7 @@ void MeshCylinder::createTopTriangle(std::vector<TextureVertex>* vertices) {
 	//std::memcpy(&vertices[index], &vertices[index - 3], sizeof(TextureVertex) * 3);
 	//std::copy(&(*vertices)[index], &(*vertices)[index] + sizeof(TextureVertex) * 3, std::back_inserter(*vertices));
 	//index += 3;
-	TextureVertex *vertex;
+	TextureVertex* vertex;
 	for (int i = index; i < index + 3; i++) {
 		vertex = &(*vertices)[i];
 		vertex->Position.y += height;
@@ -147,7 +148,8 @@ void MeshCylinder::createSideTriangles(std::vector<TextureVertex>* vertices) {
 	//std::copy(&(*vertices)[index], &(*vertices)[index] + sizeof(TextureVertex) * 6, std::back_inserter(*vertices));
 	//index += 6;
 	TextureVertex *dwCent = &(*vertices)[index], *dwClos = &(*vertices)[index + 1], *dwFar = &(*vertices)[index + 2],
-		*upCent = &(*vertices)[index + 3], *upFar = &(*vertices)[index + 4], *upClos = &(*vertices)[index + 5];
+	              *upCent = &(*vertices)[index + 3], *upFar = &(*vertices)[index + 4], *upClos = &(*vertices)[index + 5
+	              ];
 	TextureVertex temp; //far and close have reverted names because i need to swap them
 	std::memcpy(&temp, upFar, sizeof(TextureVertex));
 	std::memcpy(upFar, upClos, sizeof(TextureVertex));
@@ -176,7 +178,7 @@ void MeshCylinder::createSideTriangles(std::vector<TextureVertex>* vertices) {
 
 	normal.x = perpendicular.x;
 	normal.z = perpendicular.y;
-	normal = glm::normalize(normal);
+	normal = normalize(normal);
 
 	dwCent->Normal = normal;
 	dwClos->Normal = normal;
@@ -186,7 +188,7 @@ void MeshCylinder::createSideTriangles(std::vector<TextureVertex>* vertices) {
 	upFar->Normal = normal;
 }
 
-void MeshCylinder::bufferData(std::vector<TextureVertex> *vertices) {
+void MeshCylinder::bufferData(std::vector<TextureVertex>* vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -200,7 +202,7 @@ void MeshCylinder::bufferData(std::vector<TextureVertex> *vertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(TextureVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, Normal));

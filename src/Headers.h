@@ -35,13 +35,17 @@
 
 static glm::vec2 BUTTON_STANDARD_SIZE(400.0f, 75.0f);
 
-static const char *BUTTON_IDLE = "res\\ui\\ButtonIdle.png", *BUTTON_HOVER = "res\\ui\\ButtonHover.png", *BUTTON_CLICKED = "res\\ui\\ButtonClicked.png"
-, *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER = "res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
+static const char *BUTTON_IDLE = "res\\ui\\ButtonIdle.png", *BUTTON_HOVER = "res\\ui\\ButtonHover.png", *BUTTON_CLICKED
+	                  = "res\\ui\\ButtonClicked.png"
+                  , *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER =
+	                  "res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
 
-static const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f, WINDOW_CENTER_X = WINDOW_WIDTH/2.0f, WINDOW_CENTER_Y = WINDOW_HEIGHT/2.0f;
+static const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f, WINDOW_CENTER_X = WINDOW_WIDTH / 2.0f,
+                   WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
 
-static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max, float yPosition = 0.0f) {
-	glm::vec3 *result = new glm::vec3[width * length];
+static glm::vec3* createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max,
+                                                 float yPosition = 0.0f) {
+	glm::vec3* result = new glm::vec3[width * length];
 	float firstX = width == 1 ? (max.x + min.x) / 2.0f : min.x;
 	float xStep = width == 1 ? 0.0f : (max.x - min.x) / (float)(width - 1);
 	float firstZ = length == 1 ? (max.y - min.y) / 2.0f : min.y;
@@ -49,7 +53,7 @@ static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec
 	int counter = 0;
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < length; j++) {
-			result[counter++] = glm::vec3(i*xStep + firstX, yPosition, j*zStep + firstZ);
+			result[counter++] = glm::vec3(i * xStep + firstX, yPosition, j * zStep + firstZ);
 		}
 	}
 	return result;
@@ -60,10 +64,10 @@ struct Texture {
 	std::string path;
 };
 
-static Texture createTexture(const char *textureFile) {
+static Texture createTexture(const char* textureFile) {
 	Texture texture;
 	int imgWidth, imgHeight, imgChannels;
-	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
+	unsigned char* imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
 	if (!imgData) {
 		fprintf(stderr, "Failed to load texture from file \"%s\"!", textureFile);
 		exit(1);
@@ -88,11 +92,13 @@ static GLuint loadCubemap(std::vector<std::string> faces) {
 
 	int width, height, nrComponents;
 	for (unsigned int i = 0; i < faces.size(); i++) {
-		unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
 		if (data) {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+			             data);
 			stbi_image_free(data);
-		} else {
+		}
+		else {
 			printf("Cubemap texture failed to load at path '%s'!\n", faces[i].c_str());
 			stbi_image_free(data);
 		}
@@ -115,7 +121,7 @@ static GLuint loadCubemap(std::vector<std::string> faces) {
 #define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4 + 4 * 3   // 5*float + 5*vec4 + mat4 + vec3
 
 static double remap(double value, double sourceMin, double sourceMax, double targetMin, double targetMax,
-	bool revertTarget = false, bool snapIfInvalid = true) {
+                    bool revertTarget = false, bool snapIfInvalid = true) {
 	if (value < sourceMin || value > sourceMax) {
 		if (snapIfInvalid) {
 			return value < sourceMin ? targetMin : targetMax;

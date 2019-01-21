@@ -1,12 +1,12 @@
 #include "Ubo.h"
 
-Ubo::Ubo(unsigned int size, char * blockName, GLuint binding) {
+Ubo::Ubo(unsigned int size, char* blockName, GLuint binding) {
 	this->size = size;
 	this->blockName = blockName;
 	this->binding = binding;
 	glGenBuffers(1, &id);
 	glBindBuffer(GL_UNIFORM_BUFFER, id);
-	glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, binding, id, 0, size);
 }

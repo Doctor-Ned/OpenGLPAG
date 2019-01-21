@@ -1,7 +1,9 @@
 #include "MeshColorTorus.h"
 
-MeshColorTorus::MeshColorTorus(Shader shader, float radiusIn, float radiusOut, int sideAmount, glm::vec4 color, glm::vec3 baseCenter)
-	: radiusIn(radiusIn), radiusOut(radiusOut), sideAmount(sideAmount), baseCenter(baseCenter), MeshSimple(shader, color) {
+MeshColorTorus::MeshColorTorus(Shader shader, float radiusIn, float radiusOut, int sideAmount, glm::vec4 color,
+                               glm::vec3 baseCenter)
+	: MeshSimple(shader, color), baseCenter(baseCenter), radiusIn(radiusIn), radiusOut(radiusOut),
+	  sideAmount(sideAmount) {
 	VBO = 0;
 	setupMesh();
 }
@@ -31,11 +33,11 @@ void MeshColorTorus::updateValues(float radiusIn, float radiusOut, int sideAmoun
 
 	std::vector<SimpleVertex> vertices;
 
-	float radStep = 2.0f*M_PI / sideAmount;
+	float radStep = 2.0f * M_PI / sideAmount;
 	float angle = 0.0f;
 
 	for (int i = 0; i < sideAmount; i++) {
-		createTorusSegment(&vertices, angle, i == sideAmount - 1 ? 2.0f*M_PI - angle : radStep);
+		createTorusSegment(&vertices, angle, i == sideAmount - 1 ? 2.0f * M_PI - angle : radStep);
 		angle += radStep;
 	}
 
@@ -71,7 +73,7 @@ void MeshColorTorus::drawGui(bool autoUpdate) {
 }
 
 void MeshColorTorus::createTorusSegment(std::vector<SimpleVertex>* vertices, float angle, float radStep) {
-	glm::vec3 *circle = new glm::vec3[sideAmount];
+	glm::vec3* circle = new glm::vec3[sideAmount];
 
 	float centerX = radiusOut;
 	float torusRadius = (radiusOut - radiusIn) / 2.0f;
@@ -88,21 +90,21 @@ void MeshColorTorus::createTorusSegment(std::vector<SimpleVertex>* vertices, flo
 	glm::vec3 rotateAxis(0.0f, 1.0f, 0.0f);
 
 	for (int i = 0; i < sideAmount; i++) {
-		circle[i] = glm::rotate(circle[i], angle, rotateAxis);
+		circle[i] = rotate(circle[i], angle, rotateAxis);
 	}
 
-	glm::vec3 *circle2 = new glm::vec3[sideAmount];
+	glm::vec3* circle2 = new glm::vec3[sideAmount];
 
 	std::memcpy(circle2, circle, sideAmount * sizeof(glm::vec3));
 
 	for (int i = 0; i < sideAmount; i++) {
-		circle2[i] = glm::rotate(circle2[i], radStep, rotateAxis);
+		circle2[i] = rotate(circle2[i], radStep, rotateAxis);
 	}
 
-	glm::vec3 *tL;
-	glm::vec3 *tR;
-	glm::vec3 *dR;
-	glm::vec3 *dL;
+	glm::vec3* tL;
+	glm::vec3* tR;
+	glm::vec3* dR;
+	glm::vec3* dL;
 
 	for (int i = 0; i < sideAmount; i++) {
 		tL = &circle[i];
@@ -110,7 +112,8 @@ void MeshColorTorus::createTorusSegment(std::vector<SimpleVertex>* vertices, flo
 		if (i == sideAmount - 1) {
 			dL = &circle[0];
 			dR = &circle2[0];
-		} else {
+		}
+		else {
 			dL = &circle[i + 1];
 			dR = &circle2[i + 1];
 		}
@@ -119,10 +122,11 @@ void MeshColorTorus::createTorusSegment(std::vector<SimpleVertex>* vertices, flo
 	}
 }
 
-void MeshColorTorus::createRectangle(std::vector<SimpleVertex> *vertices, glm::vec3 *tL, glm::vec3 *tR, glm::vec3 *dR, glm::vec3 *dL) {
+void MeshColorTorus::createRectangle(std::vector<SimpleVertex>* vertices, glm::vec3* tL, glm::vec3* tR, glm::vec3* dR,
+                                     glm::vec3* dL) {
 	glm::vec3 horizontal = *dR - *dL;
 	glm::vec3 vertical = *tL - *dL;
-	glm::vec3 normal = glm::cross(vertical, horizontal);
+	glm::vec3 normal = cross(vertical, horizontal);
 	SimpleVertex output[4];
 
 	for (int i = 0; i < 4; i++) {
@@ -141,7 +145,7 @@ void MeshColorTorus::createRectangle(std::vector<SimpleVertex> *vertices, glm::v
 	vertices->push_back(output[1]);
 }
 
-void MeshColorTorus::bufferData(std::vector<SimpleVertex> *vertices) {
+void MeshColorTorus::bufferData(std::vector<SimpleVertex>* vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -155,7 +159,7 @@ void MeshColorTorus::bufferData(std::vector<SimpleVertex> *vertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(SimpleVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));

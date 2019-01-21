@@ -1,7 +1,8 @@
 #include "MeshColorCone.h"
 
-MeshColorCone::MeshColorCone(Shader shader, float radius, float height, int sideAmount, glm::vec4 color, glm::vec3 baseCenter)
-	: radius(radius), height(height), sideAmount(sideAmount), baseCenter(baseCenter), MeshSimple(shader, color) {
+MeshColorCone::MeshColorCone(Shader shader, float radius, float height, int sideAmount, glm::vec4 color,
+                             glm::vec3 baseCenter)
+	: MeshSimple(shader, color), baseCenter(baseCenter), height(height), radius(radius), sideAmount(sideAmount) {
 	VBO = 0;
 	setupMesh();
 }
@@ -31,7 +32,7 @@ void MeshColorCone::updateValues(float radius, float height, int sideAmount) {
 
 	std::vector<SimpleVertex> vertices;
 
-	float radStep = 2.0f*M_PI / sideAmount;
+	float radStep = 2.0f * M_PI / sideAmount;
 	float angle = 0.0f;
 
 	bool last;
@@ -111,12 +112,13 @@ void MeshColorCone::createTopTriangle(std::vector<SimpleVertex>* vertices) {
 	std::memcpy(cl, fr, sizeof(SimpleVertex));
 	std::memcpy(fr, &temp, sizeof(SimpleVertex));
 
-	glm::vec3 botEdge(cl->Position - fr->Position), sideEdge(cen->Position - fr->Position), normal = glm::normalize(glm::cross(sideEdge, botEdge));
+	glm::vec3 botEdge(cl->Position - fr->Position), sideEdge(cen->Position - fr->Position), normal = normalize(
+		          cross(sideEdge, botEdge));
 
 	cen->Normal = fr->Normal = cl->Normal = normal;
 }
 
-void MeshColorCone::bufferData(std::vector<SimpleVertex> *vertices) {
+void MeshColorCone::bufferData(std::vector<SimpleVertex>* vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -130,7 +132,7 @@ void MeshColorCone::bufferData(std::vector<SimpleVertex> *vertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(SimpleVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SimpleVertex), (void*)offsetof(SimpleVertex, Normal));

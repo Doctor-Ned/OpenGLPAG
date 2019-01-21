@@ -17,9 +17,9 @@ public:
 	void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) override;
 	void setResumeCallback(const std::function<void()>& resumeCallback);
 protected:
-	TextRenderer *textRenderer;
+	TextRenderer* textRenderer;
 	UiTextButton *buttonResume, *buttonMenu;
-	UiColorPlane *background;
+	UiColorPlane* background;
 	std::function<void()> resumeCallback = []() {};
 };
 

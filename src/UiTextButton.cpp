@@ -1,7 +1,10 @@
 #include "UiTextButton.h"
 
-UiTextButton::UiTextButton(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked,
-	glm::vec2 position, glm::vec2 size, TextRenderer* textRenderer, char* text, glm::vec3 textColor, bool center) : UiButton(shader, textureIdle, textureHover, textureClicked, position, size, center) {
+UiTextButton::UiTextButton(Shader* shader, const char* textureIdle, const char* textureHover,
+                           const char* textureClicked,
+                           glm::vec2 position, glm::vec2 size, TextRenderer* textRenderer, char* text,
+                           glm::vec3 textColor, bool center) : UiButton(shader, textureIdle, textureHover,
+                                                                        textureClicked, position, size, center) {
 	this->textRenderer = textRenderer;
 	this->text = text;
 	this->color = textColor;

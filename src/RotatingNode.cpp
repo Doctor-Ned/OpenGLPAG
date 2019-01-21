@@ -1,9 +1,10 @@
 #include "RotatingNode.h"
 
-RotatingNode::RotatingNode(float rotationSpeed, Mesh * mesh, GraphNode * parent) : rotationSpeed(rotationSpeed), GraphNode(mesh, parent) {}
+RotatingNode::RotatingNode(float rotationSpeed, Mesh* mesh, GraphNode* parent) : GraphNode(mesh, parent),
+                                                                                 rotationSpeed(rotationSpeed) {}
 
 void RotatingNode::update(double timeDiff) {
-	setLocal(glm::rotate(local, (float)(rotationSpeed*timeDiff), glm::vec3(0.0f, 1.0f, 0.0f)));
+	setLocal(rotate(local, (float)(rotationSpeed * timeDiff), glm::vec3(0.0f, 1.0f, 0.0f)));
 	GraphNode::update(timeDiff);
 }
 

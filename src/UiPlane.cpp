@@ -1,6 +1,7 @@
 #include "UiPlane.h"
 
-UiPlane::UiPlane(Shader * shader, const char * texture, glm::vec2 position, glm::vec2 size, bool center) : UiElement(shader,texture,position,size,center) {
+UiPlane::UiPlane(Shader* shader, const char* texture, glm::vec2 position, glm::vec2 size, bool center) : UiElement(
+	shader, texture, position, size, center) {
 	const float minX = actualPosition.x;
 	const float minY = actualPosition.y;
 
@@ -36,14 +37,16 @@ UiPlane::UiPlane(Shader * shader, const char * texture, glm::vec2 position, glm:
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(UiTextureVertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiTextureVertex), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiTextureVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(UiTextureVertex), (void*)offsetof(UiTextureVertex, TexCoords));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(UiTextureVertex),
+	                      (void*)offsetof(UiTextureVertex, TexCoords));
 
 	glBindVertexArray(0);
 	data.clear();
 }
+
 void UiPlane::render() {
 	UiElement::render();
 	glBindTexture(GL_TEXTURE_2D, texture.id);
@@ -54,6 +57,6 @@ void UiPlane::render() {
 	glUseProgram(0);
 }
 
-void UiPlane::mouse_callback(GLFWwindow * window, double xpos, double ypos) {}
+void UiPlane::mouse_callback(GLFWwindow* window, double xpos, double ypos) {}
 
-void UiPlane::mouse_button_callback(GLFWwindow * window, int button, int action, int mods) {}
+void UiPlane::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {}

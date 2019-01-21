@@ -1,7 +1,9 @@
 #include "MeshModelInstanced.h"
 
-MeshModelInstanced::MeshModelInstanced(Shader shader, std::vector<ModelVertex> vertices, std::vector<unsigned int> indices, std::vector<ModelTexture> textures, glm::vec3 *offsets, int offsetSize)
-	: vertices(vertices), textures(textures), offsets(offsets), offsetSize(offsetSize), Mesh(shader, indices) {
+MeshModelInstanced::MeshModelInstanced(Shader shader, std::vector<ModelVertex> vertices,
+                                       std::vector<unsigned int> indices, std::vector<ModelTexture> textures,
+                                       glm::vec3* offsets, int offsetSize)
+	: Mesh(shader, indices), offsets(offsets), offsetSize(offsetSize), vertices(vertices), textures(textures) {
 	setupMesh();
 }
 
@@ -35,7 +37,7 @@ void MeshModelInstanced::draw(Shader shader, glm::mat4 world, float scale) {
 
 	shader.setUseSpecular(specularNr > 1);
 	glBindVertexArray(VAO);
-	glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, offsetSize);
+	glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr, offsetSize);
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -61,7 +63,7 @@ void MeshModelInstanced::setupMesh() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ModelVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ModelVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ModelVertex), (void*)offsetof(ModelVertex, Normal));
@@ -78,7 +80,7 @@ void MeshModelInstanced::setupMesh() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(5, 1);
 

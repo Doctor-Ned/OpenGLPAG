@@ -1,8 +1,10 @@
 #include "UiSlider.h"
 
-UiSlider::UiSlider(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked, glm::vec2 position,
-	glm::vec2 size, Shader* lineShader, double lineThickness, glm::vec2 buttonSize, float value,
-	float min, float max, glm::vec4 lineColor, bool center) : UiElement(lineShader, nullptr, position, size, center) {
+UiSlider::UiSlider(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked,
+                   glm::vec2 position,
+                   glm::vec2 size, Shader* lineShader, double lineThickness, glm::vec2 buttonSize, float value,
+                   float min, float max, glm::vec4 lineColor, bool center) : UiElement(
+	lineShader, nullptr, position, size, center) {
 	this->min = min;
 	this->max = max;
 	this->value = value;
@@ -43,7 +45,7 @@ UiSlider::UiSlider(Shader* shader, const char* textureIdle, const char* textureH
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(UiVertex), &data[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(UiVertex), (void*)nullptr);
 
 	glBindVertexArray(0);
 	data.clear();
@@ -57,7 +59,8 @@ void UiSlider::render() {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 	glUseProgram(0);
-	button->setPosition(glm::vec2(remap(value, min, max, 0.0, size.x) + actualPosition.x, actualPosition.y + size.y / 2.0f));
+	button->setPosition(glm::vec2(remap(value, min, max, 0.0, size.x) + actualPosition.x,
+	                              actualPosition.y + size.y / 2.0f));
 	button->render();
 }
 
@@ -74,22 +77,26 @@ void UiSlider::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 					value = min;
 					callback(value);
 				}
-			} else if (xpos > actualPosition.x + size.x) {
+			}
+			else if (xpos > actualPosition.x + size.x) {
 				if (value != max) {
 					value = max;
 					callback(value);
 				}
-			} else {
+			}
+			else {
 				const double currentX = remap(value, min, max, 0.0, size.x);
 				value = remap(currentX + xpos - moveX, 0.0, size.x, min, max);
 				moveX = xpos;
 				callback(value);
 			}
-		} else {
+		}
+		else {
 			moving = true;
 			moveX = xpos;
 		}
-	} else {
+	}
+	else {
 		moving = false;
 	}
 }

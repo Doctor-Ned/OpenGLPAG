@@ -14,7 +14,7 @@ public:
 	void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) override;
 	void setOptionsCallback(std::function<void()> callback);
 protected:
-	TextRenderer *textRenderer;
+	TextRenderer* textRenderer;
 	UiTextButton *buttonNewGame, *buttonOptions, *buttonQuit;
 };
 

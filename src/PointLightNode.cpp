@@ -1,6 +1,7 @@
 #include "PointLightNode.h"
 
-PointLightNode::PointLightNode(PointLight * light, Mesh * mesh, GraphNode * parent) : light(light), GraphNode(mesh, parent) {
+PointLightNode::
+PointLightNode(PointLight* light, Mesh* mesh, GraphNode* parent) : GraphNode(mesh, parent), light(light) {
 	pos = light->position;
 	constant = light->constant;
 	linear = light->linear;
@@ -35,7 +36,7 @@ void PointLightNode::drawGui(bool autoUpdate) {
 		light->constant = constant;
 		light->linear = linear;
 		light->quadratic = quadratic;
-		local = glm::translate(glm::mat4(1.0f), glm::vec3(light->position));
+		local = translate(glm::mat4(1.0f), glm::vec3(light->position));
 		dirty = true;
 		light->model = getWorld();
 		if (lastEnabled != enabled) {
@@ -44,7 +45,8 @@ void PointLightNode::drawGui(bool autoUpdate) {
 				light->ambient = lastAmbient;
 				light->diffuse = lastDiffuse;
 				light->specular = lastSpecular;
-			} else {
+			}
+			else {
 				lastAmbient = light->ambient;
 				lastDiffuse = light->diffuse;
 				lastSpecular = light->specular;
@@ -57,6 +59,6 @@ void PointLightNode::drawGui(bool autoUpdate) {
 	ImGui::PopID();
 }
 
-PointLight * PointLightNode::getLight() {
+PointLight* PointLightNode::getLight() {
 	return light;
 }

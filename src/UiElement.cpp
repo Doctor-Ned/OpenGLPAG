@@ -10,7 +10,8 @@ UiElement::UiElement(Shader* shader, const char* texture, glm::vec2 position, gl
 	this->center = center;
 	if (center) {
 		actualPosition = glm::vec2(position.x - size.x / 2.0f, position.y - size.y / 2.0f);
-	} else {
+	}
+	else {
 		actualPosition = position;
 	}
 }

@@ -1,7 +1,7 @@
 #include "MeshCone.h"
 
-MeshCone::MeshCone(Shader shader, float radius, float height, int sideAmount, char *texturePath, glm::vec3 baseCenter)
-	: radius(radius), height(height), sideAmount(sideAmount), baseCenter(baseCenter), MeshTexture(shader) {
+MeshCone::MeshCone(Shader shader, float radius, float height, int sideAmount, char* texturePath, glm::vec3 baseCenter)
+	: MeshTexture(shader), baseCenter(baseCenter), height(height), radius(radius), sideAmount(sideAmount) {
 	texture = createTexture(texturePath);
 	VBO = 0;
 	setupMesh();
@@ -34,7 +34,7 @@ void MeshCone::updateValues(float radius, float height, int sideAmount) {
 
 	std::vector<TextureVertex> vertices;
 
-	float radStep = 2.0f*M_PI / sideAmount;
+	float radStep = 2.0f * M_PI / sideAmount;
 	float angle = 0.0f;
 
 	bool last;
@@ -126,12 +126,13 @@ void MeshCone::createTopTriangle(std::vector<TextureVertex>* vertices) {
 	cl->TexCoords.x = 1.0f;
 	fr->TexCoords.x = 0.0f;
 
-	glm::vec3 botEdge(cl->Position - fr->Position), sideEdge(cen->Position - fr->Position), normal = glm::normalize(glm::cross(sideEdge, botEdge));
+	glm::vec3 botEdge(cl->Position - fr->Position), sideEdge(cen->Position - fr->Position), normal = normalize(
+		          cross(sideEdge, botEdge));
 
 	cen->Normal = fr->Normal = cl->Normal = normal;
 }
 
-void MeshCone::bufferData(std::vector<TextureVertex> *vertices) {
+void MeshCone::bufferData(std::vector<TextureVertex>* vertices) {
 	shader.use();
 	if (VBO != 0) {
 		glDeleteBuffers(1, &VBO);
@@ -145,7 +146,7 @@ void MeshCone::bufferData(std::vector<TextureVertex> *vertices) {
 	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(TextureVertex), &(*vertices)[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void*)offsetof(TextureVertex, Normal));

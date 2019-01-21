@@ -14,12 +14,12 @@ public:
 	void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) override;
 protected:
 	void updateDifficulty(float diff);
-	TextRenderer *textRenderer;
+	TextRenderer* textRenderer;
 	glm::vec2 difficultyTextPos, difficultyPos;
 	glm::vec3 difficultyColor;
-	char *difficultyText;
-	UiTextButton *buttonBackToMenu;
-	UiSlider *sliderDifficulty;
+	char* difficultyText;
+	UiTextButton* buttonBackToMenu;
+	UiSlider* sliderDifficulty;
 };
 
 #endif

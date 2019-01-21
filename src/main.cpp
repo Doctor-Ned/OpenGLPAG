@@ -18,11 +18,9 @@ static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-static SceneManager *sceneManager;
+static SceneManager* sceneManager;
 
-void process_keyboard_movement(GLFWwindow *window) {
-
-}
+void process_keyboard_movement(GLFWwindow* window) {}
 
 void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	sceneManager->keyboard_callback(window, key, scancode, action, mods);
@@ -57,13 +55,13 @@ int main(int, char**) {
 	const char* glsl_version = "#version 430";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
 #endif
 
 	// Create window with graphics context
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", NULL, NULL);
-	if (window == NULL) {
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGLPAG", nullptr, nullptr);
+	if (window == nullptr) {
 		return 1;
 	}
 	glfwMakeContextCurrent(window);
@@ -83,7 +81,7 @@ int main(int, char**) {
 		return 1;
 	}
 
-	glEnable(GL_DEPTH_TEST);   // this is so important. Spent 2 hours looking for it
+	glEnable(GL_DEPTH_TEST); // this is so important. Spent 2 hours looking for it
 	//glAlphaFunc(GL_GREATER, 0.1f);
 	//glEnable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);

@@ -21,7 +21,7 @@ protected:
 	Mesh(Shader shader);
 	GLuint VAO;
 	GLuint VBO, EBO;
-	float shininess=1.0f;
+	float shininess = 1.0f;
 	std::vector<unsigned int> indices;
 	Shader shader;
 	bool useLight = true;

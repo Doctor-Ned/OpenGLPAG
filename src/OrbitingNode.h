@@ -5,8 +5,8 @@
 
 class OrbitingNode : public GraphNode {
 public:
-	OrbitingNode(OrbitNode *orbit, float orbitSpeed, Mesh *mesh = NULL);
-	void update(double timeDiff);
+	OrbitingNode(OrbitNode* orbit, float orbitSpeed, Mesh* mesh = nullptr);
+	void update(double timeDiff) override;
 	void draw() { GraphNode::draw(); };
 	void setOrbitSpeed(float orbitSpeed);
 	void setAngle(float angle);
@@ -14,8 +14,8 @@ public:
 private:
 	float angle;
 	float orbitSpeed;
-	Mesh *mesh;
-	OrbitNode *orbit;
+	Mesh* mesh;
+	OrbitNode* orbit;
 };
 
 #endif

@@ -5,8 +5,8 @@
 
 class OrbitNode : public GraphNode {
 public:
-	OrbitNode(float radius, Mesh *mesh = NULL, GraphNode *parent = NULL);
-	void update(double timeDiff);
+	OrbitNode(float radius, Mesh* mesh = nullptr, GraphNode* parent = nullptr);
+	void update(double timeDiff) override;
 	float getRadius();
 	void setRadius(float radius);
 private:

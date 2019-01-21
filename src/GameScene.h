@@ -18,17 +18,17 @@ public:
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos) override;
 	void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) override;
 protected:
-	GraphNode *graphScene;
+	GraphNode* graphScene;
 	glm::mat4 projection;
-	Camera *camera;
-	SceneManager *sceneManager;
+	Camera* camera;
+	SceneManager* sceneManager;
 	void pause();
 	void unpause();
-	bool paused=false;
-	PauseScene *pauseScene;
-	Skybox *skybox;
-	bool intro = true, introHalfPassed=false;
-	float introDistance = 10.0f, introDone=0.0f, prevIntroDone=0.0f, introSpeed=0.0f, introAcceleration=0.08f;
+	bool paused = false;
+	PauseScene* pauseScene;
+	Skybox* skybox;
+	bool intro = true, introHalfPassed = false;
+	float introDistance = 10.0f, introDone = 0.0f, prevIntroDone = 0.0f, introSpeed = 0.0f, introAcceleration = 0.08f;
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "OrbitNode.h"
 
-OrbitNode::OrbitNode(float radius, Mesh *mesh, GraphNode *parent) : radius(radius), GraphNode(mesh, parent) { }
+OrbitNode::OrbitNode(float radius, Mesh* mesh, GraphNode* parent) : GraphNode(mesh, parent), radius(radius) { }
 
 void OrbitNode::update(double timeDiff) {
 	GraphNode::update(timeDiff);

@@ -5,12 +5,12 @@
 
 class PointLightNode : public GraphNode {
 public:
-	PointLightNode(PointLight *light, Mesh *mesh = NULL, GraphNode *parent = NULL);
-	virtual void update(double timeDiff);
+	PointLightNode(PointLight* light, Mesh* mesh = nullptr, GraphNode* parent = nullptr);
+	void update(double timeDiff) override;
 	void drawGui(bool autoUpdate = true);
-	PointLight *getLight();
+	PointLight* getLight();
 protected:
-	PointLight *light;
+	PointLight* light;
 	bool enabled = true;
 	glm::vec4 lastAmbient;
 	glm::vec4 lastDiffuse;

@@ -6,7 +6,7 @@
 
 class Shader {
 public:
-	Shader(char *vertexPath, char *fragmentPath);
+	Shader(char* vertexPath, char* fragmentPath);
 	virtual GLuint getID();
 	void use();
 	void remove();
@@ -35,24 +35,24 @@ public:
 	bool getUseSpecular();
 	bool getUseLight();
 	float getShininess();
-	virtual void bind(Ubo *ubo);
-	GLint getUniformLocation(const char *name);
+	virtual void bind(Ubo* ubo);
+	GLint getUniformLocation(const char* name);
 protected:
-	Shader(char *vertexPath, char *fragmentPath, bool initialise);
+	Shader(char* vertexPath, char* fragmentPath, bool initialise);
 	GLuint createAndCompileShader(int shaderType, const char* file);
 	virtual void createShaders();
 	void deleteShaders();
 	void linkShaderProgram();
 	GLuint id;
 	std::vector<GLuint> shaders;
-	char *fragmentPath;
-	char *vertexPath;
-	glm::vec4 *color = NULL;
-	glm::mat4 *model = NULL, *view = NULL, *projection = NULL;
-	glm::vec3 *viewPosition = NULL, *viewDirection = NULL;
-	float *scale = NULL;
-	float *shininess = NULL;
-	bool *disableTexture = NULL, *blinnPhong = NULL, *useSpecularMap = NULL, *useLight = NULL;
+	char* fragmentPath;
+	char* vertexPath;
+	glm::vec4* color = nullptr;
+	glm::mat4 *model = nullptr, *view = nullptr, *projection = nullptr;
+	glm::vec3 *viewPosition = nullptr, *viewDirection = nullptr;
+	float* scale = nullptr;
+	float* shininess = nullptr;
+	bool *disableTexture = nullptr, *blinnPhong = nullptr, *useSpecularMap = nullptr, *useLight = nullptr;
 };
 
 #endif

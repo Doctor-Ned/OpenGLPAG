@@ -5,12 +5,12 @@
 
 class DirLightNode : public GraphNode {
 public:
-	DirLightNode(DirLight *light, Mesh *mesh = NULL, GraphNode *parent = NULL);
-	virtual void update(double timeDiff);
+	DirLightNode(DirLight* light, Mesh* mesh = nullptr, GraphNode* parent = nullptr);
+	void update(double timeDiff) override;
 	void drawGui(bool autoUpdate = true);
-	DirLight *getLight();
+	DirLight* getLight();
 protected:
-	DirLight *light;
+	DirLight* light;
 	bool enabled = true;
 	glm::vec4 lastAmbient;
 	glm::vec4 lastDiffuse;

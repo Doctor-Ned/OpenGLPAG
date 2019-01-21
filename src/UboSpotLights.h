@@ -5,8 +5,8 @@
 
 class UboSpotLights : public Ubo {
 public:
-	UboSpotLights(int spotAmount, SpotLight **spot);
-	void inject(int spotAmount, SpotLight **spot);
+	UboSpotLights(int spotAmount, SpotLight** spot);
+	void inject(int spotAmount, SpotLight** spot);
 };
 
 #endif

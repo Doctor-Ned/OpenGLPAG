@@ -6,21 +6,21 @@
 
 class GraphNode {
 public:
-	GraphNode(Mesh *mesh = NULL, GraphNode *parent = NULL);
-	void draw();
+	GraphNode(Mesh* mesh = nullptr, GraphNode* parent = nullptr);
+	virtual void draw();
 	virtual void update(double timeDiff);
 	glm::mat4 getLocal();
 	glm::mat4 getWorld();
 	void setScale(float scale);
 	void setLocal(glm::mat4 local);
-	void addChild(GraphNode *child);
-	void removeChild(GraphNode *child);
-	Mesh *getMesh();
+	void addChild(GraphNode* child);
+	void removeChild(GraphNode* child);
+	Mesh* getMesh();
 protected:
 	glm::mat4 local, world;
 	std::vector<GraphNode*> children;
-	GraphNode *parent;
-	Mesh *mesh;
+	GraphNode* parent;
+	Mesh* mesh;
 	bool dirty;
 	float scale;
 };

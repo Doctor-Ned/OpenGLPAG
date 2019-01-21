@@ -10,11 +10,11 @@ public:
 	virtual char* getBlockName();
 	virtual ~Ubo() = 0;
 protected:
-	Ubo(unsigned int size, char *blockName, GLuint binding);
+	Ubo(unsigned int size, char* blockName, GLuint binding);
 protected:
 	GLuint binding;
 	GLuint id;
-	char *blockName;
+	char* blockName;
 	unsigned int size;
 };
 

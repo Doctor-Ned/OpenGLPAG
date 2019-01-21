@@ -1,6 +1,6 @@
 #include "SpotLightNode.h"
 
-SpotLightNode::SpotLightNode(SpotLight * light, Mesh * mesh, GraphNode * parent) : light(light), GraphNode(mesh, parent) {
+SpotLightNode::SpotLightNode(SpotLight* light, Mesh* mesh, GraphNode* parent) : GraphNode(mesh, parent), light(light) {
 	rotationZ = 0.0f;
 	rotationX = 0.0f;
 	appliedZ = 0.0f;
@@ -55,21 +55,22 @@ void SpotLightNode::drawGui(bool autoUpdate) {
 		light->outerCutOff = outerCutOff;
 		//if (rotationZ != appliedZ || rotationY != appliedY || light->position != pos) {
 		light->position = pos;
-		local = glm::translate(glm::mat4(1.0f), glm::vec3(light->position));
-		local = glm::rotate(local, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
-		local = glm::rotate(local, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
+		local = translate(glm::mat4(1.0f), glm::vec3(light->position));
+		local = rotate(local, rotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+		local = rotate(local, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
 		appliedZ = rotationZ;
 		appliedX = rotationX;
 		dirty = true;
 		light->model = getWorld();
-	//}
+		//}
 		if (lastEnabled != enabled) {
 			enabled = lastEnabled;
 			if (enabled) {
 				light->ambient = lastAmbient;
 				light->diffuse = lastDiffuse;
 				light->specular = lastSpecular;
-			} else {
+			}
+			else {
 				lastAmbient = light->ambient;
 				lastDiffuse = light->diffuse;
 				lastSpecular = light->specular;
@@ -82,6 +83,6 @@ void SpotLightNode::drawGui(bool autoUpdate) {
 	ImGui::PopID();
 }
 
-SpotLight * SpotLightNode::getLight() {
+SpotLight* SpotLightNode::getLight() {
 	return light;
 }

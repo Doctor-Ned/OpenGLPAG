@@ -2,7 +2,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 Camera::Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, float speed, float rotSpeed)
-	: cameraPos(cameraPos), cameraFront(cameraFront), cameraUp(cameraUp), speed(speed), rotSpeed(rotSpeed) {
+	: speed(speed), rotSpeed(rotSpeed), cameraPos(cameraPos), cameraFront(cameraFront), cameraUp(cameraUp) {
 	yaw = -90.0f;
 	pitch = 0.0f;
 	dirty = true;
@@ -10,7 +10,7 @@ Camera::Camera(glm::vec3 cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, f
 
 glm::mat4 Camera::getView() {
 	if (dirty) {
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	}
 	return view;
 }
@@ -49,7 +49,8 @@ void Camera::rotateY(float timeDelta) {
 		pitch += timeDelta * rotSpeed;
 		if (pitch > 89.0f) {
 			pitch = 89.0f;
-		} else if (pitch < -89.0f) {
+		}
+		else if (pitch < -89.0f) {
 			pitch = -89.0f;
 		}
 		recalculateFront();
@@ -70,7 +71,7 @@ void Camera::moveBackward(float timeDelta, int steps) {
 
 void Camera::moveRight(float timeDelta, int steps) {
 	if (timeDelta != 0.0f) {
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * timeDelta * speed * (float)steps;
+		cameraPos += normalize(cross(cameraFront, cameraUp)) * timeDelta * speed * (float)steps;
 		dirty = true;
 	}
 }
@@ -81,7 +82,7 @@ void Camera::moveLeft(float timeDelta, int steps) {
 
 void Camera::moveUp(float timeDelta, int steps) {
 	if (timeDelta != 0.0f) {
-		cameraPos += glm::normalize(glm::cross(glm::cross(cameraFront, cameraUp), cameraFront)) * timeDelta * speed * (float)steps;
+		cameraPos += normalize(cross(cross(cameraFront, cameraUp), cameraFront)) * timeDelta * speed * (float)steps;
 		dirty = true;
 	}
 }
@@ -99,5 +100,6 @@ void Camera::setRotSpeed(float rotSpeed) {
 }
 
 void Camera::recalculateFront() {
-	cameraFront = normalize(glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch)), sin(glm::radians(yaw)) * cos(glm::radians(pitch))));
+	cameraFront = normalize(glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)), sin(glm::radians(pitch)),
+	                                  sin(glm::radians(yaw)) * cos(glm::radians(pitch))));
 }

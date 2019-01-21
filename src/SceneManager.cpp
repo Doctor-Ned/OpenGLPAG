@@ -1,8 +1,8 @@
 #include "SceneManager.h"
 
 SceneManager& SceneManager::getInstance() {
-	static SceneManager *instance = nullptr;
-	if(instance == nullptr) {
+	static SceneManager* instance = nullptr;
+	if (instance == nullptr) {
 		instance = new SceneManager();
 		instance->setup();
 	}
@@ -32,8 +32,8 @@ void SceneManager::setup() {
 	shaders.push_back(textureShader);
 	shaders.push_back(colorShader);
 
-	for(int i=0;i<shaders.size();i++) {
-		for(int j=0;j<ubos.size();j++) {
+	for (int i = 0; i < shaders.size(); i++) {
+		for (int j = 0; j < ubos.size(); j++) {
 			shaders[i]->bind(ubos[j]);
 		}
 	}
@@ -42,7 +42,7 @@ void SceneManager::setup() {
 	textRenderer->load("res\\fonts\\ButterLayer.ttf", 60.0f);
 	mainMenuScene = new MainMenuScene();
 	optionsScene = new OptionsScene();
-	mainMenuScene->setOptionsCallback([this]() {currentScene = optionsScene; });
+	mainMenuScene->setOptionsCallback([this]() { currentScene = optionsScene; });
 	currentScene = mainMenuScene;
 }
 
@@ -67,22 +67,23 @@ TextRenderer* SceneManager::getTextRenderer() {
 	return textRenderer;
 }
 
-void SceneManager::keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
+void SceneManager::keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	currentScene->keyboard_callback(window, key, scancode, action, mods);
 }
 
-void SceneManager::mouse_callback(GLFWwindow * window, double xpos, double ypos) {
+void SceneManager::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	currentScene->mouse_callback(window, xpos, ypos);
 }
+
 void SceneManager::mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) {
 	currentScene->mouse_button_callback(window, butt, action, mods);
 }
 
-Shader * SceneManager::getUiColorShader() {
+Shader* SceneManager::getUiColorShader() {
 	return uiColorShader;
 }
 
-Shader * SceneManager::getUiTextureShader() {
+Shader* SceneManager::getUiTextureShader() {
 	return uiTextureShader;
 }
 
@@ -93,9 +94,11 @@ Shader* SceneManager::getSkyboxShader() {
 Shader* SceneManager::getModelShader() {
 	return modelShader;
 }
+
 Shader* SceneManager::getTextureShader() {
 	return textureShader;
 }
+
 Shader* SceneManager::getColorShader() {
 	return colorShader;
 }
@@ -104,18 +107,18 @@ UboDirLights* SceneManager::getUboDirLights() {
 	return uboDirLights;
 }
 
-UboPointLights * SceneManager::getUboPointLights() {
+UboPointLights* SceneManager::getUboPointLights() {
 	return uboPointLights;
 }
 
-UboSpotLights * SceneManager::getUboSpotLights() {
+UboSpotLights* SceneManager::getUboSpotLights() {
 	return uboSpotLights;
 }
 
-UboTextureColor * SceneManager::getUboTextureColor() {
+UboTextureColor* SceneManager::getUboTextureColor() {
 	return uboTextureColor;
 }
 
-UboViewProjection * SceneManager::getUboViewProjection() {
+UboViewProjection* SceneManager::getUboViewProjection() {
 	return uboViewProjection;
 }
