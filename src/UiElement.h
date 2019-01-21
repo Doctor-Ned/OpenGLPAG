@@ -15,10 +15,13 @@ struct UiTextureVertex {
 
 class UiElement {
 public:
-	UiElement(Shader *shader, char* texture, glm::vec2 position, glm::vec2 size, bool center = true);
+	UiElement(Shader *shader, const char* texture, glm::vec2 position, glm::vec2 size, bool center = true);
 	virtual void render();
 	virtual void mouse_callback(GLFWwindow* window, double xpos, double ypos) = 0;
 	virtual void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) = 0;
+	glm::vec2 getPosition();
+	glm::vec2 getCenter();
+	glm::vec2 getSize();
 protected:
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(WINDOW_WIDTH), static_cast<GLfloat>(WINDOW_HEIGHT), 0.0f);
 	Texture texture;

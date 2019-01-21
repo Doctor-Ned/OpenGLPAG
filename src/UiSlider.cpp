@@ -1,19 +1,19 @@
 #include "UiSlider.h"
 
-UiSlider::UiSlider(Shader* shader, char* textureIdle, char* textureHover, char* textureClicked, glm::vec2 position,
-	glm::vec2 size, Shader* lineShader, double lineThickness, glm::vec4 lineColor, glm::vec2 buttonSize, float value,
-	float min, float max, bool center) : UiElement(lineShader, nullptr, position, size, center) {
+UiSlider::UiSlider(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked, glm::vec2 position,
+	glm::vec2 size, Shader* lineShader, double lineThickness, glm::vec2 buttonSize, float value,
+	float min, float max, glm::vec4 lineColor, bool center) : UiElement(lineShader, nullptr, position, size, center) {
 	this->min = min;
 	this->max = max;
 	this->value = value;
 	this->buttonSize = buttonSize;
 	this->lineThickness = lineThickness;
 	this->lineColor = lineColor;
-	button = new UiButton(shader, textureIdle, textureHover,textureClicked, position, buttonSize, true);
+	button = new UiButton(shader, textureIdle, textureHover, textureClicked, position, buttonSize, true);
 
 	glGenVertexArrays(1, &vao);
 	const float minX = actualPosition.x;
-	const float minY = actualPosition.y + (size.y-lineThickness)/2.0f;
+	const float minY = actualPosition.y + (size.y - lineThickness) / 2.0f;
 
 	UiVertex vertices[4];
 
@@ -57,7 +57,7 @@ void UiSlider::render() {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 	glUseProgram(0);
-	button->setPosition(glm::vec2(remap(value, min, max, 0.0, size.x) + actualPosition.x, actualPosition.y+size.y/2.0f));
+	button->setPosition(glm::vec2(remap(value, min, max, 0.0, size.x) + actualPosition.x, actualPosition.y + size.y / 2.0f));
 	button->render();
 }
 
@@ -67,12 +67,24 @@ void UiSlider::setCallback(std::function<void(float)> callback) {
 
 void UiSlider::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	button->mouse_callback(window, xpos, ypos);
-	if(button->getState() == Clicked) {
-		if(moving) {
-			const double currentX = remap(value, min, max, 0.0, size.x);
-			value = remap(currentX + xpos - moveX, 0.0, size.x, min, max);
-			moveX = xpos;
-			callback(value);
+	if (button->getState() == Clicked) {
+		if (moving) {
+			if (xpos < actualPosition.x) {
+				if (value != min) {
+					value = min;
+					callback(value);
+				}
+			} else if (xpos > actualPosition.x + size.x) {
+				if (value != max) {
+					value = max;
+					callback(value);
+				}
+			} else {
+				const double currentX = remap(value, min, max, 0.0, size.x);
+				value = remap(currentX + xpos - moveX, 0.0, size.x, min, max);
+				moveX = xpos;
+				callback(value);
+			}
 		} else {
 			moving = true;
 			moveX = xpos;

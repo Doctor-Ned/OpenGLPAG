@@ -32,7 +32,12 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
-const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f;
+static glm::vec2 BUTTON_STANDARD_SIZE(400.0f, 75.0f);
+
+static const char *BUTTON_IDLE = "res\\ui\\ButtonIdle.png", *BUTTON_HOVER = "res\\ui\\ButtonHover.png", *BUTTON_CLICKED = "res\\ui\\ButtonClicked.png"
+, *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER = "res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
+
+static const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f, WINDOW_CENTER_X = WINDOW_WIDTH/2.0f, WINDOW_CENTER_Y = WINDOW_HEIGHT/2.0f;
 
 static glm::vec3 *createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max, float yPosition = 0.0f) {
 	glm::vec3 *result = new glm::vec3[width * length];
@@ -54,7 +59,7 @@ struct Texture {
 	std::string path;
 };
 
-static Texture createTexture(char *textureFile) {
+static Texture createTexture(const char *textureFile) {
 	Texture texture;
 	int imgWidth, imgHeight, imgChannels;
 	unsigned char *imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);

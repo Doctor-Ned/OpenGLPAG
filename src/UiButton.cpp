@@ -1,7 +1,7 @@
 #include "UiButton.h"
 #include "GLFW/glfw3.h"
 
-UiButton::UiButton(Shader* shader, char* textureIdle, char* textureHover, char* textureClicked, glm::vec2 position, glm::vec2 size, bool center) : UiElement(shader, textureIdle, position, size, center) {
+UiButton::UiButton(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked, glm::vec2 position, glm::vec2 size, bool center) : UiElement(shader, textureIdle, position, size, center) {
 	this->textureHover = createTexture(textureHover);
 	this->textureClicked = createTexture(textureClicked);
 	glGenVertexArrays(1, &vao);
