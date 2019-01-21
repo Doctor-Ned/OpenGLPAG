@@ -59,6 +59,10 @@ void MeshColorSphere::drawGui(bool autoUpdate) {
 	ImGui::PopID();
 }
 
+float MeshColorSphere::getRadius() {
+	return radius;
+}
+
 void MeshColorSphere::createSphereSegment(std::vector<SimpleVertex>* vertices, float angle, float radStep) {
 	glm::vec3* circle = new glm::vec3[precision];
 

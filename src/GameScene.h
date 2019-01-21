@@ -6,6 +6,7 @@
 #include "Skybox.h"
 #include "Camera.h"
 #include "GraphNode.h"
+#include "OrbNode.h"
 
 class SceneManager;
 
@@ -18,6 +19,12 @@ public:
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos) override;
 	void mouse_button_callback(GLFWwindow* window, int butt, int action, int mods) override;
 protected:
+	const float BLOCK_HEIGHT = 0.1f, BLOCK_DEPTH = 0.1f, BLOCK_MARGIN = BLOCK_HEIGHT / 8.0f, BLOCK_MIN_X = -1.0f, BLOCK_MAX_X = 1.0f, BLOCK_MIN_Z = -1.0f, BLOCK_MAX_Y = 1.5f;
+	TextRenderer *textRenderer;
+	char orbText[30];
+	int availableOrbs = 3;
+	OrbNode *orb = nullptr;
+	std::vector<BlockNode*> blocks;
 	GraphNode* graphScene;
 	glm::mat4 projection;
 	Camera* camera;

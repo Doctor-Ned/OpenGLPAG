@@ -4,7 +4,8 @@
 #include "GraphNode.h"
 #include "MeshBox.h"
 #include "MeshColorBox.h"
-#include "OrbNode.h"
+
+class OrbNode;
 
 enum CollisionState {
 	None,

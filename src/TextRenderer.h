@@ -19,7 +19,7 @@ public:
 	Shader* textShader;
 	TextRenderer(GLfloat defaultScale = 1.0f);
 	void load(std::string font, GLuint fontSize);
-	void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale = 1.0f, bool center = false,
+	void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale = 1.0f, bool center = true,
 	                glm::vec3 color = glm::vec3(1.0f));
 private:
 	GLfloat defaultScale;

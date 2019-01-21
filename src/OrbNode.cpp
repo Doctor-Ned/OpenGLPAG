@@ -1,6 +1,12 @@
 #include "OrbNode.h"
 
-OrbNode::OrbNode(MeshSphere * mesh, float speed, glm::vec2 direction, GraphNode * parent) {
+OrbNode::OrbNode(MeshSphere * mesh, float speed, glm::vec2 direction, GraphNode * parent) : GraphNode(mesh, parent) {
+	radius = mesh->getRadius();
+	this->speed = speed;
+	this->direction = glm::normalize(direction);
+}
+
+OrbNode::OrbNode(MeshColorSphere * mesh, float speed, glm::vec2 direction, GraphNode * parent) : GraphNode(mesh, parent) {
 	radius = mesh->getRadius();
 	this->speed = speed;
 	this->direction = glm::normalize(direction);
@@ -8,17 +14,21 @@ OrbNode::OrbNode(MeshSphere * mesh, float speed, glm::vec2 direction, GraphNode 
 
 void OrbNode::update(double timeDiff) {
 	GraphNode::update(timeDiff);
-	//TODO: add proper movement and collisions
+	setLocal(glm::translate(getLocal(), glm::vec3(direction*speed*(float)timeDiff, 0.0f)));
 }
 
 bool OrbNode::tryCollide(BlockNode* block) {
 	CollisionState state = block->getCollisionState(this);
-	if(state == None) {
+	if (state == None) {
 		return false;
 	}
-	block->onCollision();
+	//block->onCollision();
 	bounce(state);
 	return true;
+}
+
+glm::vec2 OrbNode::getDirection() {
+	return direction;
 }
 
 float OrbNode::getRadius() {
@@ -26,7 +36,7 @@ float OrbNode::getRadius() {
 }
 
 void OrbNode::bounce(CollisionState state) {
-	switch(state) {
+	switch (state) {
 		case Top:
 		case Bottom:
 			direction.y = -direction.y;
