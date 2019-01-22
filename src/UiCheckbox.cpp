@@ -1,28 +1,32 @@
-#include "UiButton.h"
+#include "UiCheckbox.h"
 #include "GLFW/glfw3.h"
 
-UiButton::UiButton(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked,
-                   glm::vec2 position, glm::vec2 size, bool center) : UiElement(
-	shader, textureIdle, position, size, center) {
+UiCheckbox::UiCheckbox(Shader* shader, const char* textureIdle, const char* textureHover, const char* textureClicked,
+	const char* textureTickIdle, const char* textureTickHover, const char* textureTickClicked, glm::vec2 position,
+	glm::vec2 size, bool checked, bool center) : UiElement(shader, textureIdle, position, size, center) {
 	this->textureHover = createTexture(textureHover);
 	this->textureClicked = createTexture(textureClicked);
+	this->textureTick = createTexture(textureTickIdle);
+	this->textureTickHover = createTexture(textureTickHover);
+	this->textureTickClicked = createTexture(textureTickClicked);
+	this->checked = checked;
 	glGenVertexArrays(1, &vao);
 	vbo = 0;
 	setup();
 }
 
-void UiButton::render() {
+void UiCheckbox::render() {
 	UiElement::render();
 	Texture* txt;
 	switch (state) {
 	default:
-		txt = &texture;
+		txt = checked ? &textureTick : &texture;
 		break;
 	case Hover:
-		txt = &textureHover;
+		txt = checked ? &textureTickHover : &textureHover;
 		break;
 	case Clicked:
-		txt = &textureClicked;
+		txt = checked ? &textureTickClicked : &textureClicked;
 		break;
 	}
 	glBindTexture(GL_TEXTURE_2D, txt->id);
@@ -33,7 +37,7 @@ void UiButton::render() {
 	glUseProgram(0);
 }
 
-void UiButton::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void UiCheckbox::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	if (hover != (xpos > actualPosition.x && xpos < actualPosition.x + size.x && ypos > actualPosition.y && ypos <
 		actualPosition.y + size.y)) {
 		hover = !hover;
@@ -46,7 +50,7 @@ void UiButton::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	}
 }
 
-void UiButton::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+void UiCheckbox::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		if (action == GLFW_PRESS && hover) {
 			clicked = true;
@@ -58,7 +62,8 @@ void UiButton::mouse_button_callback(GLFWwindow* window, int button, int action,
 				if (hover) {
 					state = Hover;
 					if (callback != nullptr) {
-						callback();
+						checked = !checked;
+						callback(checked);
 					}
 				}
 				else {
@@ -69,7 +74,7 @@ void UiButton::mouse_button_callback(GLFWwindow* window, int button, int action,
 	}
 }
 
-void UiButton::setup() {
+void UiCheckbox::setup() {
 	const float minX = actualPosition.x;
 	const float minY = actualPosition.y;
 
@@ -116,11 +121,11 @@ void UiButton::setup() {
 	data.clear();
 }
 
-void UiButton::setButtonCallback(std::function<void()> callback) {
+void UiCheckbox::setCheckboxCallback(std::function<void(bool)> callback) {
 	this->callback = callback;
 }
 
-void UiButton::setPosition(glm::vec2 position, bool center) {
+void UiCheckbox::setPosition(glm::vec2 position, bool center) {
 	this->position = position;
 	if (center) {
 		actualPosition = glm::vec2(position.x - size.x / 2.0f, position.y - size.y / 2.0f);
@@ -131,6 +136,6 @@ void UiButton::setPosition(glm::vec2 position, bool center) {
 	setup();
 }
 
-UiButtonState UiButton::getState() {
+UiButtonState UiCheckbox::getState() {
 	return state;
 }

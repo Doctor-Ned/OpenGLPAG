@@ -24,6 +24,7 @@ public:
 	void addPoints(int points);
 	void loseOrb();
 protected:
+	void generateBlocks();
 	void stdRender();
 	void customRender(glm::mat4 view, glm::mat4 projection, GraphNode *exclude);
 	void customRender(glm::mat4 view, glm::mat4 projection, std::vector<GraphNode*> exclude);

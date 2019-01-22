@@ -35,10 +35,14 @@ public:
 	UboSpotLights* getUboSpotLights();
 	UboTextureColor* getUboTextureColor();
 	UboViewProjection* getUboViewProjection();
+	GLuint getFramebuffer();
+	void setFramebuffer(GLuint fbo);
+	bool inverseEnabled=false;
 	float difficulty = 1.0f;
 	SceneManager(SceneManager const&) = delete;
 	void operator=(SceneManager const&) = delete;
 protected:
+	GLuint framebuffer;
 	SceneManager() {}
 	void setup();
 	Shader *uiColorShader, *uiTextureShader, *skyboxShader, *modelShader, *textureShader, *colorShader, *reflectShader, *refractShader;

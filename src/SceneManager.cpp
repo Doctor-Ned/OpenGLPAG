@@ -135,3 +135,11 @@ UboTextureColor* SceneManager::getUboTextureColor() {
 UboViewProjection* SceneManager::getUboViewProjection() {
 	return uboViewProjection;
 }
+
+GLuint SceneManager::getFramebuffer() {
+	return framebuffer;
+}
+
+void SceneManager::setFramebuffer(GLuint fbo) {
+	framebuffer = fbo;
+}

@@ -31,10 +31,10 @@ void MeshBox::updateValues(glm::vec3 min, glm::vec3 max) {
 	vertices[2].Normal = normal; //ur
 	vertices[3].Normal = normal; //br
 
-	vertices[0].TexCoords = glm::vec2(0.0f, 0.0f);
-	vertices[1].TexCoords = glm::vec2(0.0f, 1.0f);
-	vertices[2].TexCoords = glm::vec2(1.0f, 1.0f);
-	vertices[3].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[0].TexCoords = glm::vec2(0.0f, 1.0f);
+	vertices[1].TexCoords = glm::vec2(0.0f, 0.0f);
+	vertices[2].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[3].TexCoords = glm::vec2(1.0f, 1.0f);
 
 	vertices[0].Position = glm::vec3(min.x, max.y, max.z);
 	vertices[1].Position = glm::vec3(min.x, max.y, min.z);

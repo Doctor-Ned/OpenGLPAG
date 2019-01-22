@@ -29,6 +29,7 @@ public:
 	glm::vec3 getMax();
 	glm::vec3 actualMin();
 	glm::vec3 actualMax();
+	~BlockNode();
 protected:
 	glm::vec3 min, max;
 };

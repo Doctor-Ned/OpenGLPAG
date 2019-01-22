@@ -34,10 +34,10 @@ void MeshPlane::updateValues(float width, float length) {
 	vertices[2].Normal = normal; //ur
 	vertices[3].Normal = normal; //br
 
-	vertices[0].TexCoords = glm::vec2(0.0f, 0.0f);
-	vertices[1].TexCoords = glm::vec2(0.0f, 1.0f);
-	vertices[2].TexCoords = glm::vec2(1.0f, 1.0f);
-	vertices[3].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[0].TexCoords = glm::vec2(0.0f, 1.0f);
+	vertices[1].TexCoords = glm::vec2(0.0f, 0.0f);
+	vertices[2].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[3].TexCoords = glm::vec2(1.0f, 1.0f);
 
 	vertices[0].Position = baseCenter;
 	vertices[1].Position = baseCenter;

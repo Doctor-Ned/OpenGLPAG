@@ -4,6 +4,8 @@
 #include "MainMenuScene.h"
 #include "UiSlider.h"
 
+class SceneManager;
+
 class OptionsScene : public Scene {
 public:
 	OptionsScene();
@@ -15,11 +17,13 @@ public:
 protected:
 	void updateDifficulty(float diff);
 	TextRenderer* textRenderer;
-	glm::vec2 difficultyTextPos, difficultyPos;
+	glm::vec2 difficultyTextPos, difficultyPos, inverseTextPos;
 	glm::vec3 difficultyColor;
 	char* difficultyText;
 	UiTextButton* buttonBackToMenu;
 	UiSlider* sliderDifficulty;
+	UiCheckbox *checkboxInverse;
+	SceneManager *sceneManager;
 };
 
 #endif

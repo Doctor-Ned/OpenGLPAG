@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "TextRenderer.h"
 #include "UiTextButton.h"
+#include "UiCheckbox.h"
 
 class MainMenuScene : public Scene {
 public:

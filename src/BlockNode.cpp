@@ -71,3 +71,9 @@ glm::vec3 BlockNode::actualMin() {
 glm::vec3 BlockNode::actualMax() {
 	return glm::vec3(getWorld() * glm::vec4(this->max, 1.0f));
 }
+
+BlockNode::~BlockNode() {
+	if(mesh != nullptr) {
+		delete mesh;
+	}
+}

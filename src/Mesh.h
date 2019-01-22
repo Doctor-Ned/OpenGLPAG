@@ -17,6 +17,7 @@ public:
 	virtual void drawGui(bool autoUpdate = true);
 	virtual void setShader(Shader shader);
 	Shader *getShader();
+	~Mesh();
 protected:
 	Mesh(Shader shader, std::vector<unsigned int> indices);
 	Mesh(Shader shader);

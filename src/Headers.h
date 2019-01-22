@@ -34,12 +34,13 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <functional>
 
-static glm::vec2 BUTTON_STANDARD_SIZE(400.0f, 75.0f);
+static glm::vec2 BUTTON_STANDARD_SIZE(400.0f, 75.0f), CHECKBOX_STANDARD_SIZE(75.0f, 75.0f);
 
 static const char *BUTTON_IDLE = "res\\ui\\ButtonIdle.png", *BUTTON_HOVER = "res\\ui\\ButtonHover.png", *BUTTON_CLICKED
 = "res\\ui\\ButtonClicked.png"
 , *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER =
-"res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
+"res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png",
+*BUTTON_TICK_IDLE = "res\\ui\\ButtonTickIdle.png", *BUTTON_TICK_HOVER = "res\\ui\\ButtonTickHover.png", *BUTTON_TICK_CLICKED = "res\\ui\\ButtonTickClicked.png";
 
 static const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f, WINDOW_CENTER_X = WINDOW_WIDTH / 2.0f,
 WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
@@ -67,7 +68,7 @@ struct Texture {
 
 static const glm::ivec2 ENVMAP_SIZE(2048.0f, 2048.0f);
 
-static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint rb, std::function<void(glm::mat4, glm::mat4)> renderCallback) {
+static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint rb, std::function<void(glm::mat4, glm::mat4)> renderCallback, GLuint framebuffer) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
@@ -105,7 +106,7 @@ static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 }
 
 static Texture createTexture(const char* textureFile) {

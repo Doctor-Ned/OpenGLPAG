@@ -7,10 +7,10 @@ UiPlane::UiPlane(Shader* shader, const char* texture, glm::vec2 position, glm::v
 
 	UiTextureVertex vertices[4];
 
-	vertices[0].TexCoords = glm::vec2(0.0f, 0.0f);
-	vertices[1].TexCoords = glm::vec2(0.0f, 1.0f);
-	vertices[2].TexCoords = glm::vec2(1.0f, 1.0f);
-	vertices[3].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[0].TexCoords = glm::vec2(0.0f, 1.0f);
+	vertices[1].TexCoords = glm::vec2(0.0f, 0.0f);
+	vertices[2].TexCoords = glm::vec2(1.0f, 0.0f);
+	vertices[3].TexCoords = glm::vec2(1.0f, 1.0f);
 
 	vertices[0].Position = glm::vec2(minX, minY + size.y);
 	vertices[1].Position = glm::vec2(minX, minY);

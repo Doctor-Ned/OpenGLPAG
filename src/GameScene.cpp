@@ -61,41 +61,7 @@ GameScene::GameScene() {
 	sceneGraph = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 
-	int blockAmount = 8, layers = 7;
-	float currentX, currentY, blockWidth;
-	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
-	for (int l = 0; l < layers; l++) {
-		currentX = BLOCK_MIN_X;
-		currentY = BLOCK_MAX_Y - l * (BLOCK_MARGIN + BLOCK_HEIGHT);
-		for (int i = 0; i < blockAmount; i++) {
-			if (l == 0) {
-				if (i > 2 && i < blockAmount - 3) {
-					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getReflectShader(),
-						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
-					reflectiveBoxes.push_back(refBox);
-					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 500, sceneGraph);
-					reflectiveBlocks.push_back(node);
-					excludedNodes.push_back(node);
-					blocks.push_back(node);
-				}
-			} else  if (l == 1) {
-				if( i > 1 && i < blockAmount -2) {
-					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getRefractShader(),
-						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
-					refractiveBoxes.push_back(refBox);
-					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 250, sceneGraph);
-					refractiveBlocks.push_back(node);
-					excludedNodes.push_back(node);
-					blocks.push_back(node);
-				}
-			} else {
-				blocks.push_back(new DestroyableBlockNode(new MeshColorBox(*sceneManager->getColorShader(),
-					glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH)
-					, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)), 100, sceneGraph));
-			}
-			currentX += blockWidth + BLOCK_MARGIN;
-		}
-	}
+	generateBlocks();
 
 	movingBlockWidth = MOVINGBLOCK_BASE_WIDTH / (sceneManager->difficulty * 0.75f);
 
@@ -124,12 +90,12 @@ void GameScene::render() {
 	for (int i = 0; i < reflectiveBoxes.size(); i++) {
 		reflectiveBoxes[i]->regenEnvironmentMap(reflectiveBlocks[i]->getWorld(), [this](glm::mat4 view, glm::mat4 projection) {
 			customRender(view, projection, excludedNodes);
-		});
+		}, sceneManager->getFramebuffer());
 	}
 	for (int i = 0; i < refractiveBoxes.size(); i++) {
 		refractiveBoxes[i]->regenEnvironmentMap(refractiveBlocks[i]->getWorld(), [this](glm::mat4 view, glm::mat4 projection) {
 			customRender(view, projection, excludedNodes);
-		});
+		}, sceneManager->getFramebuffer());
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -221,8 +187,29 @@ void GameScene::update(double timeDelta) {
 								if (orb->tryCollide(blocks[i])) {
 									BlockNode* block = blocks[i];
 									blocks.erase(blocks.begin() + i);
+									for(int j=0;j<reflectiveBlocks.size();j++) {
+										if(reflectiveBlocks[j] == block) {
+											reflectiveBlocks.erase(reflectiveBlocks.begin() + j);
+											reflectiveBoxes.erase(reflectiveBoxes.begin() + j);
+											break;
+										}
+									}
+									for (int j = 0; j < refractiveBlocks.size(); j++) {
+										if (refractiveBlocks[j] == block) {
+											refractiveBlocks.erase(refractiveBlocks.begin() + j);
+											refractiveBoxes.erase(refractiveBoxes.begin() + j);
+											break;
+										}
+									}
 									block->onCollision(this);
 									orb->speed += ORB_SPEED / 10.0f;
+									if(blocks.size() == 0) {
+										availableOrbs++;
+										addPoints(1000);
+										//TODO: play some sound
+										loseOrb();
+										generateBlocks();
+									}
 									break;
 								}
 							}
@@ -374,6 +361,44 @@ void GameScene::loseOrb() {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 	//todo: play a proper sound
+}
+
+void GameScene::generateBlocks() {
+	int blockAmount = 8, layers = 7;
+	float currentX, currentY, blockWidth;
+	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
+	for (int l = 0; l < layers; l++) {
+		currentX = BLOCK_MIN_X;
+		currentY = BLOCK_MAX_Y - l * (BLOCK_MARGIN + BLOCK_HEIGHT);
+		for (int i = 0; i < blockAmount; i++) {
+			if (l == 0) {
+				if (i > 2 && i < blockAmount - 3) {
+					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getReflectShader(),
+						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
+					reflectiveBoxes.push_back(refBox);
+					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 500, sceneGraph);
+					reflectiveBlocks.push_back(node);
+					excludedNodes.push_back(node);
+					blocks.push_back(node);
+				}
+			} else  if (l == 1) {
+				if (i > 1 && i < blockAmount - 2) {
+					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getRefractShader(),
+						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
+					refractiveBoxes.push_back(refBox);
+					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 250, sceneGraph);
+					refractiveBlocks.push_back(node);
+					excludedNodes.push_back(node);
+					blocks.push_back(node);
+				}
+			} else {
+				blocks.push_back(new DestroyableBlockNode(new MeshColorBox(*sceneManager->getColorShader(),
+					glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH)
+					, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)), 100, sceneGraph));
+			}
+			currentX += blockWidth + BLOCK_MARGIN;
+		}
+	}
 }
 
 void GameScene::stdRender() {
