@@ -5,11 +5,13 @@
 #include "MeshSphere.h"
 #include "BlockNode.h"
 #include "MeshColorSphere.h"
+#include "MeshRefSphere.h"
 
 class OrbNode : public GraphNode {
 public:
 	OrbNode(MeshSphere* mesh, float speed, glm::vec2 direction, GraphNode* parent = nullptr);
 	OrbNode(MeshColorSphere* mesh, float speed, glm::vec2 direction, GraphNode* parent = nullptr);
+	OrbNode(MeshRefSphere* mesh, float speed, glm::vec2 direction, GraphNode* parent = nullptr);
 	void update(double timeDiff) override;
 	bool tryCollide(BlockNode *block);
 	glm::vec2 getDirection();

@@ -17,6 +17,19 @@ void Skybox::draw(glm::mat4 untranslatedView, glm::mat4 projection) {
 	glDepthFunc(GL_LESS);
 }
 
+void Skybox::draw(glm::mat4 untranslatedView, glm::mat4 projection, GLuint cubemap) {
+	glDepthFunc(GL_LEQUAL);
+	shader.use();
+	shader.setView(untranslatedView);
+	shader.setProjection(projection);
+	glBindVertexArray(VAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS);
+}
+
 void Skybox::setup() {
 	textureId = loadCubemap(faces);
 

@@ -2,7 +2,7 @@
 #include <algorithm>
 
 GraphNode::GraphNode(Mesh* mesh, GraphNode* parent) : local(glm::mat4(1.0f)), parent(parent), mesh(mesh), dirty(true),
-                                                      scale(1.0f) {
+scale(1.0f) {
 	if (parent != nullptr) {
 		parent->addChild(this);
 	}
@@ -14,8 +14,7 @@ void GraphNode::draw() {
 		if (dirty) {
 			world = parent->getWorld() * local;
 		}
-	}
-	else if (dirty) {
+	} else if (dirty) {
 		world = local;
 	}
 
@@ -25,6 +24,61 @@ void GraphNode::draw() {
 
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->draw();
+	}
+	if (dirty) {
+		dirty = false;
+	}
+}
+
+void GraphNode::draw(GraphNode* excluded) {
+	if (parent != nullptr) {
+		dirty |= parent->dirty;
+		if (dirty) {
+			world = parent->getWorld() * local;
+		}
+	} else if (dirty) {
+		world = local;
+	}
+
+	if (mesh) {
+		mesh->draw(world, scale);
+	}
+
+	for (int i = 0; i < children.size(); i++) {
+		if (children[i] != excluded) {
+			children[i]->draw(excluded);
+		}
+	}
+	if (dirty) {
+		dirty = false;
+	}
+}
+
+void GraphNode::draw(std::vector<GraphNode*> excluded) {
+	if (parent != nullptr) {
+		dirty |= parent->dirty;
+		if (dirty) {
+			world = parent->getWorld() * local;
+		}
+	} else if (dirty) {
+		world = local;
+	}
+
+	if (mesh) {
+		mesh->draw(world, scale);
+	}
+
+	for (int i = 0; i < children.size(); i++) {
+		bool exclude = false;
+		for (int j = 0; j < excluded.size(); j++) {
+			if (children[i] == excluded[j]) {
+				exclude = true;
+				break;
+			}
+		}
+		if (!exclude) {
+			children[i]->draw(excluded);
+		}
 	}
 	if (dirty) {
 		dirty = false;
@@ -69,8 +123,8 @@ void GraphNode::removeChild(GraphNode* child) {
 	if (child->parent == this) {
 		child->parent = nullptr;
 	}
-	for(int i=0;i<children.size();i++) {
-		if(children[i] == child) {
+	for (int i = 0; i < children.size(); i++) {
+		if (children[i] == child) {
 			children.erase(children.begin() + i);
 			break;
 		}

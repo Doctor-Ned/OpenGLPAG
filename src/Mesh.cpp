@@ -35,6 +35,10 @@ void Mesh::setShader(Shader shader) {
 	this->shader = shader;
 }
 
+Shader* Mesh::getShader() {
+	return &shader;
+}
+
 Mesh::Mesh(Shader shader, std::vector<unsigned int> indices) : indices(indices), shader(shader) {}
 
 Mesh::Mesh(Shader shader) : shader(shader) {}

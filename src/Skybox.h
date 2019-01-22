@@ -10,6 +10,7 @@ class Skybox {
 public:
 	Skybox(Shader shader, std::vector<std::string> faces);
 	void draw(glm::mat4 untranslatedView, glm::mat4 projection);
+	void draw(glm::mat4 untranslatedView, glm::mat4 projection, GLuint cubemap);
 protected:
 	void setup();
 	GLuint VAO;

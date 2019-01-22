@@ -11,6 +11,11 @@ BlockNode::BlockNode(MeshColorBox * mesh, GraphNode * parent) : GraphNode(mesh, 
 	this->max = mesh->getMax();
 }
 
+BlockNode::BlockNode(MeshRefBox* mesh, GraphNode* parent) : GraphNode(mesh, parent) {
+	this->min = mesh->getMin();
+	this->max = mesh->getMax();
+}
+
 void BlockNode::update(double timeDiff) {
 	GraphNode::update(timeDiff);
 }

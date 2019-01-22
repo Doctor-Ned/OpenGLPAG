@@ -3,6 +3,7 @@
 
 DestroyableBlockNode::DestroyableBlockNode(MeshBox * mesh, int points, GraphNode * parent) : BlockNode(mesh, parent), points(points) {}
 DestroyableBlockNode::DestroyableBlockNode(MeshColorBox* mesh, int points, GraphNode* parent) : BlockNode(mesh, parent), points(points) {}
+DestroyableBlockNode::DestroyableBlockNode(MeshRefBox* mesh, int points, GraphNode* parent) : BlockNode(mesh, parent), points(points) {}
 
 void DestroyableBlockNode::onCollision(GameScene *gameScene) {
 	parent->removeChild(this);

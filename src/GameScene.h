@@ -7,6 +7,9 @@
 #include "Camera.h"
 #include "GraphNode.h"
 #include "OrbNode.h"
+#include "SpotLightNode.h"
+#include "MeshRefSphere.h"
+#include "MeshRefBox.h"
 
 class SceneManager;
 
@@ -21,6 +24,10 @@ public:
 	void addPoints(int points);
 	void loseOrb();
 protected:
+	void stdRender();
+	void customRender(glm::mat4 view, glm::mat4 projection, GraphNode *exclude);
+	void customRender(glm::mat4 view, glm::mat4 projection, std::vector<GraphNode*> exclude);
+	GLFWwindow *window;
 	int points = 0;
 	void updatePoints();
 	const float BLOCK_HEIGHT = 0.1f, BLOCK_DEPTH = 0.1f, BLOCK_MARGIN = BLOCK_HEIGHT / 8.0f, BLOCK_MIN_X = -1.0f, BLOCK_MAX_X = 1.0f, BLOCK_MIN_Z = -1.0f, BLOCK_MAX_Y = 1.5f;
@@ -34,12 +41,18 @@ protected:
 	BlockNode *movingBlock, *bottomBlock;
 	std::vector<BlockNode*> walls;
 	OrbNode *orb = nullptr;
+	MeshColorSphere *orbSphere;
 	std::vector<BlockNode*> blocks;
+	std::vector<GraphNode*> reflectiveBlocks;
+	std::vector<MeshRefBox*> reflectiveBoxes;
 	GraphNode* sceneGraph;
 	UiTextButton *buttonBackToMenu;
 	glm::mat4 projection;
 	Camera* camera;
 	SceneManager* sceneManager;
+	std::vector<SpotLight*> spotLights;
+	SpotLight movingBlockSpotLight;
+	SpotLightNode *spotLightNode;
 	void pause();
 	void unpause();
 	bool paused = false;
@@ -50,6 +63,12 @@ protected:
 	bool movingLeft = false, movingRight = false;
 	float movingSpeed = 1.75f, movingBlockX, movingBlockWidth;
 	float introDistance = 10.0f, introDone = 0.0f, prevIntroDone = 0.0f, introSpeed = 0.0f, introAcceleration = 0.08f;
+
+	float camSpeed = 3.0f, camRotSpeed=0.5f;
+
+	float lastMouseX, lastMouseY;
+	bool freeCam = false, measureMouse;
+	bool camLeft = false, camRight=false, camForward=false, camBackward=false, camUp=false, camDown=false;
 };
 
 #endif

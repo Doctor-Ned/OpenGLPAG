@@ -12,6 +12,11 @@ OrbNode::OrbNode(MeshColorSphere * mesh, float speed, glm::vec2 direction, Graph
 	this->direction = glm::normalize(direction);
 }
 
+OrbNode::OrbNode(MeshRefSphere * mesh, float speed, glm::vec2 direction, GraphNode * parent) : GraphNode(mesh, parent) {
+	radius = mesh->getRadius();
+	this->speed = speed;
+	this->direction = glm::normalize(direction);
+}
 void OrbNode::update(double timeDiff) {
 	GraphNode::update(timeDiff);
 	setLocal(glm::translate(getLocal(), glm::vec3(direction*speed*(float)timeDiff, 0.0f)));

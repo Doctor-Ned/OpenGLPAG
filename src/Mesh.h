@@ -16,6 +16,7 @@ public:
 	virtual void draw(Shader shader, glm::mat4 world, float scale = 1.0f);
 	virtual void drawGui(bool autoUpdate = true);
 	virtual void setShader(Shader shader);
+	Shader *getShader();
 protected:
 	Mesh(Shader shader, std::vector<unsigned int> indices);
 	Mesh(Shader shader);

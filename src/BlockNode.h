@@ -4,6 +4,7 @@
 #include "GraphNode.h"
 #include "MeshBox.h"
 #include "MeshColorBox.h"
+#include "MeshRefBox.h"
 
 class OrbNode;
 class GameScene;
@@ -20,6 +21,7 @@ class BlockNode : public GraphNode {
 public:
 	BlockNode(MeshBox* mesh, GraphNode* parent = nullptr);
 	BlockNode(MeshColorBox* mesh, GraphNode* parent = nullptr);
+	BlockNode(MeshRefBox* mesh, GraphNode* parent = nullptr);
 	void update(double timeDiff) override;
 	virtual void onCollision(GameScene *gameScene);
 	CollisionState getCollisionState(OrbNode *orb);

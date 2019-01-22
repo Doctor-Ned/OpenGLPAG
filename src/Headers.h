@@ -32,19 +32,20 @@
 
 
 #include <glm/gtx/rotate_vector.hpp>
+#include <functional>
 
 static glm::vec2 BUTTON_STANDARD_SIZE(400.0f, 75.0f);
 
 static const char *BUTTON_IDLE = "res\\ui\\ButtonIdle.png", *BUTTON_HOVER = "res\\ui\\ButtonHover.png", *BUTTON_CLICKED
-	                  = "res\\ui\\ButtonClicked.png"
-                  , *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER =
-	                  "res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
+= "res\\ui\\ButtonClicked.png"
+, *BUTTON_LONG_IDLE = "res\\ui\\ButtonLongIdle.png", *BUTTON_LONG_HOVER =
+"res\\ui\\ButtonLongHover.png", *BUTTON_LONG_CLICKED = "res\\ui\\ButtonLongClicked.png";
 
 static const float WINDOW_WIDTH = 1280.0f, WINDOW_HEIGHT = 720.0f, WINDOW_CENTER_X = WINDOW_WIDTH / 2.0f,
-                   WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
+WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
 
 static glm::vec3* createHorizontalTransformArray(int width, int length, glm::vec2 min, glm::vec2 max,
-                                                 float yPosition = 0.0f) {
+	float yPosition = 0.0f) {
 	glm::vec3* result = new glm::vec3[width * length];
 	float firstX = width == 1 ? (max.x + min.x) / 2.0f : min.x;
 	float xStep = width == 1 ? 0.0f : (max.x - min.x) / (float)(width - 1);
@@ -63,6 +64,48 @@ struct Texture {
 	GLuint id;
 	std::string path;
 };
+
+static const glm::ivec2 ENVMAP_SIZE(2048.0f, 2048.0f);
+
+static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint rb, std::function<void(glm::mat4, glm::mat4)> renderCallback) {
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glm::mat4 p = glm::perspective(glm::radians(90.0f), 1.0f, 0.001f, 100.0f);
+
+	glm::vec3 targets[6] = {
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f)
+	};
+	glm::vec3 ups[6] = {
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)
+	};
+
+	glViewport(0, 0, ENVMAP_SIZE.x, ENVMAP_SIZE.y);
+	for (int i = 0; i < 6; i++) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glm::mat4 v = glm::lookAt(position, position + targets[i], ups[i]);
+		v[0][2] *= -1.0f;
+		v[1][2] *= -1.0f;
+		v[2][2] *= -1.0f;
+		v[3][2] *= -1.0f;
+
+		renderCallback(v, p);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 static Texture createTexture(const char* textureFile) {
 	Texture texture;
@@ -95,10 +138,9 @@ static GLuint loadCubemap(std::vector<std::string> faces) {
 		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
 		if (data) {
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-			             data);
+				data);
 			stbi_image_free(data);
-		}
-		else {
+		} else {
 			printf("Cubemap texture failed to load at path '%s'!\n", faces[i].c_str());
 			stbi_image_free(data);
 		}
@@ -121,7 +163,7 @@ static GLuint loadCubemap(std::vector<std::string> faces) {
 #define SPOTLIGHT_SIZE 5 * 4 + 5 * 4 * 4 + 4 * 4 * 4 + 4 * 3   // 5*float + 5*vec4 + mat4 + vec3
 
 static double remap(double value, double sourceMin, double sourceMax, double targetMin, double targetMax,
-                    bool revertTarget = false, bool snapIfInvalid = true) {
+	bool revertTarget = false, bool snapIfInvalid = true) {
 	if (value < sourceMin || value > sourceMax) {
 		if (snapIfInvalid) {
 			return value < sourceMin ? targetMin : targetMax;
