@@ -48,7 +48,7 @@ protected:
 	bool intro = true, introHalfPassed = false;
 	bool gameOver = false;
 	bool movingLeft = false, movingRight = false;
-	float movingSpeed = 1.5f, movingBlockX, movingBlockWidth;
+	float movingSpeed = 1.75f, movingBlockX, movingBlockWidth;
 	float introDistance = 10.0f, introDone = 0.0f, prevIntroDone = 0.0f, introSpeed = 0.0f, introAcceleration = 0.08f;
 };
 
