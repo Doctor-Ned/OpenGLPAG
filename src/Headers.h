@@ -74,33 +74,34 @@ static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint
 	glm::mat4 p = glm::perspective(glm::radians(90.0f), 1.0f, 0.001f, 100.0f);
 
 	glm::vec3 targets[6] = {
+		glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(1.0f, 0.0f, 0.0f),
 		glm::vec3(-1.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		glm::vec3(0.0f, -1.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 1.0f),
-		glm::vec3(0.0f, 0.0f, -1.0f)
+		glm::vec3(0.0f, 0.0f, 1.0f)
 	};
 	glm::vec3 ups[6] = {
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, -1.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f)
 	};
 
 	glViewport(0, 0, ENVMAP_SIZE.x, ENVMAP_SIZE.y);
 	for (int i = 0; i < 6; i++) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
 
 		glm::mat4 v = glm::lookAt(position, position + targets[i], ups[i]);
-		v[0][2] *= -1.0f;
-		v[1][2] *= -1.0f;
-		v[2][2] *= -1.0f;
-		v[3][2] *= -1.0f;
-
+		//v[0][2] *= -1.0f;
+		//v[1][2] *= -1.0f;
+		//v[2][2] *= -1.0f;
+		//v[3][2] *= -1.0f;
 		renderCallback(v, p);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
 	}

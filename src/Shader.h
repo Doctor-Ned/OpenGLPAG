@@ -10,8 +10,6 @@ public:
 	virtual GLuint getID();
 	void use();
 	void remove();
-	void refreshUniforms();
-	void setDisableTexture(bool disable);
 	void setScale(float scale);
 	void setColor(glm::vec4 color);
 	void setModel(glm::mat4 model);
@@ -22,19 +20,7 @@ public:
 	void setUseLight(bool useLight);
 	void setView(glm::mat4 view);
 	void setProjection(glm::mat4 projection);
-	bool getTextureDisabled();
-	float getScale();
-	glm::vec4 getColor();
-	glm::mat4 getModel();
-	glm::vec3 getViewPosition();
-	glm::vec3 getViewDirection();
-	glm::mat4 getView();
-	glm::mat4 getProjection();
 	void setInt(char* name, int value);
-	bool getBlinnPhong();
-	bool getUseSpecular();
-	bool getUseLight();
-	float getShininess();
 	virtual void bind(Ubo* ubo);
 	GLint getUniformLocation(const char* name);
 protected:
@@ -47,12 +33,6 @@ protected:
 	std::vector<GLuint> shaders;
 	char* fragmentPath;
 	char* vertexPath;
-	glm::vec4* color = nullptr;
-	glm::mat4 *model = nullptr, *view = nullptr, *projection = nullptr;
-	glm::vec3 *viewPosition = nullptr, *viewDirection = nullptr;
-	float* scale = nullptr;
-	float* shininess = nullptr;
-	bool *disableTexture = nullptr, *blinnPhong = nullptr, *useSpecularMap = nullptr, *useLight = nullptr;
 };
 
 #endif

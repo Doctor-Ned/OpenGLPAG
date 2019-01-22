@@ -38,185 +38,85 @@ void Shader::remove() {
 	glDeleteProgram(id);
 }
 
-void Shader::refreshUniforms() {
-	if (disableTexture != nullptr) {
-		setDisableTexture(*disableTexture);
-	}
-	if (scale != nullptr) {
-		setScale(*scale);
-	}
-	if (color != nullptr) {
-		setColor(*color);
-	}
-	if (model != nullptr) {
-		setModel(*model);
-	}
-}
-
-// deprecated, should be injected via UboTextureColor
-void Shader::setDisableTexture(bool disable) {
-	use();
-	if (this->disableTexture == nullptr) {
-		this->disableTexture = new bool();
-	}
-	GLint location = getUniformLocation("disableTexture");
-	if (location != -1) {
-		glUniform1i(location, disable ? 1 : 0);
-	}
-	*disableTexture = disable;
-}
-
 void Shader::setScale(float scale) {
 	use();
-	if (this->scale == nullptr) {
-		this->scale = new float();
-	}
 	GLint location = getUniformLocation("scale");
 	if (location != -1) {
 		glUniform1f(location, scale);
 	}
-	*(this->scale) = scale;
 }
 
 // currently injected via UboTextureColor, though it might be useful when dealing with non-texture shaders
 void Shader::setColor(glm::vec4 color) {
 	use();
-	if (this->color == nullptr) {
-		this->color = new glm::vec4();
-	}
 	GLint location = getUniformLocation("color");
 	if (location != -1) {
 		glUniform4f(location, color.x, color.y, color.z, color.w);
 	}
-	*(this->color) = color;
 }
 
 void Shader::setModel(glm::mat4 model) {
 	use();
-	if (this->model == nullptr) {
-		this->model = new glm::mat4();
-	}
 	GLint location = getUniformLocation("model");
 	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(model));
 	}
-	*(this->model) = model;
 }
 
 void Shader::setViewPosition(glm::vec3 viewPosition) {
 	use();
-	if (this->viewPosition == nullptr) {
-		this->viewPosition = new glm::vec3();
-	}
 	GLint location = getUniformLocation("viewPosition");
 	if (location != -1) {
 		glUniform3f(location, viewPosition.x, viewPosition.y, viewPosition.z);
 	}
-	*(this->viewPosition) = viewPosition;
 }
 
 void Shader::setViewDirection(glm::vec3 viewDirection) {
 	use();
-	if (this->viewDirection == nullptr) {
-		this->viewDirection = new glm::vec3();
-	}
 	GLint location = getUniformLocation("viewDirection");
 	if (location != -1) {
 		glUniform3f(location, viewDirection.x, viewDirection.y, viewDirection.z);
 	}
-	*(this->viewDirection) = viewDirection;
 }
 
 void Shader::setShininess(float shininess) {
 	use();
-	if (this->shininess == nullptr) {
-		this->shininess = new float();
-	}
 	GLint location = getUniformLocation("shininess");
 	if (location != -1) {
 		glUniform1f(location, shininess);
 	}
-	*(this->shininess) = shininess;
 }
 
 void Shader::setUseSpecular(bool useSpecular) {
 	use();
-	if (this->useSpecularMap == nullptr) {
-		this->useSpecularMap = new bool();
-	}
 	GLint location = getUniformLocation("useSpecularMap");
 	if (location != -1) {
 		glUniform1i(location, useSpecular ? 1 : 0);
 	}
-	*(this->useSpecularMap) = useSpecular;
 }
 
 void Shader::setUseLight(bool useLight) {
 	use();
-	if (this->useLight == nullptr) {
-		this->useLight = new bool();
-	}
 	GLint location = getUniformLocation("useLight");
 	if (location != -1) {
 		glUniform1i(location, useLight ? 1 : 0);
 	}
-	*(this->useLight) = useLight;
 }
 
 void Shader::setView(glm::mat4 view) {
 	use();
-	if (this->view == nullptr) {
-		this->view = new glm::mat4();
-	}
 	GLint location = getUniformLocation("view");
 	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(view));
 	}
-	*(this->view) = view;
 }
 
 void Shader::setProjection(glm::mat4 projection) {
 	use();
-	if (this->projection == nullptr) {
-		this->projection = new glm::mat4();
-	}
 	GLint location = getUniformLocation("projection");
 	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(projection));
 	}
-	*(this->projection) = projection;
-}
-
-bool Shader::getTextureDisabled() {
-	return *disableTexture;
-}
-
-float Shader::getScale() {
-	return *scale;
-}
-
-glm::vec4 Shader::getColor() {
-	return *color;
-}
-
-glm::mat4 Shader::getModel() {
-	return *model;
-}
-
-glm::vec3 Shader::getViewPosition() {
-	return *viewPosition;
-}
-
-glm::vec3 Shader::getViewDirection() {
-	return *viewDirection;
-}
-
-glm::mat4 Shader::getView() {
-	return *view;
-}
-
-glm::mat4 Shader::getProjection() {
-	return *projection;
 }
 
 void Shader::setInt(char* name, int value) {
@@ -225,22 +125,6 @@ void Shader::setInt(char* name, int value) {
 	if (location != -1) {
 		glUniform1i(location, value);
 	}
-}
-
-bool Shader::getBlinnPhong() {
-	return *blinnPhong;
-}
-
-bool Shader::getUseSpecular() {
-	return *useSpecularMap;
-}
-
-bool Shader::getUseLight() {
-	return *useLight;
-}
-
-float Shader::getShininess() {
-	return *shininess;
 }
 
 void Shader::bind(Ubo* ubo) {

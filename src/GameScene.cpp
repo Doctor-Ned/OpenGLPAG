@@ -61,7 +61,7 @@ GameScene::GameScene() {
 	sceneGraph = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 
-	int blockAmount = 8, layers = 5;
+	int blockAmount = 8, layers = 7;
 	float currentX, currentY, blockWidth;
 	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
 	for (int l = 0; l < layers; l++) {
@@ -73,8 +73,19 @@ GameScene::GameScene() {
 					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getReflectShader(),
 						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
 					reflectiveBoxes.push_back(refBox);
-					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 300, sceneGraph);
+					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 500, sceneGraph);
 					reflectiveBlocks.push_back(node);
+					excludedNodes.push_back(node);
+					blocks.push_back(node);
+				}
+			} else  if (l == 1) {
+				if( i > 1 && i < blockAmount -2) {
+					MeshRefBox *refBox = new MeshRefBox(*sceneManager->getRefractShader(),
+						glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH));
+					refractiveBoxes.push_back(refBox);
+					DestroyableBlockNode *node = new DestroyableBlockNode(refBox, 250, sceneGraph);
+					refractiveBlocks.push_back(node);
+					excludedNodes.push_back(node);
 					blocks.push_back(node);
 				}
 			} else {
@@ -88,8 +99,8 @@ GameScene::GameScene() {
 
 	movingBlockWidth = MOVINGBLOCK_BASE_WIDTH / (sceneManager->difficulty * 0.75f);
 
-	bottomBlock = new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X, -0.1f, BLOCK_MIN_Z - WALL_Z_ADDITION)
-		, glm::vec3(BLOCK_MAX_X, 0.05f, BLOCK_MIN_Z + WALL_Z_ADDITION + BLOCK_DEPTH), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph);
+	bottomBlock = new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X - WALL_THICKNESS, -0.1f, BLOCK_MIN_Z - WALL_Z_ADDITION)
+		, glm::vec3(BLOCK_MAX_X + WALL_THICKNESS, 0.05f, BLOCK_MIN_Z + WALL_Z_ADDITION + BLOCK_DEPTH), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph);
 
 	walls.push_back(new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X - WALL_THICKNESS, 0.0f, BLOCK_MIN_Z - WALL_Z_ADDITION)
 		, glm::vec3(BLOCK_MIN_X, WALL_TOP_Y - WALL_THICKNESS, BLOCK_MIN_Z + BLOCK_DEPTH + WALL_Z_ADDITION), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph));
@@ -112,7 +123,12 @@ void GameScene::render() {
 	sceneManager->getUboSpotLights()->inject(1, &spotLights[0]);
 	for (int i = 0; i < reflectiveBoxes.size(); i++) {
 		reflectiveBoxes[i]->regenEnvironmentMap(reflectiveBlocks[i]->getWorld(), [this](glm::mat4 view, glm::mat4 projection) {
-			customRender(view, projection, reflectiveBlocks);
+			customRender(view, projection, excludedNodes);
+		});
+	}
+	for (int i = 0; i < refractiveBoxes.size(); i++) {
+		refractiveBoxes[i]->regenEnvironmentMap(refractiveBlocks[i]->getWorld(), [this](glm::mat4 view, glm::mat4 projection) {
+			customRender(view, projection, excludedNodes);
 		});
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -366,8 +382,9 @@ void GameScene::stdRender() {
 	sceneManager->getTextureShader()->setViewPosition(camera->getPos());
 	sceneManager->getColorShader()->setViewPosition(camera->getPos());
 	sceneManager->getReflectShader()->setViewPosition(camera->getPos());
+	sceneManager->getRefractShader()->setViewPosition(camera->getPos());
 	sceneGraph->draw();
-	skybox->draw(camera->getUntranslatedView(), projection, reflectiveBoxes[0]->getEnvironmentMap());
+	skybox->draw(camera->getUntranslatedView(), projection);
 }
 
 void GameScene::customRender(glm::mat4 view, glm::mat4 projection, GraphNode* exclude) {
@@ -376,6 +393,7 @@ void GameScene::customRender(glm::mat4 view, glm::mat4 projection, GraphNode* ex
 	sceneManager->getTextureShader()->setViewPosition(view[3]);
 	sceneManager->getColorShader()->setViewPosition(view[3]);
 	sceneManager->getReflectShader()->setViewPosition(view[3]);
+	sceneManager->getRefractShader()->setViewPosition(view[3]);
 	sceneGraph->draw(exclude);
 	skybox->draw(glm::mat4(glm::mat3(view)), projection);
 }
@@ -386,6 +404,7 @@ void GameScene::customRender(glm::mat4 view, glm::mat4 projection, std::vector<G
 	sceneManager->getTextureShader()->setViewPosition(view[3]);
 	sceneManager->getColorShader()->setViewPosition(view[3]);
 	sceneManager->getReflectShader()->setViewPosition(view[3]);
+	sceneManager->getRefractShader()->setViewPosition(view[3]);
 	sceneGraph->draw(exclude);
 	skybox->draw(glm::mat4(glm::mat3(view)), projection);
 }
@@ -397,8 +416,14 @@ void GameScene::updatePoints() {
 void GameScene::pause() {
 	pauseScene->setResumeCallback([this]() { unpause(); });
 	paused = true;
+	if(freeCam) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
 }
 
 void GameScene::unpause() {
 	paused = false;
+	if(freeCam) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
 }

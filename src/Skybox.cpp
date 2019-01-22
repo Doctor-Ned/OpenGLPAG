@@ -15,6 +15,7 @@ void Skybox::draw(glm::mat4 untranslatedView, glm::mat4 projection) {
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 void Skybox::draw(glm::mat4 untranslatedView, glm::mat4 projection, GLuint cubemap) {
@@ -28,6 +29,7 @@ void Skybox::draw(glm::mat4 untranslatedView, glm::mat4 projection, GLuint cubem
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 void Skybox::setup() {

@@ -17,6 +17,7 @@ void SceneManager::setup() {
 	textureShader = new Shader("textureVertexShader.glsl", "textureFragmentShader.glsl");
 	colorShader = new Shader("colorVertexShader.glsl", "colorFragmentShader.glsl");
 	reflectShader = new Shader("reflectVertexShader.glsl", "reflectFragmentShader.glsl");
+	refractShader = new Shader("refractVertexShader.glsl", "refractFragmentShader.glsl");
 	uboDirLights = new UboDirLights(0, nullptr);
 	uboPointLights = new UboPointLights(0, nullptr);
 	uboSpotLights = new UboSpotLights(0, nullptr);
@@ -34,6 +35,7 @@ void SceneManager::setup() {
 	shaders.push_back(colorShader);
 
 	reflectShader->bind(uboViewProjection);
+	refractShader->bind(uboViewProjection);
 
 	for (int i = 0; i < shaders.size(); i++) {
 		for (int j = 0; j < ubos.size(); j++) {
@@ -108,6 +110,10 @@ Shader* SceneManager::getColorShader() {
 
 Shader* SceneManager::getReflectShader() {
 	return reflectShader;
+}
+
+Shader* SceneManager::getRefractShader() {
+	return refractShader;
 }
 
 UboDirLights* SceneManager::getUboDirLights() {

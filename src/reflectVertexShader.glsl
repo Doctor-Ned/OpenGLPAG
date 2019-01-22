@@ -16,6 +16,7 @@ out VS_OUT {
 	vec3 pos;
 	vec3 normal;
 	vec3 viewPosition;
+	vec3 reflection;
 } vs_out;
 
 void main() {
@@ -23,5 +24,7 @@ void main() {
     vs_out.pos = vec3(model * vec4(pos, 1.0f));
 	vs_out.normal = normalize(vec3(model * vec4(inNormal, 0.0f)));
 	vs_out.viewPosition = vec3(model * vec4(viewPosition, 1.0f));
+	vec3 viewDirection = normalize(vs_out.pos - vs_out.viewPosition);
+	vs_out.reflection = reflect(viewDirection, vs_out.normal);
     gl_Position = projection * view * vec4(vs_out.pos, 1.0f);
 }
