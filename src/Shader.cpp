@@ -119,7 +119,7 @@ void Shader::setProjection(glm::mat4 projection) {
 	}
 }
 
-void Shader::setInt(char* name, int value) {
+void Shader::setInt(const char* name, int value) {
 	use();
 	GLint location = getUniformLocation(name);
 	if (location != -1) {

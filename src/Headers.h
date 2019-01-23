@@ -112,16 +112,20 @@ static void drawToCubemap(GLuint cubemap, glm::vec3 position, GLuint fbo, GLuint
 static Texture createTexture(const char* textureFile) {
 	Texture texture;
 	int imgWidth, imgHeight, imgChannels;
-	unsigned char* imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
+	unsigned char* imgData = stbi_load(textureFile, &imgWidth, &imgHeight, &imgChannels, 0);
 	if (!imgData) {
 		fprintf(stderr, "Failed to load texture from file \"%s\"!", textureFile);
 		exit(1);
+	}
+	GLenum format = GL_RGB;
+	if(imgChannels == 4) {
+		format = GL_RGBA;
 	}
 	GLuint imgTexture;
 	glGenTextures(1, &imgTexture);
 	glBindTexture(GL_TEXTURE_2D, imgTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, imgWidth, imgHeight, 0, format, GL_UNSIGNED_BYTE, imgData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(imgData);
 	texture.id = imgTexture;

@@ -87,7 +87,7 @@ int main(int, char**) {
 
 	srand(time(nullptr));
 
-	glEnable(GL_DEPTH_TEST); // this is so important. Spent 2 hours looking for it
+	//glEnable(GL_DEPTH_TEST); // this is so important. Spent 2 hours looking for it
 	//glAlphaFunc(GL_GREATER, 0.1f);
 	//glEnable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);

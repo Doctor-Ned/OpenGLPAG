@@ -67,6 +67,8 @@ protected:
 	PointLight pointLight;
 	SpotLightNode *spotLightNode;
 	PointLightNode *pointLightNode;
+	const float LIGHT_PROJ_NEAR = 0.01f;
+	const float LIGHT_PROJ_FAR = 10.0f;
 	DirLightNode *dirLightNode;
 	void pause();
 	void unpause();

@@ -7,11 +7,7 @@ MeshModel::MeshModel(Shader shader, std::vector<ModelVertex> vertices, std::vect
 }
 
 void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
-	shader.use();
-	shader.setShininess(shininess);
-	shader.setScale(scale);
-	shader.setModel(world);
-	shader.setUseLight(useLight);
+	Mesh::draw(shader, world, scale);
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
 	GLuint normalNr = 1;
@@ -30,7 +26,7 @@ void MeshModel::draw(Shader shader, glm::mat4 world, float scale) {
 		else if (name == "texture_height")
 			number = std::to_string(heightNr++);
 
-		glUniform1i(shader.getUniformLocation((name + number).c_str()), i);
+		shader.setInt((name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 

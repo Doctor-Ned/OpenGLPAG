@@ -40,15 +40,15 @@ Shader* Mesh::getShader() {
 }
 
 Mesh::~Mesh() {
-	if(VAO != 0) {
-		glDeleteVertexArrays(1, &VAO);
-	}
-	if (VBO != 0) {
-		glDeleteBuffers(1, &VBO);
-	}
-	if (EBO != 0) {
-		glDeleteBuffers(1, &EBO);
-	}
+	//if(VAO != 0) {
+	//	glDeleteVertexArrays(1, &VAO);
+	//}
+	//if (VBO != 0) {
+	//	glDeleteBuffers(1, &VBO);
+	//}
+	//if (EBO != 0) {
+	//	glDeleteBuffers(1, &EBO);
+	//}
 }
 
 Mesh::Mesh(Shader shader, std::vector<unsigned int> indices) : indices(indices), shader(shader) {}

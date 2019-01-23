@@ -6,6 +6,7 @@
 #include "DestroyableBlockNode.h"
 #include <algorithm>
 #include "RotatingNode.h"
+#include "Model.h"
 
 GameScene::GameScene() {
 	sceneManager = &SceneManager::getInstance();
@@ -30,7 +31,7 @@ GameScene::GameScene() {
 	camera = new Camera(glm::vec3(0.0f, 1.0f, 2.0f + introDistance), glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, 1.0f);
 
-	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f);
+	lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, LIGHT_PROJ_NEAR, LIGHT_PROJ_FAR);
 
 	sceneGraph = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
@@ -46,7 +47,7 @@ GameScene::GameScene() {
 	//dir1.model = glm::translate(glm::mat4(1.0f), dirPosition);
 	dirLight.model = glm::mat4(1.0f);
 	dirLightNode = new DirLightNode(&dirLight, nullptr, rotatingNode);
-	dirLightNode->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 2.0f)));
+	dirLightNode->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 1.0f)));
 	std::vector<DirLight*> dirs;
 	dirs.push_back(&dirLight);
 
@@ -69,6 +70,9 @@ GameScene::GameScene() {
 	sceneManager->getUboDirLights()->inject(1, &dirs[0]);
 	sceneManager->getUboSpotLights()->inject(1, &spotLights[0]);
 
+	GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
+	backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
+	backgroundObjects->setScale(0.04f);
 
 	generateBlocks();
 
@@ -84,8 +88,8 @@ GameScene::GameScene() {
 	walls.push_back(new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(BLOCK_MIN_X - WALL_THICKNESS, WALL_TOP_Y - WALL_THICKNESS, BLOCK_MIN_Z - WALL_Z_ADDITION)
 		, glm::vec3(BLOCK_MAX_X + WALL_THICKNESS, WALL_TOP_Y, BLOCK_MIN_Z + BLOCK_DEPTH + WALL_Z_ADDITION), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)), sceneGraph));
 
-	movingBlock = new BlockNode(new MeshColorBox(*sceneManager->getColorShader(), glm::vec3(-movingBlockWidth / 2.0f, MOVINGBLOCK_Y, BLOCK_MIN_Z),
-		glm::vec3(movingBlockWidth / 2.0f, MOVINGBLOCK_Y + MOVINGBLOCK_HEIGHT, BLOCK_MIN_Z + BLOCK_DEPTH), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)), sceneGraph);
+	movingBlock = new BlockNode(new MeshBox(*sceneManager->getTextureShader(), glm::vec3(-movingBlockWidth / 2.0f, MOVINGBLOCK_Y, BLOCK_MIN_Z),
+		glm::vec3(movingBlockWidth / 2.0f, MOVINGBLOCK_Y + MOVINGBLOCK_HEIGHT, BLOCK_MIN_Z + BLOCK_DEPTH), "res\\textures\\BlockRed.png"), sceneGraph);
 	movingBlockX = -movingBlockWidth / 2.0f;
 
 	spotLightNode = new SpotLightNode(&movingBlockSpotLight, nullptr, movingBlock);
@@ -192,8 +196,8 @@ void GameScene::render() {
 		pauseScene->render();
 	}
 
-	//sceneManager->getDepthDebugShader()->setFloat("near_plane", 0.1f);
-	//sceneManager->getDepthDebugShader()->setFloat("far_plane", 10.0f);
+	//sceneManager->getDepthDebugShader()->setFloat("near_plane", LIGHT_PROJ_NEAR);
+	//sceneManager->getDepthDebugShader()->setFloat("far_plane", LIGHT_PROJ_FAR);
 	//glActiveTexture(GL_TEXTURE0);
 	//glBindTexture(GL_TEXTURE_2D, dirTexture);
 
@@ -495,9 +499,9 @@ void GameScene::generateBlocks() {
 					blocks.push_back(node);
 				}
 			} else {
-				blocks.push_back(new DestroyableBlockNode(new MeshColorBox(*sceneManager->getColorShader(),
+				blocks.push_back(new DestroyableBlockNode(new MeshBox(*sceneManager->getTextureShader(),
 					glm::vec3(currentX, currentY - BLOCK_HEIGHT, BLOCK_MIN_Z), glm::vec3(currentX + blockWidth, currentY, BLOCK_MIN_Z + BLOCK_DEPTH)
-					, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)), 100, sceneGraph));
+					, "res\\textures\\BlockBlue.png"), 100, sceneGraph));
 			}
 			currentX += blockWidth + BLOCK_MARGIN;
 		}

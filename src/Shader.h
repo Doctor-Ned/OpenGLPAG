@@ -20,7 +20,7 @@ public:
 	void setUseLight(bool useLight);
 	void setView(glm::mat4 view);
 	void setProjection(glm::mat4 projection);
-	void setInt(char* name, int value);
+	void setInt(const char* name, int value);
 	void setFloat(char* name, float value);
 	void setDirLightSpace(glm::mat4 dirLightSpace);
 	void setSpotLightSpace(glm::mat4 spotLightSpace);

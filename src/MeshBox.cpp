@@ -143,7 +143,7 @@ void MeshBox::updateValues(glm::vec3 min, glm::vec3 max) {
 	vertices[23].Position.x = max.x;
 
 	std::vector<TextureVertex> data;
-	for(int i=0;i<24;i+=6) {
+	for(int i=0;i<24;i+=4) {
 		data.push_back(vertices[i]);
 		data.push_back(vertices[i + 2]);
 		data.push_back(vertices[i + 1]);

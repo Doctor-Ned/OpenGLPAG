@@ -9,4 +9,4 @@ obj/
 .vs/
 /Build/*
 !/Build/recreate-cmake.bat
-/src/main.cpp~RF395725b1.TMP
+*.TMP
