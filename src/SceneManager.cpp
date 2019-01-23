@@ -19,16 +19,13 @@ void SceneManager::setup() {
 	reflectShader = new Shader("reflectVertexShader.glsl", "reflectFragmentShader.glsl");
 	refractShader = new Shader("refractVertexShader.glsl", "refractFragmentShader.glsl");
 	depthShader = new Shader("depthVertexShader.glsl", "depthFragmentShader.glsl");
+	depthPointShader = new GeometryShader("depthPointVertexShader.glsl", "depthPointGeometryShader.glsl", "depthPointFragmentShader.glsl");
 	depthDebugShader = new Shader("depthDebugVertexShader.glsl", "depthDebugFragmentShader.glsl");
-	uboDirLights = new UboDirLights(0, nullptr);
-	uboPointLights = new UboPointLights(0, nullptr);
-	uboSpotLights = new UboSpotLights(0, nullptr);
+	uboLights = new UboLights(nullptr, nullptr, nullptr);
 	uboTextureColor = new UboTextureColor(false, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	uboViewProjection = new UboViewProjection(glm::mat4(1.0f), glm::mat4(1.0f));
 	std::vector<Ubo*> ubos;
-	ubos.push_back(uboDirLights);
-	ubos.push_back(uboPointLights);
-	ubos.push_back(uboSpotLights);
+	ubos.push_back(uboLights);
 	ubos.push_back(uboTextureColor);
 	ubos.push_back(uboViewProjection);
 	std::vector<Shader*> shaders;
@@ -122,20 +119,16 @@ Shader* SceneManager::getDepthShader() {
 	return depthShader;
 }
 
+GeometryShader* SceneManager::getDepthPointShader() {
+	return depthPointShader;
+}
+
 Shader* SceneManager::getDepthDebugShader() {
 	return depthDebugShader;
 }
 
-UboDirLights* SceneManager::getUboDirLights() {
-	return uboDirLights;
-}
-
-UboPointLights* SceneManager::getUboPointLights() {
-	return uboPointLights;
-}
-
-UboSpotLights* SceneManager::getUboSpotLights() {
-	return uboSpotLights;
+UboLights* SceneManager::getUboLights() {
+	return uboLights;
 }
 
 UboTextureColor* SceneManager::getUboTextureColor() {

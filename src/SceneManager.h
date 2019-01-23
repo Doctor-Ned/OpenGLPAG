@@ -5,10 +5,9 @@
 #include "OptionsScene.h"
 #include "GameScene.h"
 #include "UboViewProjection.h"
-#include "UboDirLights.h"
-#include "UboPointLights.h"
 #include "UboTextureColor.h"
-#include "UboSpotLights.h"
+#include "UboLights.h"
+#include "GeometryShader.h"
 
 class SceneManager {
 public:
@@ -31,15 +30,14 @@ public:
 	Shader* getReflectShader();
 	Shader* getRefractShader();
 	Shader* getDepthShader();
+	GeometryShader* getDepthPointShader();
 	Shader* getDepthDebugShader();
-	UboDirLights* getUboDirLights();
-	UboPointLights* getUboPointLights();
-	UboSpotLights* getUboSpotLights();
+	UboLights* getUboLights();
 	UboTextureColor* getUboTextureColor();
 	UboViewProjection* getUboViewProjection();
 	GLuint getFramebuffer();
 	void setFramebuffer(GLuint fbo);
-	bool inverseEnabled=false;
+	bool inverseEnabled = false;
 	float difficulty = 1.0f;
 	SceneManager(SceneManager const&) = delete;
 	void operator=(SceneManager const&) = delete;
@@ -48,14 +46,13 @@ protected:
 	SceneManager() {}
 	void setup();
 	Shader *uiColorShader, *uiTextureShader, *skyboxShader, *modelShader, *textureShader, *colorShader, *reflectShader, *refractShader, *depthShader, *depthDebugShader;
+	GeometryShader *depthPointShader;
 	TextRenderer* textRenderer;
 	Scene* currentScene = nullptr;
 	MainMenuScene* mainMenuScene;
 	OptionsScene* optionsScene;
 	GameScene* gameScene;
-	UboDirLights* uboDirLights;
-	UboPointLights* uboPointLights;
-	UboSpotLights* uboSpotLights;
+	UboLights* uboLights;
 	UboTextureColor* uboTextureColor;
 	UboViewProjection* uboViewProjection;
 };

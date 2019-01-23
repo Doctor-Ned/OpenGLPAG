@@ -60,15 +60,19 @@ protected:
 	Camera* camera;
 	std::vector<Shader*> updatableShaders;
 	SceneManager* sceneManager;
-	std::vector<SpotLight*> spotLights;
-	std::vector<PointLight*> pointLights;
-	SpotLight movingBlockSpotLight;
+	SpotLight spotLight;
 	DirLight dirLight;
 	PointLight pointLight;
 	SpotLightNode *spotLightNode;
 	PointLightNode *pointLightNode;
-	const float LIGHT_PROJ_NEAR = 0.01f;
-	const float LIGHT_PROJ_FAR = 10.0f;
+	const float DIR_LIGHT_PROJ_NEAR = 0.1f;
+	const float DIR_LIGHT_PROJ_FAR = 8.0f;
+	const float SPOT_LIGHT_PROJ_NEAR = 0.01f;
+	const float SPOT_LIGHT_PROJ_FAR = 8.0f;
+	const float POINT_LIGHT_PROJ_NEAR = 0.1f;
+	const float POINT_LIGHT_PROJ_FAR = 10.0f;
+	std::vector<glm::mat4> pointSpaces;
+	bool showDepthMap = false;
 	DirLightNode *dirLightNode;
 	void pause();
 	void unpause();
@@ -81,7 +85,7 @@ protected:
 	float movingSpeed = 1.75f, movingBlockX, movingBlockWidth;
 	float introDistance = 10.0f, introDone = 0.0f, prevIntroDone = 0.0f, introSpeed = 0.0f, introAcceleration = 0.08f;
 
-	glm::mat4 lightProjection;
+	glm::mat4 dirLightProjection, spotLightProjection;
 	glm::mat4 pointSpace, dirSpace, spotSpace;
 	GLuint pointTexture, dirTexture, spotTexture;
 	GLuint pointFbo, dirFbo, spotFbo;

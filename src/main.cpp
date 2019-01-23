@@ -90,6 +90,9 @@ int main(int, char**) {
 	//glEnable(GL_DEPTH_TEST); // this is so important. Spent 2 hours looking for it
 	//glAlphaFunc(GL_GREATER, 0.1f);
 	//glEnable(GL_ALPHA_TEST);
+	glFrontFace(GL_CCW);
+	//glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	sceneManager = &SceneManager::getInstance();
@@ -144,11 +147,11 @@ int main(int, char**) {
 
 	std::vector<UiTextureVertex> data;
 	data.push_back(vertices[0]);
-	data.push_back(vertices[2]);
 	data.push_back(vertices[1]);
-	data.push_back(vertices[0]);
-	data.push_back(vertices[3]);
 	data.push_back(vertices[2]);
+	data.push_back(vertices[0]);
+	data.push_back(vertices[2]);
+	data.push_back(vertices[3]);
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);

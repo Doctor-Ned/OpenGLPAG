@@ -71,13 +71,13 @@ void MeshRefBox::updateValues(glm::vec3 min, glm::vec3 max) {
 	vertices[14].Normal = normal;
 	vertices[15].Normal = normal;
 
-	vertices[12].Position = vertices[11].Position;
+	vertices[12].Position = vertices[9].Position;
 	vertices[12].Position.z = min.z;
-	vertices[13].Position = vertices[10].Position;
+	vertices[13].Position = vertices[8].Position;
 	vertices[13].Position.z = min.z;
-	vertices[14].Position = vertices[9].Position;
+	vertices[14].Position = vertices[11].Position;
 	vertices[14].Position.z = min.z;
-	vertices[15].Position = vertices[8].Position;
+	vertices[15].Position = vertices[10].Position;
 	vertices[15].Position.z = min.z;
 
 	normal = glm::vec3(-1.0f, 0.0f, 0.0f); //left
@@ -101,13 +101,13 @@ void MeshRefBox::updateValues(glm::vec3 min, glm::vec3 max) {
 	vertices[22].Normal = normal;
 	vertices[23].Normal = normal;
 
-	vertices[20].Position = vertices[19].Position;
+	vertices[20].Position = vertices[17].Position;
 	vertices[20].Position.x = max.x;
-	vertices[21].Position = vertices[18].Position;
+	vertices[21].Position = vertices[16].Position;
 	vertices[21].Position.x = max.x;
-	vertices[22].Position = vertices[17].Position;
+	vertices[22].Position = vertices[19].Position;
 	vertices[22].Position.x = max.x;
-	vertices[23].Position = vertices[16].Position;
+	vertices[23].Position = vertices[18].Position;
 	vertices[23].Position.x = max.x;
 
 	std::vector<SimpleVertex> data;

@@ -30,11 +30,16 @@ GameScene::GameScene() {
 	skybox = new Skybox(*sceneManager->getSkyboxShader(), skyboxFaces);
 	camera = new Camera(glm::vec3(0.0f, 1.0f, 2.0f + introDistance), glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, 1.0f);
+	const float orthoSize = 5.0f;
 
-	lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, LIGHT_PROJ_NEAR, LIGHT_PROJ_FAR);
+	dirLightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, DIR_LIGHT_PROJ_NEAR, DIR_LIGHT_PROJ_FAR);
 
-	sceneGraph = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
-		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	sceneGraph = new GraphNode();
+
+	GraphNode *ground = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1000.0f, 1000.0f,
+		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), sceneGraph);
+
+	//ground->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -5.0f, 0.0f)));
 
 	GraphNode *rotatingNode = new RotatingNode(0.001f, nullptr, sceneGraph);
 
@@ -47,32 +52,39 @@ GameScene::GameScene() {
 	//dir1.model = glm::translate(glm::mat4(1.0f), dirPosition);
 	dirLight.model = glm::mat4(1.0f);
 	dirLightNode = new DirLightNode(&dirLight, nullptr, rotatingNode);
-	dirLightNode->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 1.0f)));
-	std::vector<DirLight*> dirs;
-	dirs.push_back(&dirLight);
+	dirLightNode->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 3.0f, 3.0f)));
 
 	orbSphere = new MeshColorSphere(*sceneManager->getColorShader(), ORB_RADIUS, 50, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	movingBlockSpotLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	movingBlockSpotLight.diffuse = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	movingBlockSpotLight.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	movingBlockSpotLight.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	movingBlockSpotLight.direction = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	movingBlockSpotLight.model = glm::mat4(1.0f);
-	movingBlockSpotLight.constant = 0.18f;
-	movingBlockSpotLight.linear = 0.1f;
-	movingBlockSpotLight.quadratic = 0.1f;
-	movingBlockSpotLight.cutOff = glm::radians(12.5f);
-	movingBlockSpotLight.outerCutOff = glm::radians(25.0f);
+	spotLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	spotLight.diffuse = glm::vec4(0.0f, 0.0f, 0.6f, 1.0f);
+	spotLight.specular = glm::vec4(0.0f, 0.0f, 0.6f, 1.0f);
+	spotLight.position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	spotLight.direction = glm::normalize(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+	spotLight.model = glm::mat4(1.0f);
+	spotLight.constant = 0.18f;
+	spotLight.linear = 0.1f;
+	spotLight.quadratic = 0.1f;
+	spotLight.cutOff = glm::radians(12.5f);
+	spotLight.outerCutOff = glm::radians(25.0f);
 
-	spotLights.push_back(&movingBlockSpotLight);
+	spotLightProjection = glm::perspective(glm::radians(45.0f), 1.0f, SPOT_LIGHT_PROJ_NEAR, SPOT_LIGHT_PROJ_FAR);
+	//spotLightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.01f, 7.5f);
 
-	sceneManager->getUboDirLights()->inject(1, &dirs[0]);
-	sceneManager->getUboSpotLights()->inject(1, &spotLights[0]);
+	pointLight.model = glm::mat4(1.0f);
+	pointLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	pointLight.diffuse = glm::vec4(0.7f, 0.7f, 0.3f, 1.0f);
+	pointLight.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	pointLight.position = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	pointLight.model = glm::mat4(1.0f);
+	pointLight.constant = 0.18f;
+	pointLight.linear = 0.1f;
+	pointLight.quadratic = 0.1f;
+	sceneManager->getUboLights()->inject(&dirLight, &spotLight, &pointLight);
 
-	GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
-	backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
-	backgroundObjects->setScale(0.04f);
+	//GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
+	//backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
+	//backgroundObjects->setScale(0.04f);
 
 	generateBlocks();
 
@@ -92,7 +104,7 @@ GameScene::GameScene() {
 		glm::vec3(movingBlockWidth / 2.0f, MOVINGBLOCK_Y + MOVINGBLOCK_HEIGHT, BLOCK_MIN_Z + BLOCK_DEPTH), "res\\textures\\BlockRed.png"), sceneGraph);
 	movingBlockX = -movingBlockWidth / 2.0f;
 
-	spotLightNode = new SpotLightNode(&movingBlockSpotLight, nullptr, movingBlock);
+	spotLightNode = new SpotLightNode(&spotLight, nullptr, movingBlock);
 	spotLightNode->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, MOVINGBLOCK_Y + MOVINGBLOCK_HEIGHT + 0.001f, BLOCK_MIN_Z + BLOCK_DEPTH / 2.0f)));
 
 	glGenFramebuffers(1, &dirFbo);
@@ -126,6 +138,30 @@ GameScene::GameScene() {
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
 
+	glGenFramebuffers(1, &pointFbo);
+	glGenTextures(1, &pointTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, pointTexture);
+	for (unsigned int i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointFbo);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, pointTexture, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, POINT_LIGHT_PROJ_NEAR, POINT_LIGHT_PROJ_FAR);
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
 	updatableShaders.push_back(sceneManager->getModelShader());
 	updatableShaders.push_back(sceneManager->getTextureShader());
 	updatableShaders.push_back(sceneManager->getColorShader());
@@ -136,31 +172,29 @@ GameScene::GameScene() {
 }
 
 void GameScene::render() {
-	sceneManager->getUboSpotLights()->inject(1, &spotLights[0]);
+	sceneManager->getUboLights()->inject(&dirLight, &spotLight, &pointLight);
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glCullFace(GL_FRONT);
 	dirRender();
-	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	spotRender();
-	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	pointRender();
-
+	//glCullFace(GL_BACK);
 
 	for (int i = 0; i < updatableShaders.size(); i++) {
+		updatableShaders[i]->use();
+		updatableShaders[i]->setFloat("far_plane", POINT_LIGHT_PROJ_FAR);
 		updatableShaders[i]->setDirLightSpace(dirSpace);
 		updatableShaders[i]->setSpotLightSpace(spotSpace);
 		updatableShaders[i]->setPointLightSpace(pointSpace);
-		updatableShaders[i]->use();
-		glActiveTexture(GL_TEXTURE20);
+		glActiveTexture(GL_TEXTURE31);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, pointTexture);
+		updatableShaders[i]->setInt("point_shadows", 31);
+		glActiveTexture(GL_TEXTURE29);
 		glBindTexture(GL_TEXTURE_2D, dirTexture);
-		updatableShaders[i]->setInt("dir_shadows", 20);
-		glActiveTexture(GL_TEXTURE21);
+		updatableShaders[i]->setInt("dir_shadows", 29);
+		glActiveTexture(GL_TEXTURE30);
 		glBindTexture(GL_TEXTURE_2D, spotTexture);
-		updatableShaders[i]->setInt("spot_shadows", 21);
-		////TODO
-		//updatableShaders[i]->setInt("point_shadows", 22);
+		updatableShaders[i]->setInt("spot_shadows", 30);
 	}
 
 	for (int i = 0; i < reflectiveBoxes.size(); i++) {
@@ -177,7 +211,7 @@ void GameScene::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	stdRender();
 
-	if (!intro && !paused) {
+	if (!intro && !paused && !showDepthMap) {
 		if (!gameOver) {
 			if (orb == nullptr) {
 				sprintf_s(orbText, "%d orbs left", availableOrbs);
@@ -196,36 +230,46 @@ void GameScene::render() {
 		pauseScene->render();
 	}
 
-	//sceneManager->getDepthDebugShader()->setFloat("near_plane", LIGHT_PROJ_NEAR);
-	//sceneManager->getDepthDebugShader()->setFloat("far_plane", LIGHT_PROJ_FAR);
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, dirTexture);
+	if (showDepthMap && !paused && !gameOver) {
 
-	//static unsigned int quadVAO = 0;
-	//static unsigned int quadVBO;
-	//if (quadVAO == 0) {
-	//	float quadVertices[] = {
-	//		// positions        // texture Coords
-	//		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-	//		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-	//		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-	//		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-	//	};
-	//	// setup plane VAO
-	//	glGenVertexArrays(1, &quadVAO);
-	//	glGenBuffers(1, &quadVBO);
-	//	glBindVertexArray(quadVAO);
-	//	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	//	glEnableVertexAttribArray(0);
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	//	glEnableVertexAttribArray(1);
-	//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	//}
-	//glBindVertexArray(quadVAO);
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//glBindVertexArray(0);
-	//glUseProgram(0);
+		//sceneManager->getDepthDebugShader()->setInt("perspective", 0);
+		//sceneManager->getDepthDebugShader()->setFloat("near_plane", DIR_LIGHT_PROJ_NEAR);
+		//sceneManager->getDepthDebugShader()->setFloat("far_plane", DIR_LIGHT_PROJ_FAR);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, dirTexture);
+
+		sceneManager->getDepthDebugShader()->setInt("perspective", 1);
+		sceneManager->getDepthDebugShader()->setFloat("near_plane", SPOT_LIGHT_PROJ_NEAR);
+		sceneManager->getDepthDebugShader()->setFloat("far_plane", SPOT_LIGHT_PROJ_FAR);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, spotTexture);
+
+		static unsigned int quadVAO = 0;
+		static unsigned int quadVBO;
+		if (quadVAO == 0) {
+			float quadVertices[] = {
+				// positions        // texture Coords
+				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+				 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			};
+			// setup plane VAO
+			glGenVertexArrays(1, &quadVAO);
+			glGenBuffers(1, &quadVBO);
+			glBindVertexArray(quadVAO);
+			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		}
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glBindVertexArray(0);
+		glUseProgram(0);
+	}
 }
 
 void GameScene::update(double timeDelta) {
@@ -398,6 +442,10 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 			}
 		}
 
+		if (key == GLFW_KEY_M && action == GLFW_RELEASE) {
+			showDepthMap = !showDepthMap;
+		}
+
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE && !gameOver) {
 			pause();
 		} else if (intro) {
@@ -471,7 +519,7 @@ void GameScene::loseOrb() {
 }
 
 void GameScene::generateBlocks() {
-	int blockAmount = 8, layers = 7;
+	int blockAmount = 3, layers = 7;
 	float currentX, currentY, blockWidth;
 	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
 	for (int l = 0; l < layers; l++) {
@@ -515,6 +563,7 @@ void GameScene::stdRender() {
 	}
 	sceneGraph->draw();
 	skybox->draw(camera->getUntranslatedView(), projection);
+	//skybox->draw(camera->getUntranslatedView(), projection, pointTexture);
 }
 
 void GameScene::dirRender() {
@@ -522,7 +571,7 @@ void GameScene::dirRender() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	sceneManager->getDepthShader()->use();
 	glm::vec3 pos = glm::vec3(dirLightNode->getWorld()[3]);
-	dirSpace = lightProjection * glm::lookAt(pos, pos + glm::normalize(glm::vec3(dirLightNode->getWorld() * glm::vec4(glm::vec3(dirLight.direction), 0.0f))), glm::vec3(0.0f, 1.0f, 0.0f));
+	dirSpace = dirLightProjection * glm::lookAt(pos - glm::normalize(glm::vec3(dirLightNode->getWorld() * glm::vec4(glm::vec3(dirLight.direction), 0.0f))), pos, glm::vec3(0.0f, 1.0f, 0.0f));
 	sceneManager->getDepthShader()->setLightSpace(dirSpace);
 	sceneGraph->draw(sceneManager->getDepthShader());
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
@@ -532,8 +581,8 @@ void GameScene::spotRender() {
 	glBindFramebuffer(GL_FRAMEBUFFER, spotFbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	sceneManager->getDepthShader()->use();
-	spotSpace = lightProjection * glm::lookAt(glm::vec3(spotLightNode->getWorld()[3]),
-		glm::vec3(spotLightNode->getWorld()[3]) + glm::normalize(glm::vec3(spotLightNode->getWorld() * glm::vec4(glm::vec3(spotLights[0]->direction), 0.0f)))
+	spotSpace = spotLightProjection * glm::lookAt(glm::vec3(spotLightNode->getWorld()[3]),
+		glm::vec3(spotLightNode->getWorld()[3]) + glm::normalize(glm::vec3(spotLightNode->getWorld() * glm::vec4(glm::vec3(spotLight.direction), 0.0f)))
 		, glm::vec3(0.0f, 0.0f, 1.0f));
 	sceneManager->getDepthShader()->setLightSpace(spotSpace);
 	sceneGraph->draw(sceneManager->getDepthShader());
@@ -541,7 +590,18 @@ void GameScene::spotRender() {
 }
 
 void GameScene::pointRender() {
-
+	//glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointFbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	GeometryShader *shader = sceneManager->getDepthPointShader();
+	shader->setFloat("far_plane", POINT_LIGHT_PROJ_FAR);
+	shader->setPointPosition(pointLight.model * pointLight.position);
+	shader->setPointSpaces(pointSpaces);
+	sceneGraph->draw(shader);
+	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
+	glCullFace(GL_BACK);
+	//glDisable(GL_CULL_FACE);
 }
 
 void GameScene::customRender(glm::mat4 view, glm::mat4 projection, GraphNode* exclude) {
