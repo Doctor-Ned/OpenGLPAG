@@ -73,9 +73,9 @@ GameScene::GameScene() {
 
 	pointLight.model = glm::mat4(1.0f);
 	pointLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	pointLight.diffuse = glm::vec4(0.7f, 0.7f, 0.3f, 1.0f);
-	pointLight.specular = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	pointLight.position = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	pointLight.diffuse = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
+	pointLight.specular = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
+	pointLight.position = glm::vec4(0.0f, 2.0f, 1.0f, 1.0f);
 	pointLight.model = glm::mat4(1.0f);
 	pointLight.constant = 0.18f;
 	pointLight.linear = 0.1f;
@@ -591,7 +591,7 @@ void GameScene::spotRender() {
 
 void GameScene::pointRender() {
 	//glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+	//glCullFace(GL_FRONT);
 	glBindFramebuffer(GL_FRAMEBUFFER, pointFbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	GeometryShader *shader = sceneManager->getDepthPointShader();
@@ -600,7 +600,7 @@ void GameScene::pointRender() {
 	shader->setPointSpaces(pointSpaces);
 	sceneGraph->draw(shader);
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 	//glDisable(GL_CULL_FACE);
 }
 
