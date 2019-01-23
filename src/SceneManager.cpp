@@ -18,6 +18,8 @@ void SceneManager::setup() {
 	colorShader = new Shader("colorVertexShader.glsl", "colorFragmentShader.glsl");
 	reflectShader = new Shader("reflectVertexShader.glsl", "reflectFragmentShader.glsl");
 	refractShader = new Shader("refractVertexShader.glsl", "refractFragmentShader.glsl");
+	depthShader = new Shader("depthVertexShader.glsl", "depthFragmentShader.glsl");
+	depthDebugShader = new Shader("depthDebugVertexShader.glsl", "depthDebugFragmentShader.glsl");
 	uboDirLights = new UboDirLights(0, nullptr);
 	uboPointLights = new UboPointLights(0, nullptr);
 	uboSpotLights = new UboSpotLights(0, nullptr);
@@ -114,6 +116,14 @@ Shader* SceneManager::getReflectShader() {
 
 Shader* SceneManager::getRefractShader() {
 	return refractShader;
+}
+
+Shader* SceneManager::getDepthShader() {
+	return depthShader;
+}
+
+Shader* SceneManager::getDepthDebugShader() {
+	return depthDebugShader;
 }
 
 UboDirLights* SceneManager::getUboDirLights() {

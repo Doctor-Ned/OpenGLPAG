@@ -10,6 +10,8 @@
 #include "SpotLightNode.h"
 #include "MeshRefSphere.h"
 #include "MeshRefBox.h"
+#include "PointLightNode.h"
+#include "DirLightNode.h"
 
 class SceneManager;
 
@@ -26,6 +28,9 @@ public:
 protected:
 	void generateBlocks();
 	void stdRender();
+	void dirRender();
+	void spotRender();
+	void pointRender();
 	void customRender(glm::mat4 view, glm::mat4 projection, GraphNode *exclude);
 	void customRender(glm::mat4 view, glm::mat4 projection, std::vector<GraphNode*> exclude);
 	GLFWwindow *window;
@@ -53,10 +58,16 @@ protected:
 	UiTextButton *buttonBackToMenu;
 	glm::mat4 projection;
 	Camera* camera;
+	std::vector<Shader*> updatableShaders;
 	SceneManager* sceneManager;
 	std::vector<SpotLight*> spotLights;
+	std::vector<PointLight*> pointLights;
 	SpotLight movingBlockSpotLight;
+	DirLight dirLight;
+	PointLight pointLight;
 	SpotLightNode *spotLightNode;
+	PointLightNode *pointLightNode;
+	DirLightNode *dirLightNode;
 	void pause();
 	void unpause();
 	bool paused = false;
@@ -67,6 +78,13 @@ protected:
 	bool movingLeft = false, movingRight = false;
 	float movingSpeed = 1.75f, movingBlockX, movingBlockWidth;
 	float introDistance = 10.0f, introDone = 0.0f, prevIntroDone = 0.0f, introSpeed = 0.0f, introAcceleration = 0.08f;
+
+	glm::mat4 lightProjection;
+	glm::mat4 pointSpace, dirSpace, spotSpace;
+	GLuint pointTexture, dirTexture, spotTexture;
+	GLuint pointFbo, dirFbo, spotFbo;
+	const GLuint SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+	//glm::vec3 dirPosition;
 
 	float camSpeed = 3.0f, camRotSpeed=0.5f;
 

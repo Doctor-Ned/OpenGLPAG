@@ -10,6 +10,9 @@ public:
 	virtual void draw();
 	virtual void draw(GraphNode *excluded);
 	virtual void draw(std::vector<GraphNode*> excluded);
+	virtual void draw(Shader *shader);
+	virtual void draw(Shader *shader, GraphNode *excluded);
+	virtual void draw(Shader *shader, std::vector<GraphNode*> excluded);
 	virtual void update(double timeDiff);
 	glm::mat4 getLocal();
 	glm::mat4 getWorld();

@@ -21,6 +21,11 @@ public:
 	void setView(glm::mat4 view);
 	void setProjection(glm::mat4 projection);
 	void setInt(char* name, int value);
+	void setFloat(char* name, float value);
+	void setDirLightSpace(glm::mat4 dirLightSpace);
+	void setSpotLightSpace(glm::mat4 spotLightSpace);
+	void setPointLightSpace(glm::mat4 pointLightSpace);
+	void setLightSpace(glm::mat4 lightSpace);
 	virtual void bind(Ubo* ubo);
 	GLint getUniformLocation(const char* name);
 protected:

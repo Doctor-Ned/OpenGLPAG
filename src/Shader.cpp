@@ -127,6 +127,46 @@ void Shader::setInt(char* name, int value) {
 	}
 }
 
+void Shader::setFloat(char* name, float value) {
+	use();
+	GLint location = getUniformLocation(name);
+	if(location != -1) {
+		glUniform1f(location, value);
+	}
+}
+
+void Shader::setDirLightSpace(glm::mat4 dirLightSpace) {
+	use();
+	GLint location = getUniformLocation("dirLightSpace");
+	if(location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(dirLightSpace));
+	}
+}
+
+void Shader::setSpotLightSpace(glm::mat4 spotLightSpace) {
+	use();
+	GLint location = getUniformLocation("spotLightSpace");
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(spotLightSpace));
+	}
+}
+
+void Shader::setPointLightSpace(glm::mat4 pointLightSpace) {
+	use();
+	GLint location = getUniformLocation("pointLightSpace");
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(pointLightSpace));
+	}
+}
+
+void Shader::setLightSpace(glm::mat4 lightSpace) {
+	use();
+	GLint location = getUniformLocation("lightSpace");
+	if(location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(lightSpace));
+	}
+}
+
 void Shader::bind(Ubo* ubo) {
 	GLuint index = glGetUniformBlockIndex(id, ubo->getBlockName());
 	if (index != -1) {

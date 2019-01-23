@@ -1,4 +1,6 @@
 #include "MeshRef.h"
+#include "SceneManager.h"
+
 void MeshRef::regenEnvironmentMap(glm::mat4 model, std::function<void(glm::mat4, glm::mat4)> renderCallback, GLuint framebuffer) {
 	drawToCubemap(environmentMap, getUnmodeledCenter() + glm::vec3(model[3]), fbo, rb, renderCallback, framebuffer);
 }
@@ -35,6 +37,6 @@ MeshRef::MeshRef(Shader shader) : Mesh(shader) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo);
 	glDrawBuffers(1, drawBufs);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, SceneManager::getInstance().getFramebuffer());
 	//glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }

@@ -30,6 +30,8 @@ public:
 	Shader* getColorShader();
 	Shader* getReflectShader();
 	Shader* getRefractShader();
+	Shader* getDepthShader();
+	Shader* getDepthDebugShader();
 	UboDirLights* getUboDirLights();
 	UboPointLights* getUboPointLights();
 	UboSpotLights* getUboSpotLights();
@@ -45,7 +47,7 @@ protected:
 	GLuint framebuffer;
 	SceneManager() {}
 	void setup();
-	Shader *uiColorShader, *uiTextureShader, *skyboxShader, *modelShader, *textureShader, *colorShader, *reflectShader, *refractShader;
+	Shader *uiColorShader, *uiTextureShader, *skyboxShader, *modelShader, *textureShader, *colorShader, *reflectShader, *refractShader, *depthShader, *depthDebugShader;
 	TextRenderer* textRenderer;
 	Scene* currentScene = nullptr;
 	MainMenuScene* mainMenuScene;

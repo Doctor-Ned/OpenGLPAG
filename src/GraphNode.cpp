@@ -85,6 +85,83 @@ void GraphNode::draw(std::vector<GraphNode*> excluded) {
 	}
 }
 
+void GraphNode::draw(Shader* shader) {
+	if (parent != nullptr) {
+		dirty |= parent->dirty;
+		if (dirty) {
+			world = parent->getWorld() * local;
+		}
+	} else if (dirty) {
+		world = local;
+	}
+
+	if (mesh) {
+		mesh->draw(*shader, world, scale);
+	}
+
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->draw(shader);
+	}
+	if (dirty) {
+		dirty = false;
+	}
+}
+
+void GraphNode::draw(Shader* shader, GraphNode* excluded) {
+	if (parent != nullptr) {
+		dirty |= parent->dirty;
+		if (dirty) {
+			world = parent->getWorld() * local;
+		}
+	} else if (dirty) {
+		world = local;
+	}
+
+	if (mesh) {
+		mesh->draw(*shader, world, scale);
+	}
+
+	for (int i = 0; i < children.size(); i++) {
+		if (children[i] != excluded) {
+			children[i]->draw(shader, excluded);
+		}
+	}
+	if (dirty) {
+		dirty = false;
+	}
+}
+
+void GraphNode::draw(Shader* shader, std::vector<GraphNode*> excluded) {
+	if (parent != nullptr) {
+		dirty |= parent->dirty;
+		if (dirty) {
+			world = parent->getWorld() * local;
+		}
+	} else if (dirty) {
+		world = local;
+	}
+
+	if (mesh) {
+		mesh->draw(*shader, world, scale);
+	}
+
+	for (int i = 0; i < children.size(); i++) {
+		bool exclude = false;
+		for (int j = 0; j < excluded.size(); j++) {
+			if (children[i] == excluded[j]) {
+				exclude = true;
+				break;
+			}
+		}
+		if (!exclude) {
+			children[i]->draw(shader, excluded);
+		}
+	}
+	if (dirty) {
+		dirty = false;
+	}
+}
+
 void GraphNode::update(double timeDiff) {
 	for (int i = 0; i < children.size(); i++) {
 		children[i]->update(timeDiff);
