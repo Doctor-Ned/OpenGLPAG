@@ -99,21 +99,21 @@ vec3 gridSamplingDisk[20] = vec3[]
 );
 
 vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
-//    vec3 fragToLight = fs_in.pos - vec3(light.model * light.position);
-//    float closestDepth = texture(point_shadows, fragToLight).r;
-//    closestDepth *= far_plane;
-//    float currentDepth = length(fragToLight);
-//    float bias = 0.05; 
-//    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+    vec3 fragToLight = fs_in.pos - vec3(light.model * light.position);
+    float closestDepth = texture(point_shadows, fragToLight).r;
+    closestDepth *= far_plane;
+    float currentDepth = length(fragToLight);
+    float bias = 0.05; 
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
 
-	vec3 fromLightToFragment = vec3(light.model * light.position) - fs_in.pos;
-	float distanceToLight = length(fromLightToFragment);
-	float currentDistanceToLight = distanceToLight / far_plane;
-	fromLightToFragment = normalize(fromLightToFragment);
-	float referenceDistanceToLight	= texture(point_shadows, -fromLightToFragment).r;
-	float bias = max(0.05 * (1.0 - dot(fs_in.normal, fromLightToFragment)),0.005);
-	float shadowFactor = float(referenceDistanceToLight > currentDistanceToLight);
-	float shadow = referenceDistanceToLight - bias > currentDistanceToLight ? 0.0 : 1.0;
+//	vec3 fromLightToFragment = vec3(light.model * light.position) - fs_in.pos;
+//	float distanceToLight = length(fromLightToFragment);
+//	float currentDistanceToLight = distanceToLight / far_plane;
+//	fromLightToFragment = normalize(fromLightToFragment);
+//	float referenceDistanceToLight	= texture(point_shadows, -fromLightToFragment).r;
+//	float bias = max(0.05 * (1.0 - dot(fs_in.normal, fromLightToFragment)),0.005);
+//	float shadowFactor = float(referenceDistanceToLight > currentDistanceToLight);
+//	float shadow = referenceDistanceToLight - bias > currentDistanceToLight ? 0.0 : 1.0;
 
 	vec3 position = vec3(light.model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	vec3 direction = normalize(position - fs_in.pos);

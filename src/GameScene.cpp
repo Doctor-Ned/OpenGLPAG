@@ -75,7 +75,7 @@ GameScene::GameScene() {
 	pointLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	pointLight.diffuse = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
 	pointLight.specular = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
-	pointLight.position = glm::vec4(0.0f, 2.0f, 1.0f, 1.0f);
+	pointLight.position = glm::vec4(0.0f, 2.0f, -5.0f, 1.0f);
 	pointLight.model = glm::mat4(1.0f);
 	pointLight.constant = 0.18f;
 	pointLight.linear = 0.1f;
@@ -85,6 +85,9 @@ GameScene::GameScene() {
 	//GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
 	//backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
 	//backgroundObjects->setScale(0.04f);
+
+	GraphNode *background = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1.0f, 20.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)), sceneGraph);
+	background->setLocal(glm::translate(glm::rotate(glm::mat4(1.0f), (float)M_PI/2.0f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.0f, -6.0f, 0.0f)));
 
 	generateBlocks();
 
@@ -519,7 +522,7 @@ void GameScene::loseOrb() {
 }
 
 void GameScene::generateBlocks() {
-	int blockAmount = 3, layers = 7;
+	int blockAmount = 8, layers = 7;
 	float currentX, currentY, blockWidth;
 	blockWidth = (BLOCK_MAX_X - BLOCK_MIN_X - (blockAmount - 1)*BLOCK_MARGIN) / blockAmount;
 	for (int l = 0; l < layers; l++) {
@@ -582,16 +585,15 @@ void GameScene::spotRender() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	sceneManager->getDepthShader()->use();
 	spotSpace = spotLightProjection * glm::lookAt(glm::vec3(spotLightNode->getWorld()[3]),
-		glm::vec3(spotLightNode->getWorld()[3]) + glm::normalize(glm::vec3(spotLightNode->getWorld() * glm::vec4(glm::vec3(spotLight.direction), 0.0f)))
-		, glm::vec3(0.0f, 0.0f, 1.0f));
+		glm::vec3(spotLightNode->getWorld()[3]) + glm::normalize(glm::vec3(spotLightNode->getWorld() * glm::vec4(glm::vec3(spotLight.direction), 0.0f))), glm::vec3(0.0f, 0.0f, 1.0f));
 	sceneManager->getDepthShader()->setLightSpace(spotSpace);
 	sceneGraph->draw(sceneManager->getDepthShader());
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
 }
 
 void GameScene::pointRender() {
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 	glBindFramebuffer(GL_FRAMEBUFFER, pointFbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	GeometryShader *shader = sceneManager->getDepthPointShader();
@@ -600,8 +602,8 @@ void GameScene::pointRender() {
 	shader->setPointSpaces(pointSpaces);
 	sceneGraph->draw(shader);
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());
-	//glCullFace(GL_BACK);
-	//glDisable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glDisable(GL_CULL_FACE);
 }
 
 void GameScene::customRender(glm::mat4 view, glm::mat4 projection, GraphNode* exclude) {
