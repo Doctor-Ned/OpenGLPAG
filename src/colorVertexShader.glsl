@@ -27,7 +27,7 @@ out VS_OUT {
 void main() {
 	vec3 pos = inPosition * scale;
     vs_out.pos = vec3(model * vec4(pos, 1.0f));
-	vs_out.normal = normalize(vec3(model * vec4(inNormal, 0.0f)));
+	vs_out.normal = normalize(transpose(inverse(mat3(model))) * inNormal);
 	vs_out.viewPosition = vec3(model * vec4(viewPosition, 1.0f));
 	vs_out.fragDirLightSpace = dirLightSpace * vec4(vs_out.pos, 1.0f);
 	vs_out.fragSpotLightSpace = spotLightSpace * vec4(vs_out.pos, 1.0f);

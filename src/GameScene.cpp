@@ -75,7 +75,7 @@ GameScene::GameScene() {
 	pointLight.ambient = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	pointLight.diffuse = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
 	pointLight.specular = glm::vec4(0.3f, 0.3f, 0.1f, 1.0f);
-	pointLight.position = glm::vec4(0.0f, 2.0f, -5.0f, 1.0f);
+	pointLight.position = glm::vec4(0.0f, 2.0f, 1.0f, 1.0f);
 	pointLight.model = glm::mat4(1.0f);
 	pointLight.constant = 0.18f;
 	pointLight.linear = 0.1f;
@@ -86,7 +86,7 @@ GameScene::GameScene() {
 	//backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
 	//backgroundObjects->setScale(0.04f);
 
-	GraphNode *background = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1.0f, 20.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)), sceneGraph);
+	GraphNode *background = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1.5f, 20.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)), sceneGraph);
 	background->setLocal(glm::translate(glm::rotate(glm::mat4(1.0f), (float)M_PI/2.0f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.0f, -6.0f, 0.0f)));
 
 	generateBlocks();
