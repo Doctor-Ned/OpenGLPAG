@@ -579,8 +579,8 @@ void GameScene::stdRender() {
 		updatableShaders[i]->setViewPosition(camera->getPos());
 	}
 	sceneGraph->draw();
-	//skybox->draw(camera->getUntranslatedView(), projection);
-	skybox->draw(camera->getUntranslatedView(), projection, pointTexture);
+	skybox->draw(camera->getUntranslatedView(), projection);
+	//skybox->draw(camera->getUntranslatedView(), projection, pointTexture);
 }
 
 void GameScene::dirRender() {

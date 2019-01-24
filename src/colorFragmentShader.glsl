@@ -1,4 +1,4 @@
-#version 430 core
+#version 330 core
 
 struct DirLight {
 	vec4 direction;
