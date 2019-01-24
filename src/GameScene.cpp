@@ -88,7 +88,7 @@ GameScene::GameScene() {
 	backgroundObjects->setScale(0.04f);
 
 	GraphNode *background = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1.5f, 20.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)), sceneGraph);
-	background->setLocal(glm::translate(glm::rotate(glm::mat4(1.0f), (float)M_PI/2.0f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.0f, -6.0f, 0.0f)));
+	background->setLocal(glm::translate(glm::rotate(glm::mat4(1.0f), (float)M_PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.0f, -6.0f, 0.0f)));
 
 	generateBlocks();
 
@@ -158,13 +158,6 @@ GameScene::GameScene() {
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, POINT_LIGHT_PROJ_NEAR, POINT_LIGHT_PROJ_FAR);
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 
 	updatableShaders.push_back(sceneManager->getModelShader());
 	updatableShaders.push_back(sceneManager->getTextureShader());
@@ -186,6 +179,7 @@ void GameScene::render() {
 
 	for (int i = 0; i < updatableShaders.size(); i++) {
 		updatableShaders[i]->use();
+		updatableShaders[i]->setFloat("near_plane", POINT_LIGHT_PROJ_NEAR);
 		updatableShaders[i]->setFloat("far_plane", POINT_LIGHT_PROJ_FAR);
 		updatableShaders[i]->setDirLightSpace(dirSpace);
 		updatableShaders[i]->setSpotLightSpace(spotSpace);
@@ -214,8 +208,6 @@ void GameScene::render() {
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	stdRender();
-
-	pointLight.model = glm::translate(pointLight.model, glm::vec3(0.0f, 0.0f, -0.001f));
 
 	if (!intro && !paused && !showDepthMap) {
 		if (!gameOver) {
@@ -390,12 +382,12 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 	if (paused) {
 		pauseScene->keyboard_callback(window, key, scancode, action, mods);
 	} else {
-		if(key== GLFW_KEY_I && action == GLFW_RELEASE) {
+		if (key == GLFW_KEY_I && action == GLFW_RELEASE) {
 			DIR_LIGHT_PROJ_NEAR += 0.1f;
 		}
 		if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
 			DIR_LIGHT_PROJ_NEAR -= 0.1f;
-			if(DIR_LIGHT_PROJ_NEAR < 0.0f) {
+			if (DIR_LIGHT_PROJ_NEAR < 0.0f) {
 				DIR_LIGHT_PROJ_NEAR = 0.0f;
 			}
 		}
@@ -587,8 +579,8 @@ void GameScene::stdRender() {
 		updatableShaders[i]->setViewPosition(camera->getPos());
 	}
 	sceneGraph->draw();
-	skybox->draw(camera->getUntranslatedView(), projection);
-	//skybox->draw(camera->getUntranslatedView(), projection, pointTexture);
+	//skybox->draw(camera->getUntranslatedView(), projection);
+	skybox->draw(camera->getUntranslatedView(), projection, pointTexture);
 }
 
 void GameScene::dirRender() {
@@ -620,8 +612,39 @@ void GameScene::pointRender() {
 	glBindFramebuffer(GL_FRAMEBUFFER, pointFbo);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	GeometryShader *shader = sceneManager->getDepthPointShader();
+	shader->setFloat("near_plane", POINT_LIGHT_PROJ_NEAR);
 	shader->setFloat("far_plane", POINT_LIGHT_PROJ_FAR);
-	shader->setPointPosition(pointLight.model * pointLight.position);
+	glm::vec3 pos = glm::vec3(pointLight.model * pointLight.position);
+	shader->setPointPosition(pos);
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, POINT_LIGHT_PROJ_NEAR, POINT_LIGHT_PROJ_FAR);
+
+	/*pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	pointSpaces.push_back(shadowProj * glm::lookAt(glm::vec3(pointLight.position), glm::vec3(pointLight.position) + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));*/
+
+	glm::vec3 targets[6] = {
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(-1.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f)
+	};
+	glm::vec3 ups[6] = {
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f)
+	};
+
+	for (int i = 0; i < 6; i++) {
+		pointSpaces.push_back(shadowProj * glm::lookAt(pos, pos + targets[i], ups[i]));
+	}
 	shader->setPointSpaces(pointSpaces);
 	sceneGraph->draw(shader);
 	glBindFramebuffer(GL_FRAMEBUFFER, sceneManager->getFramebuffer());

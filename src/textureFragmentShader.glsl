@@ -56,6 +56,7 @@ in VS_OUT {
 	vec4 fragPointLightSpace;
 } fs_in;
 
+uniform float near_plane;
 uniform float far_plane;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D dir_shadows;
@@ -90,18 +91,10 @@ vec3 calcDirLight(DirLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
 	//return ((vec3(light.ambient) * diffuse) + (vec3(light.diffuse) * diff * diffuse) + (vec3(light.specular) * spec * specular));
 }
 
-vec3 gridSamplingDisk[20] = vec3[]
-(
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-);
-
 vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
     vec3 fragToLight = fs_in.pos - vec3(light.model * light.position);
     float closestDepth = texture(point_shadows, fragToLight).r;
+	closestDepth += near_plane;
     closestDepth *= far_plane;
     float currentDepth = length(fragToLight);
     float bias = 0.05; 
