@@ -30,9 +30,6 @@ GameScene::GameScene() {
 	skybox = new Skybox(*sceneManager->getSkyboxShader(), skyboxFaces);
 	camera = new Camera(glm::vec3(0.0f, 1.0f, 2.0f + introDistance), glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, 1.0f);
-	const float orthoSize = 5.0f;
-
-	dirLightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, DIR_LIGHT_PROJ_NEAR, DIR_LIGHT_PROJ_FAR);
 
 	sceneGraph = new GraphNode();
 
@@ -82,9 +79,13 @@ GameScene::GameScene() {
 	pointLight.quadratic = 0.1f;
 	sceneManager->getUboLights()->inject(&dirLight, &spotLight, &pointLight);
 
-	//GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
-	//backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
-	//backgroundObjects->setScale(0.04f);
+	/*GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\ruins_final\\ruins_final.obj"), sceneGraph);
+	backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, -10.0f)));
+	backgroundObjects->setScale(0.04f);*/
+
+	GraphNode *backgroundObjects = new GraphNode(new Model(*sceneManager->getModelShader(), "res\\models\\nanosuit\\nanosuit.obj"), sceneGraph);
+	backgroundObjects->setLocal(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.8f)));
+	backgroundObjects->setScale(0.04f);
 
 	GraphNode *background = new GraphNode(new MeshColorPlane(*sceneManager->getColorShader(), 1.5f, 20.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)), sceneGraph);
 	background->setLocal(glm::translate(glm::rotate(glm::mat4(1.0f), (float)M_PI/2.0f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.0f, -6.0f, 0.0f)));
@@ -214,6 +215,8 @@ void GameScene::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	stdRender();
 
+	pointLight.model = glm::translate(pointLight.model, glm::vec3(0.0f, 0.0f, -0.001f));
+
 	if (!intro && !paused && !showDepthMap) {
 		if (!gameOver) {
 			if (orb == nullptr) {
@@ -235,17 +238,17 @@ void GameScene::render() {
 
 	if (showDepthMap && !paused && !gameOver) {
 
-		//sceneManager->getDepthDebugShader()->setInt("perspective", 0);
-		//sceneManager->getDepthDebugShader()->setFloat("near_plane", DIR_LIGHT_PROJ_NEAR);
-		//sceneManager->getDepthDebugShader()->setFloat("far_plane", DIR_LIGHT_PROJ_FAR);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, dirTexture);
+		sceneManager->getDepthDebugShader()->setInt("perspective", 0);
+		sceneManager->getDepthDebugShader()->setFloat("near_plane", DIR_LIGHT_PROJ_NEAR);
+		sceneManager->getDepthDebugShader()->setFloat("far_plane", DIR_LIGHT_PROJ_FAR);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, dirTexture);
 
-		sceneManager->getDepthDebugShader()->setInt("perspective", 1);
+		/*sceneManager->getDepthDebugShader()->setInt("perspective", 1);
 		sceneManager->getDepthDebugShader()->setFloat("near_plane", SPOT_LIGHT_PROJ_NEAR);
 		sceneManager->getDepthDebugShader()->setFloat("far_plane", SPOT_LIGHT_PROJ_FAR);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, spotTexture);
+		glBindTexture(GL_TEXTURE_2D, spotTexture);*/
 
 		static unsigned int quadVAO = 0;
 		static unsigned int quadVBO;
@@ -387,6 +390,25 @@ void GameScene::keyboard_callback(GLFWwindow* window, int key, int scancode, int
 	if (paused) {
 		pauseScene->keyboard_callback(window, key, scancode, action, mods);
 	} else {
+		if(key== GLFW_KEY_I && action == GLFW_RELEASE) {
+			DIR_LIGHT_PROJ_NEAR += 0.1f;
+		}
+		if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
+			DIR_LIGHT_PROJ_NEAR -= 0.1f;
+			if(DIR_LIGHT_PROJ_NEAR < 0.0f) {
+				DIR_LIGHT_PROJ_NEAR = 0.0f;
+			}
+		}
+		if (key == GLFW_KEY_O && action == GLFW_RELEASE) {
+			DIR_LIGHT_PROJ_FAR += 0.1f;
+		}
+		if (key == GLFW_KEY_L && action == GLFW_RELEASE) {
+			DIR_LIGHT_PROJ_FAR -= 0.1f;
+			if (DIR_LIGHT_PROJ_FAR < 0.0f) {
+				DIR_LIGHT_PROJ_FAR = 0.0f;
+			}
+		}
+
 		if (key == GLFW_KEY_LEFT) {
 			if (action == GLFW_PRESS) {
 				movingLeft = true;
@@ -574,6 +596,7 @@ void GameScene::dirRender() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	sceneManager->getDepthShader()->use();
 	glm::vec3 pos = glm::vec3(dirLightNode->getWorld()[3]);
+	dirLightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, DIR_LIGHT_PROJ_NEAR, DIR_LIGHT_PROJ_FAR);
 	dirSpace = dirLightProjection * glm::lookAt(pos - glm::normalize(glm::vec3(dirLightNode->getWorld() * glm::vec4(glm::vec3(dirLight.direction), 0.0f))), pos, glm::vec3(0.0f, 1.0f, 0.0f));
 	sceneManager->getDepthShader()->setLightSpace(dirSpace);
 	sceneGraph->draw(sceneManager->getDepthShader());

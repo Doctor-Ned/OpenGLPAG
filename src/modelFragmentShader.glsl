@@ -109,7 +109,7 @@ vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir)
     float bias = 0.05; 
     float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
 
-	vec3 position = vec3(light.model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	vec3 position = vec3(light.model * light.position);
 	vec3 direction = normalize(position - fs_in.pos);
 	float diff = max(dot(direction, fs_in.normal), 0.0);
 	

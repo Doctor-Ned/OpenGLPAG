@@ -141,7 +141,7 @@ vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
     if(projCoords.z > 1.0)
         shadow = 0.0;
 
-	vec3 position = vec3(light.model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	vec3 position = vec3(light.model * light.position);
 	vec3 direction = normalize(position - fs_in.pos);
 	vec3 spotDirection = normalize(vec3(light.model * vec4(vec3(-light.direction), 0.0f)));
 	float diff = max(dot(direction, fs_in.normal), 0.0);
