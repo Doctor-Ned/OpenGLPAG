@@ -124,11 +124,11 @@ vec3 calcPointLight(PointLight light, vec3 diffuse, vec3 specular, vec3 viewDir)
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 diffuse, vec3 specular, vec3 viewDir) {
-	vec3 projCoords = fs_in.fragDirLightSpace.xyz / fs_in.fragDirLightSpace.w;
+	vec3 projCoords = fs_in.fragSpotLightSpace.xyz / fs_in.fragSpotLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(dir_shadows, projCoords.xy).r; 
+    float closestDepth = texture(spot_shadows, projCoords.xy).r; 
     float currentDepth = projCoords.z;
-    vec3 lightDir = normalize(vec3(light.model[3]) - fs_in.pos);
+    vec3 lightDir = normalize(vec3(light.model * light.position) - fs_in.pos);
     float bias = max(0.05 * (1.0 - dot(fs_in.normal, lightDir)), 0.005);
     float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     
